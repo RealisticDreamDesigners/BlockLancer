@@ -1,0 +1,188 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+// ✅ COMPREHENSIVE API PROXY for CORS and Rate Limiting Fix
+export async function POST(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+  try {
+    // Your Hiro API key
+    const apiKey = process.env.NEXT_PUBLIC_HIRO_API_KEY || '7d030816adf5527229ee20a9a36aaf5a';
+
+    // Build the target URL
+    const { path: pathSegments } = await params;
+    const path = pathSegments.join('/');
+    const networkType = process.env.NEXT_PUBLIC_NETWORK || 'testnet';
+    const baseUrl = networkType === 'mainnet'
+      ? 'https://api.hiro.so'
+      : networkType === 'devnet'
+        ? 'http://localhost:3999'
+        : 'https://api.testnet.hiro.so';
+
+    const targetUrl = `${baseUrl}/v2/contracts/call-read/${path}`;
+
+    // Get request body
+    const body = await request.json();
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'User-Agent': 'BlockLancer-App/1.0'
+    };
+
+    // Add API key for non-devnet networks
+    if (apiKey && networkType !== 'devnet') {
+      headers['x-api-key'] = apiKey;
+    }
+    
+    // ✅ FIX: Handle BigInt serialization in API proxy
+    const serializedBody = JSON.stringify(body, (_key, value) =>
+      typeof value === 'bigint' ? value.toString() : value
+    );
+
+    // Make the request with proper headers
+    const response = await fetch(targetUrl, {
+      method: 'POST',
+      headers,
+      body: serializedBody,
+    });
+    
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      
+      // Handle specific error types
+      if (response.status === 429) {
+        return NextResponse.json(
+          { 
+            error: 'Rate limit exceeded', 
+            details: 'Too many requests. Please try again later.',
+            retryAfter: response.headers.get('retry-after') || '60'
+          }, 
+          { status: 429 }
+        );
+      }
+      
+      if (response.status === 401) {
+        return NextResponse.json(
+          { 
+            error: 'Authentication failed', 
+            details: 'Invalid API key or authentication required.'
+          }, 
+          { status: 401 }
+        );
+      }
+      
+      return NextResponse.json(
+        { 
+          error: `API error: ${response.status}`, 
+          details: errorText 
+        }, 
+        { status: response.status }
+      );
+    }
+    
+    const data = await response.json();
+    
+    // ✅ ADD CORS HEADERS for browser compatibility
+    return NextResponse.json(data, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-api-key',
+      },
+    });
+    
+  } catch (error) {
+    
+    const errorMessage = error instanceof Error ? error.message : 'Unknown proxy error';
+    
+    return NextResponse.json(
+      { 
+        error: 'Proxy failed', 
+        details: errorMessage,
+        timestamp: new Date().toISOString()
+      }, 
+      { status: 500 }
+    );
+  }
+}
+
+// ✅ HANDLE GET REQUESTS
+export async function GET(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
+  try {
+    const apiKey = process.env.NEXT_PUBLIC_HIRO_API_KEY || '49c6e72fb90e5b04c2f53721cd1f9a59';
+
+    const { path: pathSegments } = await params;
+    const path = pathSegments.join('/');
+    const networkType = process.env.NEXT_PUBLIC_NETWORK || 'testnet';
+    const baseUrl = networkType === 'mainnet'
+      ? 'https://api.hiro.so'
+      : networkType === 'devnet'
+        ? 'http://localhost:3999'
+        : 'https://api.testnet.hiro.so';
+
+    const targetUrl = `${baseUrl}/v2/contracts/call-read/${path}`;
+
+    // Add query parameters if they exist
+    const searchParams = request.nextUrl.searchParams;
+    const queryString = searchParams.toString();
+    const fullUrl = queryString ? `${targetUrl}?${queryString}` : targetUrl;
+
+    const headers: Record<string, string> = {
+      'Accept': 'application/json',
+      'User-Agent': 'BlockLancer-App/1.0'
+    };
+
+    if (apiKey && networkType !== 'devnet') {
+      headers['x-api-key'] = apiKey;
+    }
+    
+    const response = await fetch(fullUrl, {
+      method: 'GET',
+      headers,
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      
+      return NextResponse.json(
+        { 
+          error: `API error: ${response.status}`, 
+          details: errorText 
+        }, 
+        { status: response.status }
+      );
+    }
+    
+    const data = await response.json();
+    
+    return NextResponse.json(data, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-api-key',
+      },
+    });
+    
+  } catch (error) {
+    
+    return NextResponse.json(
+      { 
+        error: 'GET Proxy failed', 
+        details: error instanceof Error ? error.message : 'Unknown'
+      }, 
+      { status: 500 }
+    );
+  }
+}
+
+// ✅ HANDLE OPTIONS for CORS preflight
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-api-key',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
+}
