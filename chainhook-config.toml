@@ -1,0 +1,101 @@
+# chainhook-config.toml - BlockLancer Chainhook configuration
+# Updated for v2 contracts deployed on testnet
+
+[storage]
+working_dir = "cache"
+
+[network]
+mode = "testnet"
+bitcoind_rpc_url = "http://localhost:18443"
+bitcoind_rpc_username = "devnet"
+bitcoind_rpc_password = "devnet"
+stacks_node_rpc_url = "https://api.testnet.hiro.so"
+
+[http_api]
+http_port = 20456
+database_uri = "redis://localhost:6379/"
+
+# ===== BLOCKLANCER ESCROW EVENTS =====
+[[predicates]]
+uuid = "blocklancer-escrow-events"
+name = "BlockLancer Escrow Events"
+network = "testnet"
+version = 2
+start_block = 1
+
+[predicates.predicate]
+scope = "contract_call"
+contract_identifier = "ST30M31FNAKNX5EJKV10V7SJSE07VVDFFZHZHGE0J.blocklancer-escrow-v2"
+method = ["create-escrow", "add-milestone", "submit-milestone", "approve-milestone", "reject-milestone"]
+
+[predicates.action]
+http_post_url = "http://localhost:8080/webhooks/escrow"
+http_post_authorization_header = "Bearer blocklancer-secret-token"
+
+# ===== BLOCKLANCER DISPUTE EVENTS =====
+[[predicates]]
+uuid = "blocklancer-dispute-events"
+name = "BlockLancer Dispute Events"
+network = "testnet"
+version = 2
+start_block = 1
+
+[predicates.predicate]
+scope = "contract_call"
+contract_identifier = "ST30M31FNAKNX5EJKV10V7SJSE07VVDFFZHZHGE0J.blocklancer-dispute-v3"
+method = ["open-dispute", "submit-evidence", "dao-resolve-dispute", "withdraw-dispute"]
+
+[predicates.action]
+http_post_url = "http://localhost:8080/webhooks/dispute"
+http_post_authorization_header = "Bearer blocklancer-secret-token"
+
+# ===== BLOCKLANCER DAO EVENTS =====
+[[predicates]]
+uuid = "blocklancer-dao-events"
+name = "BlockLancer DAO Events"
+network = "testnet"
+version = 2
+start_block = 1
+
+[predicates.predicate]
+scope = "contract_call"
+contract_identifier = "ST30M31FNAKNX5EJKV10V7SJSE07VVDFFZHZHGE0J.blocklancer-dao"
+method = ["propose-dispute-resolution", "propose-escrow-release", "propose-escrow-refund", "vote-on-proposal", "finalize-proposal-manual", "admin-add-dao-member"]
+
+[predicates.action]
+http_post_url = "http://localhost:8080/webhooks/dao"
+http_post_authorization_header = "Bearer blocklancer-secret-token"
+
+# ===== BLOCKLANCER MEMBERSHIP EVENTS =====
+[[predicates]]
+uuid = "blocklancer-membership-events"
+name = "BlockLancer Membership Events"
+network = "testnet"
+version = 2
+start_block = 1
+
+[predicates.predicate]
+scope = "contract_call"
+contract_identifier = "ST30M31FNAKNX5EJKV10V7SJSE07VVDFFZHZHGE0J.blocklancer-membership"
+method = ["set-committee-member", "propose-member", "vote-on-proposal"]
+
+[predicates.action]
+http_post_url = "http://localhost:8080/webhooks/membership"
+http_post_authorization_header = "Bearer blocklancer-secret-token"
+
+# ===== BLOCKLANCER PAYMENTS EVENTS =====
+[[predicates]]
+uuid = "blocklancer-payment-events"
+name = "BlockLancer Payment Events"
+network = "testnet"
+version = 2
+start_block = 1
+
+[predicates.predicate]
+scope = "contract_call"
+contract_identifier = "ST30M31FNAKNX5EJKV10V7SJSE07VVDFFZHZHGE0J.blocklancer-payments"
+method = ["set-user-tier", "process-platform-fee"]
+
+[predicates.action]
+http_post_url = "http://localhost:8080/webhooks/payments"
+http_post_authorization_header = "Bearer blocklancer-secret-token"
