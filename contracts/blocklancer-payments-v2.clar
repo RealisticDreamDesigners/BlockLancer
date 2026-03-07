@@ -15,6 +15,10 @@
 (define-constant platform-fee-rate u150) ;; 1.5%
 (define-constant basis-points u10000)
 
+;; sBTC Token Contract Reference (mainnet; Clarinet remaps for devnet/testnet)
+(define-constant sbtc-token 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token)
+(define-constant sbtc-decimals u8)
+
 ;; Tier Constants
 (define-constant tier-free u0)
 (define-constant tier-pro u1)
@@ -26,6 +30,7 @@
 ;; Data Variables
 (define-data-var platform-treasury principal tx-sender)
 (define-data-var total-platform-fees uint u0)
+(define-data-var total-platform-fees-sbtc uint u0)
 (define-data-var contract-paused bool false)
 
 ;; Data Maps
@@ -185,6 +190,24 @@
   )
 )
 
+;; Calculate platform fee for sBTC amounts (8 decimal places, in satoshis).
+;; Same percentage rate as STX; amounts are denominated in satoshis.
+(define-read-only (calculate-platform-fee-sbtc (user principal) (amount-sats uint))
+  (calculate-platform-fee user amount-sats)
+)
+
+;; Record an sBTC fee collected by the escrow contract.
+;; The escrow contract transfers the fee directly to the treasury;
+;; this function only updates the accounting ledger.
+(define-public (record-sbtc-fee (fee-amount uint))
+  (begin
+    (try! (assert-not-paused))
+    (asserts! (> fee-amount u0) err-insufficient-funds)
+    (var-set total-platform-fees-sbtc (+ (var-get total-platform-fees-sbtc) fee-amount))
+    (ok true)
+  )
+)
+
 ;; Process platform fee payment
 (define-public (process-platform-fee (user principal) (amount uint))
   (begin
@@ -225,8 +248,8 @@
     (asserts! (is-eq tx-sender contract-owner) err-owner-only)
     (asserts! (<= amount (var-get total-platform-fees)) err-insufficient-funds)
 
-    (try! (as-contract? ((with-stx amount))
-      (try! (stx-transfer? amount tx-sender (var-get platform-treasury)))
+    (try! (as-contract
+      (stx-transfer? amount tx-sender (var-get platform-treasury))
     ))
     (var-set total-platform-fees (- (var-get total-platform-fees) amount))
 
@@ -253,6 +276,7 @@
 (define-read-only (get-platform-stats)
   {
     total-fees: (var-get total-platform-fees),
+    total-fees-sbtc: (var-get total-platform-fees-sbtc),
     treasury: (var-get platform-treasury)
   }
 )

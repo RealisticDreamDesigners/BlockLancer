@@ -118,8 +118,8 @@
             })
           )
           ;; Return stake to nominee
-          (try! (as-contract? ((with-stx (get stake-amount proposal-data)))
-            (try! (stx-transfer? (get stake-amount proposal-data) tx-sender (get nominee proposal-data)))))
+          (try! (as-contract
+            (stx-transfer? (get stake-amount proposal-data) tx-sender (get nominee proposal-data))))
           (ok true)
         )
         (ok true)
@@ -184,7 +184,7 @@
 
     ;; Transfer stake from nominee (tx-sender)
     (asserts! (>= (stx-get-balance tx-sender) required-stake) err-insufficient-stake)
-    (try! (stx-transfer? required-stake tx-sender (unwrap-panic (as-contract? () tx-sender))))
+    (try! (stx-transfer? required-stake tx-sender (as-contract tx-sender)))
 
     ;; Create proposal
     (map-set member-proposals proposal-id
@@ -274,8 +274,8 @@
     (asserts! (> staked-amount u0) err-insufficient-stake)
     
     ;; Transfer slashed amount to platform treasury
-    (try! (as-contract? ((with-stx slash-amount))
-      (try! (stx-transfer? slash-amount tx-sender contract-admin))))
+    (try! (as-contract
+      (stx-transfer? slash-amount tx-sender contract-admin)))
     
     ;; Update staked amount
     (map-set staked-amounts member (- staked-amount slash-amount))
@@ -293,8 +293,8 @@
     (asserts! (> staked-amount u0) err-insufficient-stake)
     
     ;; Transfer remaining stake back to member
-    (try! (as-contract? ((with-stx staked-amount))
-      (try! (stx-transfer? staked-amount tx-sender tx-sender))))
+    (try! (as-contract
+      (stx-transfer? staked-amount tx-sender tx-sender)))
     
     ;; Clear stake records
     (map-delete staked-amounts tx-sender)

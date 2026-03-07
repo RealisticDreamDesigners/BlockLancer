@@ -2,16 +2,17 @@
 
 BlockLancer is a decentralized escrow and milestone payment platform built on the Stacks blockchain, providing Bitcoin-level security for freelance payments.
 
-## 🌟 Features
+## Features
 
 - **Bitcoin Security**: All contracts secured by Bitcoin through Stacks blockchain
 - **Milestone Payments**: Break projects into manageable milestones with individual payments
 - **Automatic Payments**: Instant fund release when milestones are approved
+- **sBTC Escrow**: Create and fund escrows with sBTC (1:1 Bitcoin-pegged SIP-010 token) alongside native STX
 - **Dispute Resolution**: Fair conflict resolution system
 - **Freemium Model**: Free tier for small contracts, Pro tier for advanced features
 - **Grant Support**: Perfect for funding organizations and grant programs
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 blocklancer-stacks/
@@ -30,7 +31,7 @@ blocklancer-stacks/
 └── README.md
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -81,26 +82,33 @@ blocklancer-stacks/
    npm run dev
    ```
 
-## 📝 Smart Contracts
+## Smart Contracts
 
 ### Core Contracts
 
-- **blocklancer-escrow.clar**: Main escrow functionality with milestone management
-- **blocklancer-payments.clar**: Fee processing and user tier management
-- **blocklancer-dispute.clar**: Basic dispute creation and resolution
+- **blocklancer-escrow-v3.clar**: Main escrow functionality with milestone management, supporting both STX and sBTC as escrow currencies
+- **blocklancer-payments-v2.clar**: Fee processing, user tier management, and sBTC fee accounting
+- **blocklancer-dispute-v4.clar**: Dispute creation and DAO-driven resolution
+- **blocklancer-reputation.clar**: On-chain reputation tracking
+- **blocklancer-marketplace.clar**: Job listing and application management
+- **blocklancer-membership.clar**: DAO committee membership with stake-based governance
 
 ### Key Functions
 
 #### Escrow Contract
-- `create-escrow`: Create new escrow contract
+- `create-escrow`: Create a new escrow funded with STX
+- `create-escrow-sbtc`: Create a new escrow funded with sBTC
 - `add-milestone`: Add milestone to existing contract
 - `submit-milestone`: Submit completed work (freelancer)
-- `approve-milestone`: Approve work and release payment (client)
+- `approve-milestone`: Approve work and release payment in the original token (client)
 - `reject-milestone`: Reject work with feedback (client)
+- `claim-deadline-refund`: Reclaim funds for overdue milestones
 
 #### Payments Contract
 - `validate-contract-creation`: Check user tier limits
-- `calculate-platform-fee`: Calculate fees for pro users
+- `calculate-platform-fee`: Calculate fees for pro users (STX)
+- `calculate-platform-fee-sbtc`: Calculate fees for pro users (sBTC, 8 decimal places)
+- `record-sbtc-fee`: Record sBTC fee for platform accounting
 - `upgrade-to-pro`: Upgrade user to pro tier
 
 #### Dispute Contract
@@ -108,7 +116,7 @@ blocklancer-stacks/
 - `submit-evidence`: Submit evidence for dispute
 - `resolve-dispute`: Admin resolution (MVP version)
 
-## 🔧 Development
+## Development
 
 ### Testing Contracts
 ```bash
@@ -135,7 +143,7 @@ clarinet deployment apply testnet
 clarinet deployment apply mainnet
 ```
 
-## 🔐 Security Features
+## Security Features
 
 - **Bitcoin Security**: All contracts inherit Bitcoin's security through Stacks
 - **Multi-signature Support**: Team approval workflows
@@ -143,11 +151,12 @@ clarinet deployment apply mainnet
 - **Dispute Protection**: Fair resolution mechanisms
 - **Access Controls**: Role-based permissions
 
-## 🌐 Tech Stack
+## Tech Stack
 
 ### Smart Contracts
-- **Clarity**: Smart contract language for Stacks
+- **Clarity 3**: Smart contract language for Stacks
 - **Clarinet**: Development toolchain
+- **sBTC (SIP-010)**: Bitcoin-pegged token for escrow payments
 
 ### Frontend
 - **Next.js 14**: React framework with App Router
@@ -166,33 +175,40 @@ clarinet deployment apply mainnet
 - Bitcoin ecosystem expansion
 - Grant/funding organization needs
 
-## 🗺️ Roadmap
+## Roadmap
 
 ### Phase 1: MVP (Current)
-- ✅ Core escrow contracts
-- ✅ Basic frontend with wallet integration
-- ✅ Milestone management
-- ✅ Simple dispute resolution
+- Core escrow contracts (STX)
+- Basic frontend with wallet integration
+- Milestone management
+- Simple dispute resolution
 
-### Phase 2: Enhanced Features
+### Phase 2: Multi-Token and sBTC (Current)
+- sBTC escrow support via `create-escrow-sbtc`
+- Token-aware payment release and refund logic
+- sBTC fee accounting in the payments contract
+- Frontend `createEscrowSbtc` hook and `formatSbtc` utilities
+- Backend chainhook indexing for sBTC escrow events
+
+### Phase 3: Enhanced Features
 - Advanced dispute voting system
 - Grant-specific workflows
 - User profiles and ratings
 - Mobile-responsive design
 
-### Phase 3: Ecosystem Integration
-- Multi-token support (sBTC, other SRC-20s)
+### Phase 4: Ecosystem Integration
+- Additional SIP-010 token support
 - Integration with Stacks DeFi protocols
 - API for third-party integrations
 - Advanced analytics dashboard
 
-### Phase 4: Scale & Partnership
+### Phase 5: Scale and Partnership
 - Stacks Foundation partnership
 - Enterprise grant management
 - Cross-chain integrations
 - Community governance
 
-## 🤝 Contributing
+## Contributing
 
 BlockLancer is being developed as part of the Stacks Ascent Program. We welcome contributions from the community!
 
@@ -208,18 +224,17 @@ BlockLancer is being developed as part of the Stacks Ascent Program. We welcome 
 - Documentation enhancements
 - Testing and bug fixes
 
-## 📄 License
+## License
 
 This project is part of the Stacks Ascent Program. License details will be updated upon program completion.
 
-## 🆘 Support
+## Support
 
 - **GitHub Issues**: Report bugs and feature requests
 - **Documentation**: Comprehensive guides and API docs (coming soon)
 - **Discord**: Join the Stacks Discord community (coming soon)
-- **Email**: support@blocklancer.app (coming soon)
 
-## 🏆 Acknowledgments
+## Acknowledgments
 
 - **Stacks Foundation**: For the Stacks Ascent Program
 - **Hiro Systems**: For excellent developer tools
@@ -228,4 +243,4 @@ This project is part of the Stacks Ascent Program. License details will be updat
 
 ---
 
-Built with ❤️ for the Stacks Ascent Program 2025
+Built for the Stacks Ascent Program 2025

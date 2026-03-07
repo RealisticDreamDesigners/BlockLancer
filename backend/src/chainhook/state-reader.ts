@@ -27,6 +27,7 @@ export async function readEscrowState(escrowId: number) {
       description: data.description?.value || data.description || '',
       created_at: parseInt(data['created-at']?.value || data['created-at'] || '0'),
       end_date: parseInt(data['end-date']?.value || data['end-date'] || '0'),
+      token_contract: null as string | null,
     };
   } catch (err) {
     logger.error({ err, escrowId }, 'Failed to read escrow state');
