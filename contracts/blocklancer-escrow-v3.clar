@@ -20,6 +20,12 @@
 ;; sBTC Token Contract Reference (mainnet; Clarinet remaps for devnet/testnet)
 (define-constant sbtc-token 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token)
 
+;; Constants for token operation
+(define-constant err-token-paused (err u109))
+(define-constant err-token-insufficient-balance (err u110))
+(define-constant err-token-transfer-failed (err u111))
+(define-constant err-unsupported-token (err u112))
+
 ;; Contract Status Constants
 (define-constant status-active u0)
 (define-constant status-completed u1)
@@ -42,6 +48,9 @@
 (define-data-var payments-contract-principal (optional principal) none)
 (define-data-var reputation-contract-principal (optional principal) none)
 (define-data-var contract-paused bool false)
+
+;; USDCx contract address variable (kept for reference, but using hardcoded address in calls)
+(define-data-var usdcx-token-contract principal 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usdcx)
 
 ;; Data Maps
 (define-map contracts
@@ -288,6 +297,71 @@
     (var-set next-contract-id (+ contract-id u1))
 
     (ok contract-id)
+  )
+)
+
+(define-public (create-escrow-usdcx
+    (client principal)
+    (freelancer principal)
+    (description (string-utf8 500))
+    (end-date uint)
+    (total-amount uint))
+  (let
+    (
+      (contract-id (var-get next-contract-id))
+      (current-time stacks-block-height)
+      (usdcx-contract (var-get usdcx-token-contract))
+    )
+    (try! (assert-not-paused))
+    ;;Validations
+    (asserts! (is-standard client) err-not-authorized)
+    (asserts! (is-standard freelancer) err-not-authorized)
+    (asserts! (> end-date current-time) err-invalid-time-parameters)
+    (asserts! (> total-amount u0) err-invalid-amount)
+    (asserts! (not (is-eq client freelancer)) err-not-authorized)
+
+    ;; Transfer token from client to escrow contract
+    ;; Direct call to USDCx testnet contract
+    (match (contract-call? 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usdcx transfer
+        total-amount
+        tx-sender
+        (unwrap-panic (as-contract? () tx-sender))
+        none)
+      success-val 
+        (begin
+          ;; Create contract record
+          (map-set contracts contract-id
+            {
+              client: client,
+              freelancer: freelancer,
+              total-amount: total-amount,
+              remaining-balance: total-amount,
+              status: status-active,
+              created-at: current-time,
+              end-date: end-date,
+              description: description
+            }
+          )
+
+          ;; Initialize milestone counter
+          (map-set milestone-counters contract-id u0)
+
+          ;; Set token type to USDCx (not STX)
+          (map-set contract-token-type contract-id (some 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usdcx))
+
+          ;; Increment contract ID
+          (var-set next-contract-id (+ contract-id u1))
+
+          ;; Return contract ID
+          (ok contract-id)
+        )
+      error-val 
+        ;; Handle transfer errors
+        (if (is-eq error-val u401)
+          err-token-paused              ;; Circle paused USDCx
+          err-token-transfer-failed     ;; Other transfer failure (insufficient balance, etc.)
+        )
+    )
   )
 )
 
