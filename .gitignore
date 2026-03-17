@@ -12,9 +12,17 @@ coverage
 costs-reports.json
 node_modules
 
-# env files (can opt-in for committing if needed)
-.env*
-.env.local*
+# env files
+.env
+.env.local
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+frontend/.env.local
+frontend/.env.*
+!frontend/.env.example
 
 # Deployment plans with real data
 deployments/default.testnet-plan.yaml
@@ -30,9 +38,34 @@ test-results/
 
 # Backend
 backend/node_modules/
-backend/.env
 
 # Screenshots and debug files
 *.png
 frontend/*.mjs
 frontend/*.sh
+
+# Deploy and infrastructure scripts (contain sensitive config)
+deploy-v4.mjs
+wire-contracts.mjs
+verify-committee.mjs
+backend/wire-contracts.mjs
+
+# Internal documentation (moved to blocklancer-private)
+BLOCKLANCER_FEATURE_PLAN.md
+stacks_upgrade_research.md
+team-blocklancer.md
+
+# Old contract backups
+contracts/backup-v1/
+
+# Editor config
+.vscode/
+
+# Tracking files
+ProjectTracking.md
+SessionLog.md
+NextSession.md
+Decisions.md
+
+# Firecrawl cache
+.firecrawl/

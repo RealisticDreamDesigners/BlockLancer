@@ -4,9 +4,9 @@ services:
     image: postgres:15-alpine
     restart: always
     environment:
-      POSTGRES_USER: workshield_user
-      POSTGRES_PASSWORD: workshield_password
-      POSTGRES_DB: workshield
+      POSTGRES_USER: ${POSTGRES_USER:-blocklancer_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-blocklancer_password}
+      POSTGRES_DB: ${POSTGRES_DB:-blocklancer}
     ports:
       - "5432:5432"
     volumes:

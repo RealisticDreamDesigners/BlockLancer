@@ -30,7 +30,7 @@ method = ["create-escrow", "add-milestone", "submit-milestone", "approve-milesto
 
 [predicates.action]
 http_post_url = "http://localhost:8080/webhooks/escrow"
-http_post_authorization_header = "Bearer blocklancer-secret-token"
+http_post_authorization_header = "Bearer ${CHAINHOOK_AUTH_TOKEN}"
 
 # ===== BLOCKLANCER DISPUTE EVENTS =====
 [[predicates]]
@@ -47,7 +47,7 @@ method = ["open-dispute", "submit-evidence", "dao-resolve-dispute", "withdraw-di
 
 [predicates.action]
 http_post_url = "http://localhost:8080/webhooks/dispute"
-http_post_authorization_header = "Bearer blocklancer-secret-token"
+http_post_authorization_header = "Bearer ${CHAINHOOK_AUTH_TOKEN}"
 
 # ===== BLOCKLANCER DAO EVENTS =====
 [[predicates]]
@@ -64,7 +64,7 @@ method = ["propose-dispute-resolution", "propose-escrow-release", "propose-escro
 
 [predicates.action]
 http_post_url = "http://localhost:8080/webhooks/dao"
-http_post_authorization_header = "Bearer blocklancer-secret-token"
+http_post_authorization_header = "Bearer ${CHAINHOOK_AUTH_TOKEN}"
 
 # ===== BLOCKLANCER MEMBERSHIP EVENTS =====
 [[predicates]]
@@ -81,7 +81,7 @@ method = ["set-committee-member", "propose-member", "vote-on-proposal"]
 
 [predicates.action]
 http_post_url = "http://localhost:8080/webhooks/membership"
-http_post_authorization_header = "Bearer blocklancer-secret-token"
+http_post_authorization_header = "Bearer ${CHAINHOOK_AUTH_TOKEN}"
 
 # ===== BLOCKLANCER PAYMENTS EVENTS =====
 [[predicates]]
@@ -98,4 +98,4 @@ method = ["set-user-tier", "process-platform-fee"]
 
 [predicates.action]
 http_post_url = "http://localhost:8080/webhooks/payments"
-http_post_authorization_header = "Bearer blocklancer-secret-token"
+http_post_authorization_header = "Bearer ${CHAINHOOK_AUTH_TOKEN}"
