@@ -1,8 +1,8 @@
 ;; BlockLancer Core Escrow Contract v3
-;; @version clarity-4
+;; @version clarity-3
 ;; Handles contract creation, milestone management, and escrow logic
 ;; Upgrades from v2: pause mechanism, resubmission support, fee integration,
-;; deadline refund claims, multi-token support structure, is-standard principal validation
+;; deadline refund claims, multi-token support (STX, sBTC, USDCx)
 
 ;; Constants
 (define-constant contract-owner tx-sender)
@@ -17,8 +17,17 @@
 (define-constant err-invalid-time-parameters (err u108))
 (define-constant err-sbtc-transfer-failed (err u109))
 
+;; Token error constants
+(define-constant err-token-paused (err u110))
+(define-constant err-token-insufficient-balance (err u111))
+(define-constant err-token-transfer-failed (err u112))
+(define-constant err-unsupported-token (err u113))
+
 ;; sBTC Token Contract Reference (mainnet; Clarinet remaps for devnet/testnet)
 (define-constant sbtc-token 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token)
+
+;; USDCx Token Contract Reference (testnet; swap for mainnet on deploy)
+(define-constant usdcx-token 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usdcx)
 
 ;; Contract Status Constants
 (define-constant status-active u0)
@@ -112,12 +121,28 @@
   )
 )
 
-;; Check whether an escrow uses sBTC
-(define-private (is-sbtc-escrow (contract-id uint))
+;; Check whether an escrow uses a SIP-010 token (sBTC or USDCx)
+(define-private (is-token-escrow (contract-id uint))
   (is-some (default-to none (map-get? contract-token-type contract-id)))
 )
 
-;; Release payment from escrow supporting both STX and sBTC.
+;; Check whether an escrow uses sBTC specifically
+(define-private (is-sbtc-escrow (contract-id uint))
+  (match (default-to none (map-get? contract-token-type contract-id))
+    token-principal (is-eq token-principal sbtc-token)
+    false
+  )
+)
+
+;; Check whether an escrow uses USDCx specifically
+(define-private (is-usdcx-escrow (contract-id uint))
+  (match (default-to none (map-get? contract-token-type contract-id))
+    token-principal (is-eq token-principal usdcx-token)
+    false
+  )
+)
+
+;; Release payment from escrow supporting STX, sBTC, and USDCx.
 ;; Transfers net-amount to recipient and fee-amount to treasury.
 (define-private (release-payment-with-fee
     (contract-id uint)
@@ -127,6 +152,7 @@
     (treasury principal))
   (let ((net-amount (- total-amount fee-amount)))
     (if (is-sbtc-escrow contract-id)
+      ;; sBTC payment path
       (if (> fee-amount u0)
         (begin
           (try! (as-contract (begin
@@ -142,32 +168,55 @@
           (ok true)
         )
       )
-      (if (> fee-amount u0)
-        (begin
-          (try! (as-contract (begin
-            (try! (stx-transfer? net-amount tx-sender recipient))
-            (stx-transfer? fee-amount tx-sender treasury)
-          )))
-          (ok true)
+      (if (is-usdcx-escrow contract-id)
+        ;; USDCx payment path
+        (if (> fee-amount u0)
+          (begin
+            (try! (as-contract (begin
+              (try! (contract-call? usdcx-token transfer net-amount tx-sender recipient none))
+              (contract-call? usdcx-token transfer fee-amount tx-sender treasury none)
+            )))
+            (ok true)
+          )
+          (begin
+            (try! (as-contract
+              (contract-call? usdcx-token transfer total-amount tx-sender recipient none)
+            ))
+            (ok true)
+          )
         )
-        (begin
-          (try! (as-contract
-            (stx-transfer? total-amount tx-sender recipient)
-          ))
-          (ok true)
+        ;; STX payment path (default)
+        (if (> fee-amount u0)
+          (begin
+            (try! (as-contract (begin
+              (try! (stx-transfer? net-amount tx-sender recipient))
+              (stx-transfer? fee-amount tx-sender treasury)
+            )))
+            (ok true)
+          )
+          (begin
+            (try! (as-contract
+              (stx-transfer? total-amount tx-sender recipient)
+            ))
+            (ok true)
+          )
         )
       )
     )
   )
 )
 
-;; Refund tokens from escrow (no fee deduction).
+;; Refund tokens from escrow (no fee deduction). Supports STX, sBTC, USDCx.
 (define-private (refund-from-escrow (contract-id uint) (amount uint) (recipient principal))
   (if (is-sbtc-escrow contract-id)
     (as-contract
       (contract-call? sbtc-token transfer amount tx-sender recipient none))
-    (as-contract
-      (stx-transfer? amount tx-sender recipient))
+    (if (is-usdcx-escrow contract-id)
+      (as-contract
+        (contract-call? usdcx-token transfer amount tx-sender recipient none))
+      (as-contract
+        (stx-transfer? amount tx-sender recipient))
+    )
   )
 )
 
@@ -192,7 +241,7 @@
   )
 )
 
-;; Create a new escrow contract
+;; Create a new escrow contract (STX)
 (define-public (create-escrow
     (client principal)
     (freelancer principal)
@@ -288,6 +337,67 @@
     (var-set next-contract-id (+ contract-id u1))
 
     (ok contract-id)
+  )
+)
+
+;; Create an escrow funded with USDCx instead of STX
+(define-public (create-escrow-usdcx
+    (client principal)
+    (freelancer principal)
+    (description (string-utf8 500))
+    (end-date uint)
+    (total-amount uint))
+  (let
+    (
+      (contract-id (var-get next-contract-id))
+      (current-time stacks-block-height)
+      (escrow-principal (as-contract tx-sender))
+    )
+    (try! (assert-not-paused))
+    ;; Validations
+    (asserts! (is-standard client) err-not-authorized)
+    (asserts! (is-standard freelancer) err-not-authorized)
+    (asserts! (> end-date current-time) err-invalid-time-parameters)
+    (asserts! (> total-amount u0) err-invalid-amount)
+    (asserts! (not (is-eq client freelancer)) err-not-authorized)
+
+    ;; Transfer USDCx from caller to escrow contract
+    ;; Handles Circle pause (u401) gracefully
+    (match (contract-call? usdcx-token transfer total-amount tx-sender escrow-principal none)
+      success-val
+        (begin
+          ;; Create contract record
+          (map-set contracts contract-id
+            {
+              client: client,
+              freelancer: freelancer,
+              total-amount: total-amount,
+              remaining-balance: total-amount,
+              status: status-active,
+              created-at: current-time,
+              end-date: end-date,
+              description: description
+            }
+          )
+
+          ;; Initialize milestone counter
+          (map-set milestone-counters contract-id u0)
+
+          ;; Set token type to USDCx
+          (map-set contract-token-type contract-id (some usdcx-token))
+
+          ;; Increment contract ID
+          (var-set next-contract-id (+ contract-id u1))
+
+          (ok contract-id)
+        )
+      error-val
+        ;; Handle transfer errors
+        (if (is-eq error-val u401)
+          err-token-paused
+          err-token-transfer-failed
+        )
+    )
   )
 )
 
@@ -509,6 +619,7 @@
       (milestone-data (unwrap! (map-get? milestones milestone-key) err-invalid-milestone))
       (contract-data (unwrap! (map-get? contracts contract-id) err-invalid-state))
       (refund-amount (get amount milestone-data))
+      (client (get client contract-data))
     )
     (try! (assert-not-paused))
     ;; Only client can claim
@@ -522,7 +633,7 @@
     (asserts! (>= (get remaining-balance contract-data) refund-amount) err-insufficient-funds)
 
     ;; Transfer refund to client
-    (try! (refund-from-escrow contract-id refund-amount (get client contract-data)))
+    (try! (refund-from-escrow contract-id refund-amount client))
 
     ;; Update milestone status to refunded
     (map-set milestones milestone-key
@@ -537,8 +648,7 @@
     )
 
     ;; Record reputation for escrow cancellation (best-effort)
-    (match (contract-call? .blocklancer-reputation record-escrow-cancellation
-      (get client contract-data))
+    (match (contract-call? .blocklancer-reputation record-escrow-cancellation client)
       ok-val true err-val true)
 
     (ok true)
