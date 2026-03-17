@@ -33,7 +33,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   if (!mounted || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
     );
   }
@@ -54,7 +54,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => router.push('/')}
-                className="flex items-center space-x-2 text-orange-600 hover:text-orange-700 transition-colors"
+                className="flex items-center space-x-2 text-blue-600 hover:text-blue-700 transition-colors"
               >
                 <Home className="w-5 h-5" />
                 <span className="text-xl font-bold">BlockLancer</span>
@@ -66,7 +66,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <div className="text-sm">
                 <div className="text-gray-500">Connected as</div>
                 <div className="font-medium text-gray-900">
-                  {formatAddress(userAddress || '')}
+                  {formatAddress(userAddress || '-')}
                 </div>
               </div>
               <button

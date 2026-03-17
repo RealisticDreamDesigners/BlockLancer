@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// ✅ COMPREHENSIVE API PROXY for CORS and Rate Limiting Fix
+// COMPREHENSIVE API PROXY for CORS and Rate Limiting Fix
 export async function POST(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   try {
     // Your Hiro API key
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       headers['x-api-key'] = apiKey;
     }
     
-    // ✅ FIX: Handle BigInt serialization in API proxy
+    // FIX: Handle BigInt serialization in API proxy
     const serializedBody = JSON.stringify(body, (_key, value) =>
       typeof value === 'bigint' ? value.toString() : value
     );
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     
     const data = await response.json();
     
-    // ✅ ADD CORS HEADERS for browser compatibility
+    // ADD CORS HEADERS for browser compatibility
     return NextResponse.json(data, {
       headers: {
         'Access-Control-Allow-Origin': '*',
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 }
 
-// ✅ HANDLE GET REQUESTS
+// HANDLE GET REQUESTS
 export async function GET(request: NextRequest, { params }: { params: Promise<{ path: string[] }> }) {
   try {
     const apiKey = process.env.NEXT_PUBLIC_HIRO_API_KEY || '49c6e72fb90e5b04c2f53721cd1f9a59';
@@ -174,7 +174,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
 }
 
-// ✅ HANDLE OPTIONS for CORS preflight
+// HANDLE OPTIONS for CORS preflight
 export async function OPTIONS(request: NextRequest) {
   return new NextResponse(null, {
     status: 200,

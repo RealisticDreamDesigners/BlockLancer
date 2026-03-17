@@ -13,8 +13,8 @@ export default function ReputationPage() {
   const { isSignedIn, userAddress } = useStacks();
   const { reputation, reputationLoading, scoreChange, history } = useReputation(userAddress);
 
-  const [lookupAddress, setLookupAddress] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [lookupAddress, setLookupAddress] = useState('-');
+  const [searchQuery, setSearchQuery] = useState('-');
   const {
     reputation: lookedUpReputation,
     reputationLoading: lookupLoading,
@@ -31,8 +31,8 @@ export default function ReputationPage() {
   };
 
   const clearSearch = () => {
-    setSearchQuery('');
-    setLookupAddress('');
+    setSearchQuery('-');
+    setLookupAddress('-');
   };
 
   return (
@@ -40,8 +40,8 @@ export default function ReputationPage() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       <Breadcrumbs className="mb-4" />
       <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
-          <Award className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+        <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+          <Award className="h-6 w-6 text-blue-600 dark:text-blue-400" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           Reputation System
@@ -51,7 +51,7 @@ export default function ReputationPage() {
       {/* User Lookup Search */}
       <div className="mb-8">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-          <span className="w-1 h-5 bg-orange-500 rounded-full" />
+          <span className="w-1 h-5 bg-blue-500 rounded-full" />
           Look Up a User
         </h2>
         <form onSubmit={handleSearch} className="flex gap-2">
@@ -62,7 +62,7 @@ export default function ReputationPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Enter a Stacks address (ST...)"
-              className="w-full pl-10 pr-10 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full pl-10 pr-10 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             {searchQuery && (
               <button
@@ -77,7 +77,7 @@ export default function ReputationPage() {
           <button
             type="submit"
             disabled={!searchQuery.trim().startsWith('S')}
-            className="px-4 py-2.5 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Search
           </button>
@@ -113,7 +113,7 @@ export default function ReputationPage() {
       {isSignedIn && userAddress && (
         <div className="mb-8">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-            <span className="w-1 h-5 bg-orange-500 rounded-full" />
+            <span className="w-1 h-5 bg-blue-500 rounded-full" />
             Your Reputation
           </h2>
           {reputationLoading ? (
@@ -127,7 +127,7 @@ export default function ReputationPage() {
             />
           ) : (
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 text-center">
-              <Award className="h-10 w-10 text-orange-300 dark:text-orange-700 mx-auto mb-2" />
+              <Award className="h-10 w-10 text-blue-300 dark:text-blue-700 mx-auto mb-2" />
               <p className="text-gray-500 dark:text-gray-400">No reputation data yet. Complete escrows to build your score.</p>
             </div>
           )}
@@ -137,7 +137,7 @@ export default function ReputationPage() {
       {/* Leaderboard */}
       <div>
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-          <span className="w-1 h-5 bg-orange-500 rounded-full" />
+          <span className="w-1 h-5 bg-blue-500 rounded-full" />
           Leaderboard
         </h2>
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4">

@@ -41,13 +41,13 @@ export async function POST(request: NextRequest) {
     const expectedToken = process.env.CHAINHOOK_SECRET_TOKEN || 'local_dev_secret';
     
     if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
-      console.warn('🚫 Unauthorized chainhook request');
+      console.warn('Unauthorized chainhook request');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const payload: ChainhookPayload = await request.json();
     
-    console.log('📥 Received escrow chainhook event:', {
+    console.log('Received escrow chainhook event:', {
       uuid: payload.chainhook.uuid,
       blocks: payload.apply.length,
       rollbacks: payload.rollback.length,
@@ -55,13 +55,13 @@ export async function POST(request: NextRequest) {
 
     // Process apply events (new blocks)
     for (const block of payload.apply) {
-      console.log(`📦 Processing block ${block.block_identifier.index}`);
+      console.log(`Processing block ${block.block_identifier.index}`);
       
       for (const transaction of block.transactions) {
         const contractCall = transaction.metadata.contract_call;
         
         if (contractCall) {
-          console.log(`🔧 Contract call: ${contractCall.function_name}`);
+          console.log(`Contract call: ${contractCall.function_name}`);
           
           // Process different escrow events
           switch (contractCall.function_name) {
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
               await handleRejectMilestone(transaction, block);
               break;
             default:
-              console.log(`⚠️ Unknown function: ${contractCall.function_name}`);
+              console.log(`Unknown function: ${contractCall.function_name}`);
           }
         }
       }
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
 
     // Process rollback events (chain reorgs)
     for (const rollbackBlock of payload.rollback) {
-      console.log(`↩️ Rolling back block ${rollbackBlock.block_identifier.index}`);
+      console.log(`Rolling back block ${rollbackBlock.block_identifier.index}`);
       await handleRollback(rollbackBlock);
     }
 
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('❌ Error processing escrow chainhook:', error);
+    console.error('Error processing escrow chainhook:', error);
     return NextResponse.json(
       { error: 'Internal server error' }, 
       { status: 500 }
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
 
 // Event handlers
 async function handleCreateEscrow(transaction: any, block: any) {
-  console.log('🆕 New escrow created:', {
+  console.log('[NEW] Escrow created:', {
     txHash: transaction.transaction_identifier.hash,
     blockHeight: block.block_identifier.index,
   });
@@ -123,7 +123,7 @@ async function handleCreateEscrow(transaction: any, block: any) {
 }
 
 async function handleAddMilestone(transaction: any, block: any) {
-  console.log('📋 Milestone added:', {
+  console.log('Milestone added:', {
     txHash: transaction.transaction_identifier.hash,
     blockHeight: block.block_identifier.index,
   });
@@ -132,7 +132,7 @@ async function handleAddMilestone(transaction: any, block: any) {
 }
 
 async function handleSubmitMilestone(transaction: any, block: any) {
-  console.log('📤 Milestone submitted:', {
+  console.log('Milestone submitted:', {
     txHash: transaction.transaction_identifier.hash,
     blockHeight: block.block_identifier.index,
   });
@@ -141,7 +141,7 @@ async function handleSubmitMilestone(transaction: any, block: any) {
 }
 
 async function handleApproveMilestone(transaction: any, block: any) {
-  console.log('✅ Milestone approved:', {
+  console.log('Milestone approved:', {
     txHash: transaction.transaction_identifier.hash,
     blockHeight: block.block_identifier.index,
   });
@@ -150,7 +150,7 @@ async function handleApproveMilestone(transaction: any, block: any) {
 }
 
 async function handleRejectMilestone(transaction: any, block: any) {
-  console.log('❌ Milestone rejected:', {
+  console.log('Milestone rejected:', {
     txHash: transaction.transaction_identifier.hash,
     blockHeight: block.block_identifier.index,
   });
@@ -159,7 +159,7 @@ async function handleRejectMilestone(transaction: any, block: any) {
 }
 
 async function handleRollback(rollbackBlock: any) {
-  console.log('🔄 Handling rollback for block:', rollbackBlock.block_identifier.index);
+  console.log('Handling rollback for block:', rollbackBlock.block_identifier.index);
   
   // TODO: Reverse database changes for this block
   // This is critical for maintaining data consistency during chain reorgs

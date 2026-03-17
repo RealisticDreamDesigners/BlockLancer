@@ -79,10 +79,10 @@ export default function DisputeDetailPage() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading dispute...</p>
+          <p className="text-gray-600 dark:text-gray-400">Loading dispute...</p>
         </div>
       </div>
     );
@@ -91,9 +91,9 @@ export default function DisputeDetailPage() {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-lg border border-red-200 p-6">
-          <div className="flex items-center gap-3 text-red-800 mb-4">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800/50 rounded-lg border border-red-200 dark:border-red-800/50 p-6">
+          <div className="flex items-center gap-3 text-red-800 dark:text-red-300 mb-4">
             <AlertCircle className="h-6 w-6 flex-shrink-0" />
             <div>
               <h3 className="font-semibold">Failed to Load Dispute</h3>
@@ -114,13 +114,13 @@ export default function DisputeDetailPage() {
   // Not found state
   if (!dispute) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-lg border border-gray-200 p-6 text-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700/50 p-6 text-center">
           <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
             Dispute Not Found
           </h3>
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
             The dispute you're looking for doesn't exist or has been removed.
           </p>
           <button
@@ -146,7 +146,7 @@ export default function DisputeDetailPage() {
       (isFreelancer && !dispute.freelancerEvidence));
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Main Content */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-6">
@@ -162,8 +162,8 @@ export default function DisputeDetailPage() {
           />
 
           {/* Evidence Timeline */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">
+          <div className="bg-white dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700/50 p-6">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
               Dispute Timeline
             </h2>
             <EvidenceTimeline
@@ -187,8 +187,8 @@ export default function DisputeDetailPage() {
 
           {/* Evidence Comparison (if both parties submitted) */}
           {dispute.clientEvidence && dispute.freelancerEvidence && (
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">
+            <div className="bg-white dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700/50 p-6">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
                 Evidence Comparison
               </h2>
               <EvidenceComparison
@@ -203,15 +203,15 @@ export default function DisputeDetailPage() {
 
           {/* DAO Voting Section */}
           {dispute.status === DisputeStatus.OPEN && (
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="bg-white dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700/50 p-6">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                  <Scale className="h-6 w-6 text-blue-600" />
+                  <Scale className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                       DAO Resolution
                     </h2>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
                       DAO members can create and vote on resolution proposals
                     </p>
                   </div>
@@ -243,18 +243,18 @@ export default function DisputeDetailPage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 px-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="text-center py-8 px-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-200 dark:border-gray-700/50">
                   {isDAOMember ? (
                     <>
-                      <p className="text-gray-700 mb-2">No proposals yet for this dispute</p>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-gray-700 dark:text-gray-300 mb-2">No proposals yet for this dispute</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
                         Be the first to create a resolution proposal
                       </p>
                     </>
                   ) : (
                     <>
-                      <p className="text-gray-700 mb-2">Waiting for DAO proposals</p>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-gray-700 dark:text-gray-300 mb-2">Waiting for DAO proposals</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
                         Only DAO members can create resolution proposals
                       </p>
                     </>
@@ -283,11 +283,11 @@ export default function DisputeDetailPage() {
 
           {/* DAO Proposal Link */}
           {dispute.proposal && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-blue-900 mb-2">
+            <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/40 rounded-lg p-6">
+              <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-200 mb-2">
                 DAO Proposal Created
               </h3>
-              <p className="text-sm text-blue-800 mb-4">
+              <p className="text-sm text-blue-800 dark:text-blue-300 mb-4">
                 This dispute is being reviewed by the DAO. DAO members can vote on
                 the resolution.
               </p>
@@ -304,12 +304,12 @@ export default function DisputeDetailPage() {
 
           {/* Non-Participant Info */}
           {!isParticipant && userAddress && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-6">
+            <div className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700/50 rounded-lg p-6">
               <div className="flex gap-3">
-                <AlertCircle className="h-5 w-5 text-gray-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-gray-700">
+                <AlertCircle className="h-5 w-5 text-gray-600 dark:text-gray-400 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-gray-700 dark:text-gray-300">
                   <p className="font-medium">You're viewing this dispute</p>
-                  <p className="text-gray-600 mt-1">
+                  <p className="text-gray-600 dark:text-gray-400 mt-1">
                     You're not directly involved in this dispute. Only the client
                     and freelancer can submit evidence.
                   </p>
@@ -320,12 +320,12 @@ export default function DisputeDetailPage() {
 
           {/* Connect Wallet Prompt */}
           {!userAddress && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+            <div className="bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800/50 rounded-lg p-6">
               <div className="flex gap-3">
-                <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-yellow-900">
+                <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-yellow-900 dark:text-yellow-200">
                   <p className="font-medium">Connect Your Wallet</p>
-                  <p className="text-yellow-800 mt-1">
+                  <p className="text-yellow-800 dark:text-yellow-300 mt-1">
                     Connect your wallet to submit evidence or take actions on this
                     dispute.
                   </p>

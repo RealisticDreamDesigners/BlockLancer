@@ -41,13 +41,13 @@ export async function POST(request: NextRequest) {
     const expectedToken = process.env.CHAINHOOK_SECRET_TOKEN || 'local_dev_secret';
     
     if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
-      console.warn('🚫 Unauthorized print event chainhook request');
+      console.warn('Unauthorized print event chainhook request');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const payload: ChainhookPayload = await request.json();
     
-    console.log('📥 Received print event chainhook:', {
+    console.log('Received print event chainhook:', {
       uuid: payload.chainhook.uuid,
       blocks: payload.apply.length,
       rollbacks: payload.rollback.length,
@@ -55,14 +55,14 @@ export async function POST(request: NextRequest) {
 
     // Process apply events (new blocks)
     for (const block of payload.apply) {
-      console.log(`📦 Processing print events in block ${block.block_identifier.index}`);
+      console.log(`Processing print events in block ${block.block_identifier.index}`);
       
       for (const transaction of block.transactions) {
         // Check for print events in metadata
         const printEvent = transaction.metadata.print_event;
         
         if (printEvent) {
-          console.log(`📝 Print event detected:`, {
+          console.log(`Print event detected:`, {
             contract: printEvent.contract_identifier,
             topic: printEvent.topic,
             value: printEvent.value,
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
 
     // Process rollback events (chain reorgs)
     for (const rollbackBlock of payload.rollback) {
-      console.log(`↩️ Rolling back print events for block ${rollbackBlock.block_identifier.index}`);
+      console.log(`Rolling back print events for block ${rollbackBlock.block_identifier.index}`);
       await handlePrintEventRollback(rollbackBlock);
     }
 
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('❌ Error processing print event chainhook:', error);
+    console.error('Error processing print event chainhook:', error);
     return NextResponse.json(
       { error: 'Internal server error' }, 
       { status: 500 }
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
 
 // Print event handlers
 async function handlePrintEvent(printEvent: any, transaction: any, block: any) {
-  console.log('📄 Processing print event:', {
+  console.log('Processing print event:', {
     txHash: transaction.transaction_identifier.hash,
     blockHeight: block.block_identifier.index,
     topic: printEvent.topic,
@@ -115,10 +115,10 @@ async function handlePrintEvent(printEvent: any, transaction: any, block: any) {
   
   try {
     // Parse the print event topic to determine event type
-    const topic = printEvent.topic?.toLowerCase() || '';
+    const topic = printEvent.topic?.toLowerCase() || '-';
     
     if (topic.includes('blocklancer')) {
-      console.log('🛡️ BlockLancer print event detected:', printEvent.value);
+      console.log('BlockLancer print event detected:', printEvent.value);
       
       // Handle different BlockLancer print events
       if (topic.includes('escrow-created')) {
@@ -143,7 +143,7 @@ async function handlePrintEvent(printEvent: any, transaction: any, block: any) {
 }
 
 async function handleReceiptPrintEvent(event: any, transaction: any, block: any) {
-  console.log('📋 Receipt print event:', {
+  console.log('Receipt print event:', {
     txHash: transaction.transaction_identifier.hash,
     blockHeight: block.block_identifier.index,
     event: event,
@@ -155,7 +155,7 @@ async function handleReceiptPrintEvent(event: any, transaction: any, block: any)
 
 // Specific BlockLancer print event handlers
 async function handleEscrowCreatedPrint(printEvent: any, transaction: any, block: any) {
-  console.log('🆕 Escrow created print event:', printEvent.value);
+  console.log('[NEW] Escrow created print event:', printEvent.value);
   
   try {
     // TODO: Extract escrow details from print event
@@ -171,7 +171,7 @@ async function handleEscrowCreatedPrint(printEvent: any, transaction: any, block
 }
 
 async function handleMilestoneSubmittedPrint(printEvent: any, transaction: any, block: any) {
-  console.log('📤 Milestone submitted print event:', printEvent.value);
+  console.log('Milestone submitted print event:', printEvent.value);
   
   try {
     // TODO: Extract milestone submission details
@@ -186,7 +186,7 @@ async function handleMilestoneSubmittedPrint(printEvent: any, transaction: any, 
 }
 
 async function handleMilestoneApprovedPrint(printEvent: any, transaction: any, block: any) {
-  console.log('✅ Milestone approved print event:', printEvent.value);
+  console.log('Milestone approved print event:', printEvent.value);
   
   try {
     // TODO: Extract milestone approval details
@@ -201,7 +201,7 @@ async function handleMilestoneApprovedPrint(printEvent: any, transaction: any, b
 }
 
 async function handlePaymentReleasedPrint(printEvent: any, transaction: any, block: any) {
-  console.log('💰 Payment released print event:', printEvent.value);
+  console.log('Payment released print event:', printEvent.value);
   
   try {
     // TODO: Extract payment release details
@@ -216,7 +216,7 @@ async function handlePaymentReleasedPrint(printEvent: any, transaction: any, blo
 }
 
 async function handleDisputeOpenedPrint(printEvent: any, transaction: any, block: any) {
-  console.log('⚠️ Dispute opened print event:', printEvent.value);
+  console.log('Dispute opened print event:', printEvent.value);
   
   try {
     // TODO: Extract dispute details
@@ -231,7 +231,7 @@ async function handleDisputeOpenedPrint(printEvent: any, transaction: any, block
 }
 
 async function handleGenericBlockLancerPrint(printEvent: any, transaction: any, block: any) {
-  console.log('📝 Generic BlockLancer print event:', printEvent.value);
+  console.log('Generic BlockLancer print event:', printEvent.value);
   
   try {
     // TODO: Store generic BlockLancer event for analytics/debugging
@@ -250,7 +250,7 @@ async function handleGenericBlockLancerPrint(printEvent: any, transaction: any, 
 }
 
 async function handlePrintEventRollback(rollbackBlock: any) {
-  console.log('🔄 Handling print event rollback for block:', rollbackBlock.block_identifier.index);
+  console.log('Handling print event rollback for block:', rollbackBlock.block_identifier.index);
   
   // TODO: Remove print event data for rolled back blocks
   // This ensures consistency in event logs during chain reorgs

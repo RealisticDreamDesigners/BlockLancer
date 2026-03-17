@@ -45,13 +45,13 @@ export async function POST(request: NextRequest) {
     const expectedToken = process.env.CHAINHOOK_SECRET_TOKEN || 'local_dev_secret';
 
     if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
-      console.warn('🚫 Unauthorized chainhook request');
+      console.warn('Unauthorized chainhook request');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const payload: ChainhookPayload = await request.json();
 
-    console.log('📥 Received DAO chainhook event:', {
+    console.log('Received DAO chainhook event:', {
       uuid: payload.chainhook.uuid,
       blocks: payload.apply.length,
       rollbacks: payload.rollback.length,
@@ -59,13 +59,13 @@ export async function POST(request: NextRequest) {
 
     // Process apply events (new blocks)
     for (const block of payload.apply) {
-      console.log(`📦 Processing block ${block.block_identifier.index}`);
+      console.log(`Processing block ${block.block_identifier.index}`);
 
       for (const transaction of block.transactions) {
         const contractCall = transaction.metadata.contract_call;
 
         if (contractCall) {
-          console.log(`🔧 Contract call: ${contractCall.function_name}`);
+          console.log(`Contract call: ${contractCall.function_name}`);
 
           // Process different DAO events
           switch (contractCall.function_name) {
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
               await handleMemberRemoved(transaction, block);
               break;
             default:
-              console.log(`⚠️ Unknown function: ${contractCall.function_name}`);
+              console.log(`Unknown function: ${contractCall.function_name}`);
           }
         }
       }
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
 
     // Process rollback events (chain reorgs)
     for (const rollbackBlock of payload.rollback) {
-      console.log(`↩️ Rolling back block ${rollbackBlock.block_identifier.index}`);
+      console.log(`Rolling back block ${rollbackBlock.block_identifier.index}`);
       await handleRollback(rollbackBlock);
     }
 
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('❌ Error processing DAO chainhook:', error);
+    console.error('Error processing DAO chainhook:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
 
 // Event handlers
 async function handleProposalCreated(transaction: any, block: any) {
-  console.log('📜 New proposal created:', {
+  console.log('New proposal created:', {
     txHash: transaction.transaction_identifier.hash,
     blockHeight: block.block_identifier.index,
   });
@@ -129,7 +129,7 @@ async function handleProposalCreated(transaction: any, block: any) {
   const printEvent = events.find((e: any) => e.type === 'print_event');
 
   if (printEvent) {
-    console.log('📄 Proposal data:', printEvent.data);
+    console.log('Proposal data:', printEvent.data);
   }
 
   // TODO: Store proposal in database
@@ -142,7 +142,7 @@ async function handleProposalCreated(transaction: any, block: any) {
 }
 
 async function handleVoteCast(transaction: any, block: any) {
-  console.log('🗳️ Vote cast:', {
+  console.log('Vote cast:', {
     txHash: transaction.transaction_identifier.hash,
     blockHeight: block.block_identifier.index,
   });
@@ -157,7 +157,7 @@ async function handleVoteCast(transaction: any, block: any) {
   );
 
   if (proposalFinalized) {
-    console.log('✅ Proposal auto-finalized after vote!');
+    console.log('Proposal auto-finalized after vote!');
   }
 
   // TODO: Update vote counts in database
@@ -174,7 +174,7 @@ async function handleVoteCast(transaction: any, block: any) {
 }
 
 async function handleProposalFinalized(transaction: any, block: any) {
-  console.log('🏁 Proposal finalized:', {
+  console.log('Proposal finalized:', {
     txHash: transaction.transaction_identifier.hash,
     blockHeight: block.block_identifier.index,
   });
@@ -194,7 +194,7 @@ async function handleProposalFinalized(transaction: any, block: any) {
 }
 
 async function handleMemberAdded(transaction: any, block: any) {
-  console.log('👤 DAO member added:', {
+  console.log('DAO member added:', {
     txHash: transaction.transaction_identifier.hash,
     blockHeight: block.block_identifier.index,
   });
@@ -207,7 +207,7 @@ async function handleMemberAdded(transaction: any, block: any) {
 }
 
 async function handleMemberRemoved(transaction: any, block: any) {
-  console.log('❌ DAO member removed:', {
+  console.log('DAO member removed:', {
     txHash: transaction.transaction_identifier.hash,
     blockHeight: block.block_identifier.index,
   });
@@ -220,7 +220,7 @@ async function handleMemberRemoved(transaction: any, block: any) {
 }
 
 async function handleRollback(rollbackBlock: any) {
-  console.log('🔄 Handling rollback for block:', rollbackBlock.block_identifier.index);
+  console.log('Handling rollback for block:', rollbackBlock.block_identifier.index);
 
   // TODO: Reverse database changes for this block
   // This is critical for maintaining data consistency during chain reorgs
