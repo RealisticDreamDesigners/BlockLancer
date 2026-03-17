@@ -43,7 +43,7 @@ export function useDAOMembership() {
   const { userAddress, isSignedIn } = useStacks();
 
   return useQuery({
-    queryKey: DAO_MEMBERSHIP_QUERY_KEYS.memberStatus(userAddress || ''),
+    queryKey: DAO_MEMBERSHIP_QUERY_KEYS.memberStatus(userAddress || '-'),
     queryFn: async () => {
       if (!userAddress) {
         return {
@@ -71,7 +71,7 @@ export function useDAOMembership() {
  */
 export function useCheckDAOMembership(address: string | null | undefined) {
   return useQuery({
-    queryKey: DAO_MEMBERSHIP_QUERY_KEYS.memberStatus(address || ''),
+    queryKey: DAO_MEMBERSHIP_QUERY_KEYS.memberStatus(address || '-'),
     queryFn: async () => {
       if (!address) {
         return {
@@ -313,7 +313,7 @@ export function useDAOMemberBadge() {
       text: 'Not a Member',
       color: 'text-gray-600 bg-gray-100',
       description: 'Not a DAO member',
-      icon: '👤',
+      icon: '-',
     };
   }
 
@@ -322,7 +322,7 @@ export function useDAOMemberBadge() {
       text: 'Active Member',
       color: 'text-green-600 bg-green-100',
       description: `${metrics.totalVotes} votes cast`,
-      icon: '⭐',
+      icon: '-',
     };
   }
 
@@ -331,7 +331,7 @@ export function useDAOMemberBadge() {
       text: 'Proposer',
       color: 'text-purple-600 bg-purple-100',
       description: `${metrics.proposalsCreated} proposals created`,
-      icon: '📝',
+      icon: '-',
     };
   }
 
@@ -339,7 +339,7 @@ export function useDAOMemberBadge() {
     text: 'DAO Member',
     color: 'text-blue-600 bg-blue-100',
     description: 'Member of the DAO',
-    icon: '🏛️',
+    icon: '-',
   };
 }
 

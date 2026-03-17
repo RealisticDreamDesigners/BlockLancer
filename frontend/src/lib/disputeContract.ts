@@ -71,24 +71,24 @@ const makeProxyApiCall = async (endpoint: string, body?: any) => {
 
     return await response.json();
   } catch (error) {
-    console.error('❌ Proxy API call failed:', error);
+    console.error('Proxy API call failed:', error);
     throw error;
   }
 };
 
 const makeSmartApiCall = async (apiCall: () => Promise<any>, fallbackEndpoint?: string, fallbackBody?: any) => {
   try {
-    console.log('🎯 Attempting direct Stacks.js API call...');
+    console.log('Attempting direct Stacks.js API call...');
     return await apiCall();
   } catch (error: any) {
-    console.warn('⚠️ Direct call failed:', error.message || error);
+    console.warn('Direct call failed:', error.message || error);
 
     if (fallbackEndpoint) {
       try {
-        console.log('🔄 Trying proxy fallback for:', fallbackEndpoint);
+        console.log('Trying proxy fallback for:', fallbackEndpoint);
         return await makeProxyApiCall(fallbackEndpoint, fallbackBody);
       } catch (proxyError: any) {
-        console.warn('⚠️ Both direct and proxy calls failed - this may be expected if contracts are not yet linked or data does not exist');
+        console.warn('Both direct and proxy calls failed - this may be expected if contracts are not yet linked or data does not exist');
         throw proxyError;
       }
     } else {
@@ -139,10 +139,10 @@ function transformDisputeData(clarityData: any, disputeId?: number): Dispute {
     const dispute: Dispute = {
       id: disputeId || 0,
       contractId: parseInt(data['contract-id']?.value || data['contract-id'] || '0'),
-      openedBy: data['opened-by']?.value || data['opened-by'] || '',
-      client: data.client?.value || data.client || '',
-      freelancer: data.freelancer?.value || data.freelancer || '',
-      reason: data.reason?.value || data.reason || '',
+      openedBy: data['opened-by']?.value || data['opened-by'] || '-',
+      client: data.client?.value || data.client || '-',
+      freelancer: data.freelancer?.value || data.freelancer || '-',
+      reason: data.reason?.value || data.reason || '-',
       clientEvidence: extractOptionalString(data['client-evidence']),
       freelancerEvidence: extractOptionalString(data['freelancer-evidence']),
       status: parseInt(data.status?.value || data.status || '0') as DisputeStatus,
@@ -153,7 +153,7 @@ function transformDisputeData(clarityData: any, disputeId?: number): Dispute {
 
     return dispute;
   } catch (error) {
-    console.error('❌ Error transforming dispute data:', error);
+    console.error('Error transforming dispute data:', error);
     throw new Error('Failed to parse dispute data');
   }
 }
@@ -170,7 +170,7 @@ export async function getDispute(disputeId: number, userAddress?: string): Promi
   try {
     const backendDispute = await getDisputeFromBackend(disputeId);
     if (backendDispute) {
-      console.log(`✅ Got dispute #${disputeId} from backend`);
+      console.log(`Got dispute #${disputeId} from backend`);
       return {
         id: backendDispute.id,
         contractId: backendDispute.contractId,
@@ -192,7 +192,7 @@ export async function getDispute(disputeId: number, userAddress?: string): Promi
 
   // Fallback: existing Hiro API code
   try {
-    console.log(`🔍 Fetching dispute #${disputeId} (Hiro fallback)...`);
+    console.log(`Fetching dispute #${disputeId} (Hiro fallback)...`);
 
     const result = await fetchCallReadOnlyFunction({
       network,
@@ -204,19 +204,19 @@ export async function getDispute(disputeId: number, userAddress?: string): Promi
     });
 
     const disputeData = cvToJSON(result);
-    console.log('📝 Dispute data:', disputeData);
+    console.log('Dispute data:', disputeData);
 
     // Check if dispute exists (for optional types, value will be null if not found)
     if (disputeData.value === null || !disputeData.value) {
-      console.log(`❌ Dispute #${disputeId} not found`);
+      console.log(`Dispute #${disputeId} not found`);
       return null;
     }
 
     const dispute = transformDisputeData(disputeData, disputeId);
-    console.log(`✅ Fetched dispute #${disputeId}:`, dispute);
+    console.log(`Fetched dispute #${disputeId}:`, dispute);
     return dispute;
   } catch (error) {
-    console.error(`❌ Error fetching dispute #${disputeId}:`, error);
+    console.error(`Error fetching dispute #${disputeId}:`, error);
     return null;
   }
 }
@@ -229,7 +229,7 @@ export async function getContractDispute(contractId: number, userAddress?: strin
   try {
     const backendDispute = await getContractDisputeFromBackend(contractId);
     if (backendDispute) {
-      console.log(`✅ Got dispute for contract #${contractId} from backend`);
+      console.log(`Got dispute for contract #${contractId} from backend`);
       return {
         id: backendDispute.id,
         contractId: backendDispute.contractId,
@@ -251,8 +251,8 @@ export async function getContractDispute(contractId: number, userAddress?: strin
 
   // Fallback: existing Hiro API code
   try {
-    console.log(`🔍 Fetching dispute for contract #${contractId} (Hiro fallback)...`);
-    console.log(`📍 Using contract: ${disputeContract.address}.${disputeContract.name}`);
+    console.log(`Fetching dispute for contract #${contractId} (Hiro fallback)...`);
+    console.log(`Using contract: ${disputeContract.address}.${disputeContract.name}`);
 
     // First, get the dispute ID for this contract
     const disputeIdResult = await fetchCallReadOnlyFunction({
@@ -265,18 +265,18 @@ export async function getContractDispute(contractId: number, userAddress?: strin
     });
 
     const disputeIdData = cvToJSON(disputeIdResult);
-    console.log(`🔍 Raw dispute ID data:`, disputeIdData);
+    console.log(`Raw dispute ID data:`, disputeIdData);
 
     // Check if a dispute ID exists
     if (disputeIdData.value === null || !disputeIdData.value) {
-      console.log(`ℹ️ No dispute found for contract #${contractId}`);
+      console.log(`No dispute found for contract #${contractId}`);
       return null;
     }
 
     // Extract the actual dispute ID value - handle both direct value and nested value
     const rawDisputeId = disputeIdData.value?.value || disputeIdData.value;
     const disputeId = parseInt(rawDisputeId);
-    console.log(`📍 Found dispute ID ${disputeId} for contract #${contractId}`);
+    console.log(`Found dispute ID ${disputeId} for contract #${contractId}`);
 
     // Now fetch the full dispute data
     const result = await fetchCallReadOnlyFunction({
@@ -291,16 +291,16 @@ export async function getContractDispute(contractId: number, userAddress?: strin
     const disputeData = cvToJSON(result);
 
     if (disputeData.value === null || !disputeData.value) {
-      console.log(`ℹ️ No dispute found for contract #${contractId}`);
+      console.log(`No dispute found for contract #${contractId}`);
       return null;
     }
 
     // Transform with the correct dispute ID
     const dispute = transformDisputeData(disputeData, disputeId);
-    console.log(`✅ Fetched dispute for contract #${contractId}:`, dispute);
+    console.log(`Fetched dispute for contract #${contractId}:`, dispute);
     return dispute;
   } catch (error) {
-    console.error(`❌ Error fetching contract dispute #${contractId}:`, error);
+    console.error(`Error fetching contract dispute #${contractId}:`, error);
     return null;
   }
 }
@@ -310,7 +310,7 @@ export async function getContractDispute(contractId: number, userAddress?: strin
  */
 export async function hasActiveDispute(contractId: number, userAddress?: string): Promise<boolean> {
   try {
-    console.log(`🔍 Checking if contract #${contractId} has active dispute...`);
+    console.log(`Checking if contract #${contractId} has active dispute...`);
 
     const result = await fetchCallReadOnlyFunction({
       network,
@@ -322,10 +322,10 @@ export async function hasActiveDispute(contractId: number, userAddress?: string)
     });
 
     const hasDispute = cvToValue(result) as boolean;
-    console.log(`✅ Contract #${contractId} has active dispute:`, hasDispute);
+    console.log(`Contract #${contractId} has active dispute:`, hasDispute);
     return hasDispute;
   } catch (error) {
-    console.warn(`⚠️ Could not check active dispute for contract #${contractId} - assuming no active dispute`);
+    console.warn(`Could not check active dispute for contract #${contractId} - assuming no active dispute`);
     // Return false by default if contract call fails (likely means no dispute exists or contracts not linked)
     return false;
   }
@@ -340,7 +340,7 @@ export async function getUserDisputes(userAddress: string): Promise<Dispute[]> {
   try {
     const backendDisputes = await getUserDisputesFromBackend(userAddress);
     if (backendDisputes) {
-      console.log(`✅ Got ${backendDisputes.length} disputes from backend for user`);
+      console.log(`Got ${backendDisputes.length} disputes from backend for user`);
       return backendDisputes.map(d => ({
         id: d.id,
         contractId: d.contractId,
@@ -362,7 +362,7 @@ export async function getUserDisputes(userAddress: string): Promise<Dispute[]> {
 
   // Fallback: existing Hiro API code (limited to 3 disputes)
   try {
-    console.log(`🔍 Fetching disputes for user ${userAddress} (Hiro fallback)...`);
+    console.log(`Fetching disputes for user ${userAddress} (Hiro fallback)...`);
 
     const result = await fetchCallReadOnlyFunction({
       network,
@@ -388,15 +388,15 @@ export async function getUserDisputes(userAddress: string): Promise<Dispute[]> {
             disputes.push(dispute);
           }
         } catch (error) {
-          console.warn(`⚠️ Failed to parse ${disputeKey}`);
+          console.warn(`Failed to parse ${disputeKey}`);
         }
       }
     }
 
-    console.log(`✅ Found ${disputes.length} disputes for user ${userAddress}`);
+    console.log(`Found ${disputes.length} disputes for user ${userAddress}`);
     return disputes;
   } catch (error) {
-    console.error(`❌ Error fetching user disputes for ${userAddress}:`, error);
+    console.error(`Error fetching user disputes for ${userAddress}:`, error);
     return [];
   }
 }
@@ -409,7 +409,7 @@ export async function getDisputeCount(): Promise<number> {
   try {
     const backendCount = await getDisputeCountFromBackend();
     if (backendCount !== null) {
-      console.log(`✅ Got dispute count from backend: ${backendCount}`);
+      console.log(`Got dispute count from backend: ${backendCount}`);
       return backendCount;
     }
   } catch (e) {
@@ -418,7 +418,7 @@ export async function getDisputeCount(): Promise<number> {
 
   // Fallback: existing Hiro API code
   try {
-    console.log('🔍 Fetching total dispute count (Hiro fallback)...');
+    console.log('Fetching total dispute count (Hiro fallback)...');
 
     const result = await fetchCallReadOnlyFunction({
       network,
@@ -432,10 +432,10 @@ export async function getDisputeCount(): Promise<number> {
     const countData = cvToJSON(result);
     const count = typeof countData === 'number' ? countData : parseInt(countData.value || '1');
 
-    console.log(`✅ Total dispute count: ${count}`);
+    console.log(`Total dispute count: ${count}`);
     return count;
   } catch (error) {
-    console.error('❌ Error fetching dispute count:', error);
+    console.error('Error fetching dispute count:', error);
     return 1; // Return 1 as default (next-dispute-id starts at 1)
   }
 }
@@ -449,7 +449,7 @@ export async function getAllDisputes(userAddress?: string): Promise<Dispute[]> {
   try {
     const backendDisputes = await getAllDisputesFromBackend();
     if (backendDisputes) {
-      console.log(`✅ Got ${backendDisputes.length} total disputes from backend`);
+      console.log(`Got ${backendDisputes.length} total disputes from backend`);
       return backendDisputes.map(d => ({
         id: d.id,
         contractId: d.contractId,
@@ -471,14 +471,14 @@ export async function getAllDisputes(userAddress?: string): Promise<Dispute[]> {
 
   // Fallback: existing Hiro API code
   try {
-    console.log('🔍 Fetching all disputes (Hiro fallback)...');
+    console.log('Fetching all disputes (Hiro fallback)...');
 
     // First get the total count
     const count = await getDisputeCount();
 
     // If count is 1, it means no disputes have been created yet (next-dispute-id starts at 1)
     if (count <= 1) {
-      console.log('📭 No disputes found in system');
+      console.log('No disputes found in system');
       return [];
     }
 
@@ -495,10 +495,10 @@ export async function getAllDisputes(userAddress?: string): Promise<Dispute[]> {
     // Filter out null disputes
     const validDisputes = disputes.filter((d): d is Dispute => d !== null);
 
-    console.log(`✅ Fetched ${validDisputes.length} total disputes from system`);
+    console.log(`Fetched ${validDisputes.length} total disputes from system`);
     return validDisputes;
   } catch (error) {
-    console.error('❌ Error fetching all disputes:', error);
+    console.error('Error fetching all disputes:', error);
     return [];
   }
 }
@@ -517,7 +517,7 @@ export async function openDispute(
   reason: string
 ): Promise<DisputeResponse> {
   try {
-    console.log('🔧 Opening dispute with parameters:', {
+    console.log('Opening dispute with parameters:', {
       contractId,
       client: clientAddress,
       freelancer: freelancerAddress,
@@ -548,7 +548,7 @@ export async function openDispute(
       postConditionMode: PostConditionMode.Allow,
     }, 'Open Dispute');
   } catch (error) {
-    console.error('❌ Error opening dispute:', error);
+    console.error('Error opening dispute:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return {
       success: false,
@@ -565,7 +565,7 @@ export async function submitEvidence(
   evidence: string
 ): Promise<DisputeResponse> {
   try {
-    console.log('🔧 Submitting evidence for dispute #', disputeId);
+    console.log('Submitting evidence for dispute #', disputeId);
 
     // Validate inputs
     if (!evidence || evidence.length === 0) {
@@ -589,7 +589,7 @@ export async function submitEvidence(
       postConditionMode: PostConditionMode.Allow,
     }, 'Submit Evidence');
   } catch (error) {
-    console.error('❌ Error submitting evidence:', error);
+    console.error('Error submitting evidence:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return {
       success: false,
@@ -603,7 +603,7 @@ export async function submitEvidence(
  */
 export async function withdrawDispute(disputeId: number): Promise<DisputeResponse> {
   try {
-    console.log('🔧 Withdrawing dispute #', disputeId);
+    console.log('Withdrawing dispute #', disputeId);
 
     return wrappedContractCall({
       network,
@@ -615,7 +615,7 @@ export async function withdrawDispute(disputeId: number): Promise<DisputeRespons
       postConditionMode: PostConditionMode.Allow,
     }, 'Withdraw Dispute');
   } catch (error) {
-    console.error('❌ Error withdrawing dispute:', error);
+    console.error('Error withdrawing dispute:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return {
       success: false,
@@ -633,7 +633,7 @@ export async function daoResolveDispute(
   daoProposalId: number
 ): Promise<DisputeResponse> {
   try {
-    console.log('🔧 DAO resolving dispute #', disputeId, 'via proposal #', daoProposalId);
+    console.log('DAO resolving dispute #', disputeId, 'via proposal #', daoProposalId);
 
     return wrappedContractCall({
       network,
@@ -648,7 +648,7 @@ export async function daoResolveDispute(
       postConditionMode: PostConditionMode.Allow,
     }, 'DAO Resolve Dispute');
   } catch (error) {
-    console.error('❌ Error resolving dispute via DAO:', error);
+    console.error('Error resolving dispute via DAO:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return {
       success: false,

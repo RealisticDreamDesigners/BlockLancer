@@ -56,7 +56,7 @@ export interface DashboardStats {
   overdueItems: number;
   openDisputes?: number; // For backward compatibility
   totalEarnings?: number; // For backward compatibility
-  // ✅ NEW: Added for enhanced dashboard
+  // NEW: Added for enhanced dashboard
   totalValue: number;
   completedMilestones: number;
   totalMilestones: number;
@@ -174,7 +174,7 @@ export function formatAddress(address: string, startChars: number = 6, endChars:
   return `${address.slice(0, startChars)}...${address.slice(-endChars)}`;
 }
 
-// ✅ ENHANCED: Contract status utilities - MISSING FUNCTION
+// ENHANCED: Contract status utilities - MISSING FUNCTION
 export function getContractStatusInfo(status: ContractStatus): { 
   text: string; 
   color: string; 
@@ -220,7 +220,7 @@ export function getContractStatusInfo(status: ContractStatus): {
   }
 }
 
-// ✅ ENHANCED: Milestone status utilities - MISSING FUNCTION
+// ENHANCED: Milestone status utilities - MISSING FUNCTION
 export function getMilestoneStatusInfo(status: MilestoneStatus): {
   text: string;
   color: string;
@@ -259,7 +259,7 @@ export function getMilestoneStatusInfo(status: MilestoneStatus): {
     case MilestoneStatus.REFUNDED:
       return {
         text: 'Refunded',
-        color: 'text-orange-600 bg-orange-50 border-orange-200',
+        color: 'text-blue-600 bg-blue-50 border-blue-200',
         description: 'Deadline passed, funds refunded to client',
         icon: AlertTriangle
       };
@@ -273,7 +273,7 @@ export function getMilestoneStatusInfo(status: MilestoneStatus): {
   }
 }
 
-// ✅ ENHANCED: Progress calculation - MISSING FUNCTION
+// ENHANCED: Progress calculation - MISSING FUNCTION
 export function calculateContractProgress(milestones: Milestone[]): {
   percentage: number;
   completed: number;
@@ -324,7 +324,7 @@ export function isValidStacksAddress(address: string): boolean {
   // Remove any whitespace
   const cleanAddress = address.trim();
 
-  // ✅ FIX: Stacks addresses can be 40 OR 41 characters (not just 41)
+  // FIX: Stacks addresses can be 40 OR 41 characters (not just 41)
   if (cleanAddress.length < 40 || cleanAddress.length > 41) {
     return false;
   }
@@ -334,12 +334,12 @@ export function isValidStacksAddress(address: string): boolean {
     return false;
   }
 
-  // ✅ FIX: Updated regex to handle both 40 and 41 character addresses
+  // FIX: Updated regex to handle both 40 and 41 character addresses
   const addressPattern = /^S[TP][A-Z0-9]{38,39}$/i;
   return addressPattern.test(cleanAddress);
 }
 
-// ✅ NEW: Enhanced validation functions - MISSING FUNCTIONS
+// NEW: Enhanced validation functions - MISSING FUNCTIONS
 export function isValidSTXAmount(amount: string): boolean {
   const num = parseFloat(amount);
   return !isNaN(num) && num > 0 && num <= 1000000;
@@ -373,7 +373,7 @@ export function shortenAddress(address: string, startChars: number = 6, endChars
 // TIME UTILITIES
 // ===============================================
 
-// ✅ NEW: Time utilities
+// NEW: Time utilities
 export function getTimeUntilDeadline(deadline: number): {
   text: string;
   isOverdue: boolean;
@@ -385,7 +385,7 @@ export function getTimeUntilDeadline(deadline: number): {
   if (diff < 0) {
     const overdueDays = Math.floor(Math.abs(diff) / (24 * 60 * 60 * 1000));
     return {
-      text: `${overdueDays} day${overdueDays !== 1 ? 's' : ''} overdue`,
+      text: `${overdueDays} day${overdueDays !== 1 ? 's' : '-'} overdue`,
       isOverdue: true,
       color: 'text-red-600'
     };
@@ -396,13 +396,13 @@ export function getTimeUntilDeadline(deadline: number): {
   
   if (days > 0) {
     return {
-      text: `${days} day${days !== 1 ? 's' : ''} left`,
+      text: `${days} day${days !== 1 ? 's' : '-'} left`,
       isOverdue: false,
       color: days <= 3 ? 'text-yellow-600' : 'text-green-600'
     };
   } else if (hours > 0) {
     return {
-      text: `${hours} hour${hours !== 1 ? 's' : ''} left`,
+      text: `${hours} hour${hours !== 1 ? 's' : '-'} left`,
       isOverdue: false,
       color: 'text-red-600'
     };

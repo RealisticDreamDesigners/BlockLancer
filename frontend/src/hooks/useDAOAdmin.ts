@@ -114,7 +114,7 @@ export function useDAOAdmin(userAddress?: string) {
    */
   const getApprovedProposals = async (): Promise<ApprovedProposal[]> => {
     try {
-      console.log('🔍 Fetching approved membership proposals...');
+      console.log('Fetching approved membership proposals...');
 
       const proposals: ApprovedProposal[] = [];
 
@@ -140,8 +140,8 @@ export function useDAOAdmin(userAddress?: string) {
             if (status === 1) {
               proposals.push({
                 id: i,
-                nominee: proposalData.nominee?.value || '',
-                proposer: proposalData.proposer?.value || '',
+                nominee: proposalData.nominee?.value || '-',
+                proposer: proposalData.proposer?.value || '-',
                 approvals: parseInt(proposalData.approvals?.value || '0'),
                 status,
                 createdAt: parseInt(proposalData['created-at']?.value || '0'),
@@ -157,10 +157,10 @@ export function useDAOAdmin(userAddress?: string) {
         }
       }
 
-      console.log(`✅ Found ${proposals.length} approved proposals`);
+      console.log(`Found ${proposals.length} approved proposals`);
       return proposals;
     } catch (err) {
-      console.error('❌ Error fetching approved proposals:', err);
+      console.error('Error fetching approved proposals:', err);
       return [];
     }
   };
@@ -173,7 +173,7 @@ export function useDAOAdmin(userAddress?: string) {
     try {
       const backendStatus = await getDAOMemberStatusFromBackend(memberAddress);
       if (backendStatus) {
-        console.log(`✅ Got DAO member status from backend for ${memberAddress}`);
+        console.log(`Got DAO member status from backend for ${memberAddress}`);
         return backendStatus.isMember;
       }
     } catch (e) {
@@ -196,7 +196,7 @@ export function useDAOAdmin(userAddress?: string) {
 
       return statusData['is-member']?.value === true;
     } catch (err) {
-      console.error('❌ Error checking DAO member status:', err);
+      console.error('Error checking DAO member status:', err);
       return false;
     }
   };

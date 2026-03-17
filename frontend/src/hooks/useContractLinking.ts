@@ -99,7 +99,7 @@ export function useContractLinking(userAddress?: string) {
     try {
       const backendRefs = await getContractReferencesFromBackend();
       if (backendRefs) {
-        console.log('✅ Got contract references from backend');
+        console.log('Got contract references from backend');
         const verifiedStatus: LinkingStatus = {
           membershipToDao: false, // Will check below
           disputeToDao: backendRefs.disputeContract !== null,
@@ -117,7 +117,7 @@ export function useContractLinking(userAddress?: string) {
 
     // Fallback: existing Hiro API code
     try {
-      console.log('🔍 Verifying contract linking status from blockchain (Hiro fallback)...');
+      console.log('Verifying contract linking status from blockchain (Hiro fallback)...');
 
       // Fetch contract references from DAO contract
       const result = await fetchCallReadOnlyFunction({
@@ -132,7 +132,7 @@ export function useContractLinking(userAddress?: string) {
       const data = cvToJSON(result);
       const refs = data.value.value || data.value;
 
-      console.log('📊 On-chain contract references:', refs);
+      console.log('On-chain contract references:', refs);
 
       // Check if contracts are linked
       const membershipLinked = refs['membership-contract']?.value !== null &&
@@ -165,7 +165,7 @@ export function useContractLinking(userAddress?: string) {
           escrowToDao: escrowLinked,
         };
 
-        console.log('✅ Verified linking status:', verifiedStatus);
+        console.log('Verified linking status:', verifiedStatus);
         setLinkingStatus(verifiedStatus);
 
         return verifiedStatus;
@@ -184,7 +184,7 @@ export function useContractLinking(userAddress?: string) {
         return partialStatus;
       }
     } catch (error) {
-      console.error('❌ Error verifying contract linking status:', error);
+      console.error('Error verifying contract linking status:', error);
       return null;
     }
   }, [userAddress]);

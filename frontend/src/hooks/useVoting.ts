@@ -55,7 +55,7 @@ export function useCreateDisputeProposal() {
         throw new Error(validation.error);
       }
 
-      console.log('🔧 Creating dispute resolution proposal for dispute #', data.disputeId);
+      console.log('Creating dispute resolution proposal for dispute #', data.disputeId);
 
       const response = await execute({
         callOptions: {
@@ -80,7 +80,7 @@ export function useCreateDisputeProposal() {
       return response;
     },
     onSuccess: (response, variables) => {
-      console.log('✅ Proposal created successfully:', response);
+      console.log('Proposal created successfully:', response);
 
       // Show success toast
       toast.success('Proposal Created', {
@@ -98,7 +98,7 @@ export function useCreateDisputeProposal() {
       });
     },
     onError: (error: Error) => {
-      console.error('❌ Error creating proposal:', error);
+      console.error('Error creating proposal:', error);
 
       // Parse error for user-friendly messages
       let errorMessage = error.message;
@@ -144,7 +144,7 @@ export function useCreateEscrowReleaseProposal() {
         throw new Error(validation.error);
       }
 
-      console.log('🔧 Creating escrow release proposal for contract #', data.contractId);
+      console.log('Creating escrow release proposal for contract #', data.contractId);
 
       const response = await execute({
         callOptions: {
@@ -169,7 +169,7 @@ export function useCreateEscrowReleaseProposal() {
       return response;
     },
     onSuccess: (response) => {
-      console.log('✅ Escrow release proposal created:', response);
+      console.log('Escrow release proposal created:', response);
 
       toast.success('Proposal Created', {
         description: 'Your escrow release proposal has been submitted for DAO vote.',
@@ -180,7 +180,7 @@ export function useCreateEscrowReleaseProposal() {
       });
     },
     onError: (error: Error) => {
-      console.error('❌ Error creating escrow release proposal:', error);
+      console.error('Error creating escrow release proposal:', error);
 
       let errorMessage = error.message;
 
@@ -223,7 +223,7 @@ export function useVoteOnProposal() {
         throw new Error('Invalid vote type');
       }
 
-      console.log('🔧 Casting vote on proposal #', data.proposalId, ':', data.vote);
+      console.log('Casting vote on proposal #', data.proposalId, ':', data.vote);
 
       const response = await execute({
         callOptions: {
@@ -248,7 +248,7 @@ export function useVoteOnProposal() {
       return response;
     },
     onSuccess: (response, variables) => {
-      console.log('✅ Vote cast successfully:', response);
+      console.log('Vote cast successfully:', response);
 
       // Show success toast with vote type
       const voteText = variables.vote === VoteType.YES ? 'Yes'
@@ -281,7 +281,7 @@ export function useVoteOnProposal() {
       });
     },
     onError: (error: Error) => {
-      console.error('❌ Error casting vote:', error);
+      console.error('Error casting vote:', error);
 
       // Parse error for user-friendly messages
       let errorMessage = error.message;
@@ -465,7 +465,7 @@ export function useFinalizeProposal() {
         throw new Error('Please connect your wallet first');
       }
 
-      console.log('🔧 Finalizing proposal #', data.proposalId);
+      console.log('Finalizing proposal #', data.proposalId);
 
       const response = await execute({
         callOptions: {
@@ -487,7 +487,7 @@ export function useFinalizeProposal() {
       return response;
     },
     onSuccess: (response, variables) => {
-      console.log('✅ Proposal finalized successfully:', response);
+      console.log('Proposal finalized successfully:', response);
 
       toast.success('Proposal Finalized', {
         description: 'The proposal has been finalized based on the voting results.',
@@ -503,7 +503,7 @@ export function useFinalizeProposal() {
       });
     },
     onError: (error: Error) => {
-      console.error('❌ Error finalizing proposal:', error);
+      console.error('Error finalizing proposal:', error);
 
       let errorMessage = error.message;
 

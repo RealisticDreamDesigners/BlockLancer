@@ -29,7 +29,7 @@ export function wrappedContractCall(
           functionName: callOptions.functionName,
           contractName: callOptions.contractName,
           args: {},
-          senderAddress: '',
+          senderAddress: '-',
         }).catch(() => {});
 
         callOptions.onFinish?.(data);

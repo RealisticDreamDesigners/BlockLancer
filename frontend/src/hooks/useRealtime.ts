@@ -76,7 +76,7 @@ export function useRealtimeDispute({
               createDisputeNotification(
                 NotificationType.EVIDENCE_SUBMITTED,
                 disputeId,
-                'Client has submitted evidence.'
+                'Employer has submitted evidence.'
               )
             );
           }
@@ -85,7 +85,7 @@ export function useRealtimeDispute({
               createDisputeNotification(
                 NotificationType.EVIDENCE_SUBMITTED,
                 disputeId,
-                'Freelancer has submitted evidence.'
+                'Worker has submitted evidence.'
               )
             );
           }
