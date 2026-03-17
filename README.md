@@ -210,7 +210,7 @@ clarinet deployment apply mainnet
 
 ## Contributing
 
-BlockLancer is being developed as part of the Stacks Ascent Program. We welcome contributions from the community!
+BlockLancer was built for the [Stacks BUIDL Battle #2](https://dorahacks.io/hackathon/buidlbattle2/detail) hackathon. We welcome contributions from the community!
 
 ### Development Process
 1. Fork the repository
@@ -226,7 +226,7 @@ BlockLancer is being developed as part of the Stacks Ascent Program. We welcome 
 
 ## License
 
-This project is part of the Stacks Ascent Program. License details will be updated upon program completion.
+This project was built for the Stacks BUIDL Battle #2 hackathon. Licensed under MIT.
 
 ## Support
 
@@ -236,11 +236,11 @@ This project is part of the Stacks Ascent Program. License details will be updat
 
 ## Acknowledgments
 
-- **Stacks Foundation**: For the Stacks Ascent Program
+- **Stacks Foundation**: For the BUIDL Battle #2 hackathon
 - **Hiro Systems**: For excellent developer tools
 - **Bitcoin Community**: For the foundational security layer
 - **Open Source Contributors**: Building the future of decentralized finance
 
 ---
 
-Built for the Stacks Ascent Program 2025
+Built for the [Stacks BUIDL Battle #2](https://dorahacks.io/hackathon/buidlbattle2/detail) hackathon
