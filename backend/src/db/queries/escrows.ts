@@ -47,10 +47,11 @@ export async function upsertEscrow(data: {
   description: string;
   created_at: number;
   end_date: number;
+  token_contract?: string | null;
 }) {
   const result = await query(
-    `INSERT INTO escrows (on_chain_id, client, freelancer, total_amount, remaining_balance, status, description, created_at, end_date, updated_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+    `INSERT INTO escrows (on_chain_id, client, freelancer, total_amount, remaining_balance, status, description, created_at, end_date, token_contract, updated_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW())
      ON CONFLICT (on_chain_id) DO UPDATE SET
        client = EXCLUDED.client,
        freelancer = EXCLUDED.freelancer,
@@ -60,12 +61,14 @@ export async function upsertEscrow(data: {
        description = EXCLUDED.description,
        created_at = EXCLUDED.created_at,
        end_date = EXCLUDED.end_date,
+       token_contract = EXCLUDED.token_contract,
        updated_at = NOW()
      RETURNING *`,
     [
       data.on_chain_id, data.client, data.freelancer,
       data.total_amount, data.remaining_balance, data.status,
       data.description, data.created_at, data.end_date,
+      data.token_contract ?? null,
     ]
   );
   return result.rows[0];

@@ -8,9 +8,15 @@ export const PAYMENTS = parseContractId(config.contracts.payments);
 export const REPUTATION = parseContractId(config.contracts.reputation);
 export const MARKETPLACE = parseContractId(config.contracts.marketplace);
 
+export const SBTC_CONTRACT = {
+  address: 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4',
+  name: 'sbtc-token',
+};
+
 // Function names per contract for chainhook matching
 export const ESCROW_FUNCTIONS = [
   'create-escrow',
+  'create-escrow-sbtc',
   'add-milestone',
   'submit-milestone',
   'approve-milestone',

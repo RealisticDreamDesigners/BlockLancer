@@ -25,14 +25,18 @@ export async function handleEscrowEvent(event: {
   logger.info({ txId: event.txId, fn: event.functionName }, 'Processing escrow event');
 
   switch (event.functionName) {
-    case 'create-escrow': {
-      // Read the latest escrow ID (total count = last ID)
+    case 'create-escrow':
+    case 'create-escrow-sbtc': {
+      const isSbtc = event.functionName === 'create-escrow-sbtc';
       const totalEscrows = await readTotalEscrows();
       if (totalEscrows > 0) {
         const state = await readEscrowState(totalEscrows);
         if (state) {
+          if (isSbtc) {
+            state.token_contract = 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token';
+          }
           await upsertEscrow(state);
-          logger.info({ escrowId: totalEscrows }, 'Indexed new escrow');
+          logger.info({ escrowId: totalEscrows, sbtc: isSbtc }, 'Indexed new escrow');
         }
       }
       break;

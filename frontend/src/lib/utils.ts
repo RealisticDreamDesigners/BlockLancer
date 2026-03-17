@@ -177,3 +177,19 @@ export function deepClone<T>(obj: T): T {
   }
   return cloned;
 }
+
+// sBTC formatting (8 decimal places, 1 sBTC = 100,000,000 satoshis)
+const SBTC_UNIT = 100_000_000;
+
+export function formatSbtc(satoshis: number, maxDecimals: number = 8): string {
+  if (!satoshis || satoshis === 0) return '0';
+  const value = satoshis / SBTC_UNIT;
+  return value.toLocaleString(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: maxDecimals,
+  });
+}
+
+export function parseSbtcToSatoshis(sbtc: number): number {
+  return Math.round(sbtc * SBTC_UNIT);
+}

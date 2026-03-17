@@ -15,6 +15,10 @@
 (define-constant err-deadline-exceeded (err u106))
 (define-constant err-milestone-amount-mismatch (err u107))
 (define-constant err-invalid-time-parameters (err u108))
+(define-constant err-sbtc-transfer-failed (err u109))
+
+;; sBTC Token Contract Reference (mainnet; Clarinet remaps for devnet/testnet)
+(define-constant sbtc-token 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token)
 
 ;; Contract Status Constants
 (define-constant status-active u0)
@@ -78,8 +82,7 @@
   }
 )
 
-;; Multi-token support (Phase 7 - STX-only for now)
-;; none = STX, some = SIP-010 token principal
+;; Multi-token support: none = STX, (some principal) = SIP-010 token
 (define-map contract-token-type uint (optional principal))
 
 ;; Private Functions
@@ -106,6 +109,65 @@
   (match (map-get? contracts contract-id)
     contract-data (is-eq (get status contract-data) status-active)
     false
+  )
+)
+
+;; Check whether an escrow uses sBTC
+(define-private (is-sbtc-escrow (contract-id uint))
+  (is-some (default-to none (map-get? contract-token-type contract-id)))
+)
+
+;; Release payment from escrow supporting both STX and sBTC.
+;; Transfers net-amount to recipient and fee-amount to treasury.
+(define-private (release-payment-with-fee
+    (contract-id uint)
+    (total-amount uint)
+    (fee-amount uint)
+    (recipient principal)
+    (treasury principal))
+  (let ((net-amount (- total-amount fee-amount)))
+    (if (is-sbtc-escrow contract-id)
+      (if (> fee-amount u0)
+        (begin
+          (try! (as-contract (begin
+            (try! (contract-call? sbtc-token transfer net-amount tx-sender recipient none))
+            (contract-call? sbtc-token transfer fee-amount tx-sender treasury none)
+          )))
+          (ok true)
+        )
+        (begin
+          (try! (as-contract
+            (contract-call? sbtc-token transfer total-amount tx-sender recipient none)
+          ))
+          (ok true)
+        )
+      )
+      (if (> fee-amount u0)
+        (begin
+          (try! (as-contract (begin
+            (try! (stx-transfer? net-amount tx-sender recipient))
+            (stx-transfer? fee-amount tx-sender treasury)
+          )))
+          (ok true)
+        )
+        (begin
+          (try! (as-contract
+            (stx-transfer? total-amount tx-sender recipient)
+          ))
+          (ok true)
+        )
+      )
+    )
+  )
+)
+
+;; Refund tokens from escrow (no fee deduction).
+(define-private (refund-from-escrow (contract-id uint) (amount uint) (recipient principal))
+  (if (is-sbtc-escrow contract-id)
+    (as-contract
+      (contract-call? sbtc-token transfer amount tx-sender recipient none))
+    (as-contract
+      (stx-transfer? amount tx-sender recipient))
   )
 )
 
@@ -151,7 +213,7 @@
     (asserts! (not (is-eq client freelancer)) err-not-authorized)
 
     ;; Transfer payment to contract
-    (try! (stx-transfer? total-amount tx-sender (unwrap-panic (as-contract? () tx-sender))))
+    (try! (stx-transfer? total-amount tx-sender (as-contract tx-sender)))
 
     ;; Create contract record
     (map-set contracts contract-id
@@ -176,7 +238,55 @@
     ;; Increment contract ID
     (var-set next-contract-id (+ contract-id u1))
 
-    ;; Return contract ID
+    (ok contract-id)
+  )
+)
+
+;; Create an escrow funded with sBTC instead of STX
+(define-public (create-escrow-sbtc
+    (client principal)
+    (freelancer principal)
+    (description (string-utf8 500))
+    (end-date uint)
+    (total-amount uint))
+  (let
+    (
+      (contract-id (var-get next-contract-id))
+      (current-time stacks-block-height)
+      (escrow-principal (as-contract tx-sender))
+    )
+    (try! (assert-not-paused))
+    (asserts! (is-standard client) err-not-authorized)
+    (asserts! (is-standard freelancer) err-not-authorized)
+    (asserts! (> end-date current-time) err-invalid-time-parameters)
+    (asserts! (> total-amount u0) err-invalid-amount)
+    (asserts! (not (is-eq client freelancer)) err-not-authorized)
+
+    ;; Transfer sBTC from caller to escrow contract
+    (unwrap! (contract-call? sbtc-token transfer total-amount tx-sender escrow-principal none)
+             err-sbtc-transfer-failed)
+
+    ;; Create contract record
+    (map-set contracts contract-id
+      {
+        client: client,
+        freelancer: freelancer,
+        total-amount: total-amount,
+        remaining-balance: total-amount,
+        status: status-active,
+        created-at: current-time,
+        end-date: end-date,
+        description: description
+      }
+    )
+
+    (map-set milestone-counters contract-id u0)
+
+    ;; Mark this escrow as sBTC-funded
+    (map-set contract-token-type contract-id (some sbtc-token))
+
+    (var-set next-contract-id (+ contract-id u1))
+
     (ok contract-id)
   )
 )
@@ -269,20 +379,11 @@
     (asserts! (is-eq (get status milestone-data) milestone-submitted) err-invalid-state)
 
     ;; Release payment to freelancer with platform fee integration
-    ;; calculate-platform-fee is read-only in Clarity 4 - returns uint directly
-    (let ((fee-amount (contract-call? .blocklancer-payments-v2 calculate-platform-fee (get freelancer contract-data) payment-amount)))
-      (if (> fee-amount u0)
-        (try! (as-contract? ((with-stx payment-amount))
-          ;; Transfer net amount to freelancer
-          (try! (stx-transfer? (- payment-amount fee-amount) tx-sender (get freelancer contract-data)))
-          ;; Transfer fee to treasury
-          (try! (stx-transfer? fee-amount tx-sender (contract-call? .blocklancer-payments-v2 get-treasury)))
-        ))
-        ;; No fee, transfer full amount
-        (try! (as-contract? ((with-stx payment-amount))
-          (try! (stx-transfer? payment-amount tx-sender (get freelancer contract-data)))
-        ))
-      )
+    (let (
+      (fee-amount (contract-call? .blocklancer-payments-v2 calculate-platform-fee (get freelancer contract-data) payment-amount))
+      (treasury (contract-call? .blocklancer-payments-v2 get-treasury))
+    )
+      (try! (release-payment-with-fee contract-id payment-amount fee-amount (get freelancer contract-data) treasury))
     )
 
     ;; Update milestone status
@@ -352,20 +453,11 @@
     (asserts! (> payment-amount u0) err-insufficient-funds)
 
     ;; Release payment to freelancer with platform fee integration
-    ;; calculate-platform-fee is read-only in Clarity 4 - returns uint directly
-    (let ((fee-amount (contract-call? .blocklancer-payments-v2 calculate-platform-fee freelancer payment-amount)))
-      (if (> fee-amount u0)
-        (try! (as-contract? ((with-stx payment-amount))
-          ;; Transfer net amount to freelancer
-          (try! (stx-transfer? (- payment-amount fee-amount) tx-sender freelancer))
-          ;; Transfer fee to treasury
-          (try! (stx-transfer? fee-amount tx-sender (contract-call? .blocklancer-payments-v2 get-treasury)))
-        ))
-        ;; No fee, transfer full amount
-        (try! (as-contract? ((with-stx payment-amount))
-          (try! (stx-transfer? payment-amount tx-sender freelancer))
-        ))
-      )
+    (let (
+      (fee-amount (contract-call? .blocklancer-payments-v2 calculate-platform-fee freelancer payment-amount))
+      (treasury (contract-call? .blocklancer-payments-v2 get-treasury))
+    )
+      (try! (release-payment-with-fee contract-id payment-amount fee-amount freelancer treasury))
     )
 
     ;; Update contract status
@@ -395,9 +487,7 @@
     (asserts! (> refund-amount u0) err-insufficient-funds)
 
     ;; Refund to client (no platform fees on refunds)
-    (try! (as-contract? ((with-stx refund-amount))
-      (try! (stx-transfer? refund-amount tx-sender client))
-    ))
+    (try! (refund-from-escrow contract-id refund-amount client))
 
     ;; Update contract status
     (map-set contracts contract-id
@@ -432,9 +522,7 @@
     (asserts! (>= (get remaining-balance contract-data) refund-amount) err-insufficient-funds)
 
     ;; Transfer refund to client
-    (try! (as-contract? ((with-stx refund-amount))
-      (try! (stx-transfer? refund-amount tx-sender (get client contract-data)))
-    ))
+    (try! (refund-from-escrow contract-id refund-amount (get client contract-data)))
 
     ;; Update milestone status to refunded
     (map-set milestones milestone-key
@@ -490,16 +578,14 @@
       (milestone-count (default-to u0 (map-get? milestone-counters contract-id)))
     )
     ;; If remaining balance is 0 or very small, mark as completed
-    (if (<= (get remaining-balance contract-data) u100) ;; Allow for small dust amounts
+    (if (<= (get remaining-balance contract-data) u100)
       (begin
         (map-set contracts contract-id
           (merge contract-data {status: status-completed})
         )
         ;; Return any dust amount to client
         (if (> (get remaining-balance contract-data) u0)
-          (as-contract? ((with-stx (get remaining-balance contract-data)))
-            (try! (stx-transfer? (get remaining-balance contract-data) tx-sender (get client contract-data)))
-          )
+          (refund-from-escrow contract-id (get remaining-balance contract-data) (get client contract-data))
           (ok true)
         )
       )
