@@ -55,7 +55,7 @@ const MainNavigation: React.FC = () => {
   const authenticatedNavItems: NavItem[] = [
     {
       name: 'Dashboard',
-      href: '/dashboard', // ✅ FIXED: Routes to proper dashboard
+      href: '/dashboard', // FIXED: Routes to proper dashboard
       icon: <LayoutDashboard className="w-5 h-5" />,
       description: 'Overview and stats',
       requiresAuth: true
@@ -80,7 +80,7 @@ const MainNavigation: React.FC = () => {
 
   const roleBasedNavItems: NavItem[] = [
     {
-      name: 'Client View',
+      name: 'Employer View',
       href: '/dashboard?tab=client',
       icon: <User className="w-5 h-5" />,
       description: `${clientContracts?.length || 0} contracts`,
@@ -89,7 +89,7 @@ const MainNavigation: React.FC = () => {
       badgeCount: clientContracts?.length || 0
     },
     {
-      name: 'Freelancer View',
+      name: 'Worker View',
       href: '/dashboard?tab=freelancer',
       icon: <Briefcase className="w-5 h-5" />,
       description: `${freelancerContracts?.length || 0} contracts`,
@@ -110,7 +110,7 @@ const MainNavigation: React.FC = () => {
       : "flex items-center gap-2 px-3 py-2 rounded-lg transition-colors";
 
     const activeClasses = isActive(item.href)
-      ? "bg-orange-100 text-orange-600 font-medium"
+      ? "bg-blue-100 text-blue-600 font-medium"
       : "text-gray-600 hover:text-gray-900 hover:bg-gray-100";
 
     return (
@@ -118,7 +118,7 @@ const MainNavigation: React.FC = () => {
         {item.icon}
         <span>{item.name}</span>
         {item.showBadge && item.badgeCount !== undefined && item.badgeCount > 0 && (
-          <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
+          <span className="ml-auto bg-blue-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
             {item.badgeCount}
           </span>
         )}
@@ -133,7 +133,7 @@ const MainNavigation: React.FC = () => {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">W</span>
               </div>
               <span className="text-xl font-bold text-gray-900">BlockLancer</span>
@@ -161,10 +161,10 @@ const MainNavigation: React.FC = () => {
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:text-gray-900 transition-colors"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
                     <User className="w-4 h-4 text-white" />
                   </div>
-                  <span className="font-medium">{formatAddress(userAddress || '')}</span>
+                  <span className="font-medium">{formatAddress(userAddress || '-')}</span>
                   <ChevronDown className="w-4 h-4" />
                 </button>
 
@@ -215,7 +215,7 @@ const MainNavigation: React.FC = () => {
             ) : (
               <button
                 onClick={connectWallet}
-                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
               >
                 <Wallet className="w-4 h-4" />
                 Connect Wallet
@@ -285,7 +285,7 @@ const MainNavigation: React.FC = () => {
                 ) : (
                   <button
                     onClick={connectWallet}
-                    className="flex items-center gap-3 w-full px-4 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-medium transition-colors"
+                    className="flex items-center gap-3 w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-medium transition-colors"
                   >
                     <Wallet className="w-5 h-5" />
                     Connect Wallet

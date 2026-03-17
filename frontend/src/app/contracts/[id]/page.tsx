@@ -66,7 +66,7 @@ export default function ContractDetailsPage() {
   const [showRejectForm, setShowRejectForm] = useState<number | null>(null);
   const [showDisputeModal, setShowDisputeModal] = useState(false);
 
-  // ✅ ENHANCED: Comprehensive Clarity value parser
+  // ENHANCED: Comprehensive Clarity value parser
   const parseStacksValue = (value: any): any => {
     // Handle null/undefined
     if (value === null || value === undefined) {
@@ -95,7 +95,7 @@ export default function ContractDetailsPage() {
     return value;
   };
 
-  // ✅ ENHANCED: Safe contract parser
+  // ENHANCED: Safe contract parser
   const parseContractData = (rawContract: any): Contract | null => {
     try {
       if (!rawContract) return null;
@@ -106,9 +106,9 @@ export default function ContractDetailsPage() {
       // Ensure all numeric values are properly converted
       const safeContract: Contract = {
         id: parseInt(contractId),
-        client: String(parsed.client || ''),
-        freelancer: String(parsed.freelancer || ''),
-        description: String(parsed.description || ''),
+        client: String(parsed.client || '-'),
+        freelancer: String(parsed.freelancer || '-'),
+        description: String(parsed.description || '-'),
         totalAmount: parseInt(String(parsed.totalAmount || parsed['total-amount'] || '0')),
         remainingBalance: parseInt(String(parsed.remainingBalance || parsed['remaining-balance'] || '0')),
         endDate: parseInt(String(parsed.endDate || parsed['end-date'] || '0')),
@@ -124,18 +124,18 @@ export default function ContractDetailsPage() {
     }
   };
 
-  // ✅ ENHANCED: Safe milestone parser
+  // ENHANCED: Safe milestone parser
   const parseMilestoneData = (rawMilestone: any): Milestone => {
     const parsed = parseStacksValue(rawMilestone);
     
     return {
       id: parseInt(String(parsed.id || '0')),
-      description: String(parsed.description || ''),
+      description: String(parsed.description || '-'),
       amount: parseInt(String(parsed.amount || '0')),
       deadline: parseInt(String(parsed.deadline || '0')),
       status: parseInt(String(parsed.status || '0')) as MilestoneStatus,
-      submissionNotes: String(parsed.submissionNotes || parsed['submission-notes'] || ''),
-      rejectionReason: String(parsed.rejectionReason || parsed['rejection-reason'] || ''),
+      submissionNotes: String(parsed.submissionNotes || parsed['submission-notes'] || '-'),
+      rejectionReason: String(parsed.rejectionReason || parsed['rejection-reason'] || '-'),
       submittedAt: parsed.submittedAt ? parseInt(String(parsed.submittedAt)) : undefined,
       approvedAt: parsed.approvedAt ? parseInt(String(parsed.approvedAt)) : undefined,
     };
@@ -143,15 +143,15 @@ export default function ContractDetailsPage() {
 
   // Form states
   const [milestoneForm, setMilestoneForm] = useState({
-    description: '',
-    amount: '',
-    deadline: ''
+    description: '-',
+    amount: '-',
+    deadline: '-'
   });
   const [submissionForm, setSubmissionForm] = useState({
-    notes: ''
+    notes: '-'
   });
   const [rejectionForm, setRejectionForm] = useState({
-    reason: ''
+    reason: '-'
   });
 
   const userAddress = userData?.profile?.stxAddress?.testnet || userData?.profile?.stxAddress?.mainnet;
@@ -168,7 +168,7 @@ export default function ContractDetailsPage() {
       try {
         const fetchedContract = await fetchContractById(parseInt(contractId));
         
-        // ✅ PARSE CONTRACT DATA SAFELY
+        // PARSE CONTRACT DATA SAFELY
         const safeContract = parseContractData(fetchedContract);
         setContract(safeContract);
         
@@ -235,7 +235,7 @@ export default function ContractDetailsPage() {
       case MilestoneStatus.REJECTED:
         return 'bg-red-50 text-red-700 border-red-200';
       case MilestoneStatus.REFUNDED:
-        return 'bg-orange-50 text-orange-700 border-orange-200';
+        return 'bg-blue-50 text-blue-700 border-blue-200';
       default:
         return 'bg-gray-50 text-gray-700 border-gray-200';
     }
@@ -286,7 +286,7 @@ export default function ContractDetailsPage() {
     if (!contract) return;
 
     try {
-      // ✅ FIX: Ensure user input is treated as STX, then converted to microSTX
+      // FIX: Ensure user input is treated as STX, then converted to microSTX
       const amountInSTX = parseFloat(milestoneForm.amount); // User enters STX (like 5.0)
       const amountInMicroSTX = Math.floor(amountInSTX * 1000000); // Convert to microSTX
 
@@ -301,7 +301,7 @@ export default function ContractDetailsPage() {
 
       if (result.success) {
         setShowAddMilestone(false);
-        setMilestoneForm({ description: '', amount: '', deadline: '' });
+        setMilestoneForm({ description: '-', amount: '-', deadline: '-' });
         // Reload contract data
         const updatedContract = await fetchContractById(contract.id);
         setContract(parseContractData(updatedContract));
@@ -318,7 +318,7 @@ export default function ContractDetailsPage() {
       const result = await submitMilestone(contract.id, milestoneId, notes);
       if (result.success) {
         setShowSubmitForm(null);
-        setSubmissionForm({ notes: '' });
+        setSubmissionForm({ notes: '-' });
         // Reload contract data
         const updatedContract = await fetchContractById(contract.id);
         setContract(parseContractData(updatedContract));
@@ -350,7 +350,7 @@ export default function ContractDetailsPage() {
       const result = await rejectMilestone(contract.id, milestoneId, reason);
       if (result.success) {
         setShowRejectForm(null);
-        setRejectionForm({ reason: '' });
+        setRejectionForm({ reason: '-' });
         // Reload contract data
         const updatedContract = await fetchContractById(contract.id);
         setContract(parseContractData(updatedContract));
@@ -363,10 +363,10 @@ export default function ContractDetailsPage() {
   if (loading) {
     return (
       <AppLayout>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading contract details...</p>
+            <div className="animate-spin rounded-full h-10 w-10 border-2 border-blue-600 border-t-transparent mx-auto mb-4"></div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Loading contract details...</p>
           </div>
         </div>
       </AppLayout>
@@ -376,14 +376,14 @@ export default function ContractDetailsPage() {
   if (!contract) {
     return (
       <AppLayout>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-center">
-            <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">Contract Not Found</h2>
-            <p className="text-gray-600 mb-4">The contract you're looking for doesn't exist or you don't have access to it.</p>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+          <div className="bg-white dark:bg-gray-900/50 p-8 rounded-xl border border-gray-200 dark:border-gray-800 text-center max-w-sm">
+            <AlertTriangle className="w-12 h-12 text-red-500 dark:text-red-400 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Contract Not Found</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">The contract you're looking for doesn't exist or you don't have access to it.</p>
             <button
               onClick={() => router.push('/dashboard')}
-              className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+              className="w-full px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
             >
               Back to Dashboard
             </button>
@@ -400,39 +400,36 @@ export default function ContractDetailsPage() {
 
   return (
     <AppLayout>
-      <div className="bg-gray-50">
+      <div className="bg-gray-50 dark:bg-gray-950">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
           <button
             onClick={() => router.push('/dashboard')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+            className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white mb-4 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
           </button>
-          
+
           <div className="flex justify-between items-start">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-2xl font-bold text-gray-900">Contract Details</h1>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Contract Details</h1>
                 <span className={`px-3 py-1 text-sm font-medium rounded-full border ${getContractStatusColor(contract.status)}`}>
                   {getContractStatusText(contract.status)}
                 </span>
               </div>
-              <p className="text-gray-600">
-                You are the <span className="font-medium">{userRole === UserRole.CLIENT ? 'Client' : 'Freelancer'}</span> in this contract
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                You are the <span className="font-medium text-gray-700 dark:text-gray-300">{userRole === UserRole.CLIENT ? 'Employer' : 'Worker'}</span> in this contract
               </p>
             </div>
-            
+
             <div className="text-right">
-              <div className="flex items-center gap-1 text-2xl font-bold text-gray-900">
-                <DollarSign className="w-6 h-6" />
-                {/* ✅ SAFE: formatSTX now receives proper number values */}
+              <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {formatSTX(contract.totalAmount)}
-              </div>
-              <p className="text-sm text-gray-600">
-                {/* ✅ SAFE: formatSTX now receives proper number values */}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
                 {formatSTX(contract.remainingBalance)} remaining
               </p>
             </div>
@@ -440,69 +437,65 @@ export default function ContractDetailsPage() {
         </div>
 
         {/* Contract Overview */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Project Overview</h2>
-          
+        <div className="bg-white dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-800 p-6 mb-8">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Project Overview</h2>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
-              <h3 className="font-medium text-gray-900 mb-2">Description</h3>
-              {/* ✅ SAFE: contract.description is now guaranteed to be a string */}
-              <p className="text-gray-700">{contract.description}</p>
+              <h3 className="font-medium text-gray-900 dark:text-white mb-2">Description</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{contract.description}</p>
             </div>
-            
+
             <div className="space-y-4">
               <div>
-                <h4 className="font-medium text-gray-900 mb-1">Contract Parties</h4>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-1">Contract Parties</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4 text-gray-400" />
-                    <span className="text-gray-600">Client:</span>
-                    {/* ✅ SAFE: contract.client is now guaranteed to be a string */}
-                    <span className="font-mono text-xs">{contract.client.slice(0, 8)}...{contract.client.slice(-4)}</span>
+                    <span className="text-gray-500 dark:text-gray-400">Employer:</span>
+                    <span className="font-mono text-xs text-gray-700 dark:text-gray-300">{contract.client.slice(0, 8)}...{contract.client.slice(-4)}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4 text-gray-400" />
-                    <span className="text-gray-600">Freelancer:</span>
-                    {/* ✅ SAFE: contract.freelancer is now guaranteed to be a string */}
-                    <span className="font-mono text-xs">{contract.freelancer.slice(0, 8)}...{contract.freelancer.slice(-4)}</span>
+                    <span className="text-gray-500 dark:text-gray-400">Worker:</span>
+                    <span className="font-mono text-xs text-gray-700 dark:text-gray-300">{contract.freelancer.slice(0, 8)}...{contract.freelancer.slice(-4)}</span>
                   </div>
                 </div>
               </div>
-              
+
               <div>
-                <h4 className="font-medium text-gray-900 mb-1">Timeline</h4>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <h4 className="font-medium text-gray-900 dark:text-white mb-1">Timeline</h4>
+                <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                   <Calendar className="w-4 h-4" />
-                  {/* ✅ SAFE: contract.endDate is now guaranteed to be a number */}
                   <span>Due: {formatDate(contract.endDate)}</span>
                 </div>
               </div>
             </div>
           </div>
-          
+
           {/* Progress Bar */}
           <div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-gray-700">Progress</span>
-              <span className="text-sm text-gray-600">{Math.round(progress)}%</span>
+            <div className="flex justify-between items-center mb-1.5">
+              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Progress</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">{Math.round(progress)}%</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-green-600 h-2 rounded-full transition-all duration-300"
+            <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
+              <div
+                className="bg-blue-600 h-1.5 rounded-full transition-all duration-500"
                 style={{ width: `${progress}%` }}
-              ></div>
+              />
             </div>
           </div>
         </div>
 
         {/* Milestones Section */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-semibold text-gray-900">Milestones</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Milestones</h2>
             {canAddMilestone && (
               <button
                 onClick={() => setShowAddMilestone(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 Add Milestone
@@ -512,11 +505,11 @@ export default function ContractDetailsPage() {
 
           <div className="space-y-4">
             {contract.milestones.length === 0 ? (
-              <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h4 className="text-lg font-medium text-gray-900 mb-2">No milestones yet</h4>
-                <p className="text-gray-600 mb-4">
-                  {userRole === UserRole.CLIENT 
+              <div className="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700">
+                <FileText className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No milestones yet</h4>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                  {userRole === UserRole.CLIENT
                     ? 'Start by adding your first milestone to break down the project.'
                     : 'The client hasn\'t added any milestones yet.'
                   }
@@ -524,7 +517,7 @@ export default function ContractDetailsPage() {
                 {canAddMilestone && (
                   <button
                     onClick={() => setShowAddMilestone(true)}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                     Add First Milestone
@@ -532,31 +525,29 @@ export default function ContractDetailsPage() {
                 )}
               </div>
             ) : (
-              // ✅ SAFE: All milestone data is now properly parsed
+              // SAFE: All milestone data is now properly parsed
               contract.milestones.map((milestone, index) => (
-                <div key={milestone.id} className="border rounded-lg p-4">
+                <div key={milestone.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h4 className="font-medium text-gray-900">{milestone.description}</h4>
+                        <h4 className="font-medium text-gray-900 dark:text-white">{milestone.description}</h4>
                         <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getMilestoneStatusColor(milestone.status)}`}>
                           {getMilestoneStatusText(milestone.status)}
                         </span>
                         {isMilestoneRefundable(milestone) && (
-                          <span className="px-2 py-1 text-xs font-medium rounded-full border bg-red-50 text-red-700 border-red-200">
+                          <span className="px-2 py-1 text-xs font-medium rounded-full border bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 border-red-200 dark:border-red-800">
                             Overdue
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                      <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                         <div className="flex items-center gap-1">
-                          <DollarSign className="w-4 h-4" />
-                          {/* ✅ SAFE: milestone.amount is now guaranteed to be a number */}
+                          <DollarSign className="w-3.5 h-3.5" />
                           {formatSTX(milestone.amount)}
                         </div>
                         <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          {/* ✅ SAFE: milestone.deadline is now guaranteed to be a number */}
+                          <Calendar className="w-3.5 h-3.5" />
                           {formatDate(milestone.deadline)}
                         </div>
                       </div>
@@ -613,7 +604,7 @@ export default function ContractDetailsPage() {
                       <button
                         onClick={() => handleClaimRefund(milestone.id)}
                         disabled={transactionInProgress}
-                        className="flex items-center gap-2 px-3 py-1 bg-orange-600 text-white text-sm rounded hover:bg-orange-700 transition-colors disabled:opacity-50"
+                        className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors disabled:opacity-50"
                       >
                         <RefreshCw className="w-4 h-4" />
                         {transactionInProgress ? 'Claiming...' : 'Claim Refund'}
@@ -623,17 +614,17 @@ export default function ContractDetailsPage() {
                   
                   {/* Submission Note */}
                   {milestone.submissionNotes && (
-                    <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <p className="text-sm font-medium text-blue-800 mb-1">Submission Note:</p>
-                      <p className="text-blue-700">{milestone.submissionNotes}</p>
+                    <div className="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                      <p className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-1">Submission Note:</p>
+                      <p className="text-sm text-blue-700 dark:text-blue-400">{milestone.submissionNotes}</p>
                     </div>
                   )}
-                  
+
                   {/* Rejection Reason */}
                   {milestone.rejectionReason && (
-                    <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
-                      <p className="text-sm font-medium text-red-800 mb-1">Rejection Reason:</p>
-                      <p className="text-red-700">{milestone.rejectionReason}</p>
+                    <div className="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                      <p className="text-sm font-medium text-red-800 dark:text-red-300 mb-1">Rejection Reason:</p>
+                      <p className="text-sm text-red-700 dark:text-red-400">{milestone.rejectionReason}</p>
                     </div>
                   )}
                 </div>
@@ -643,18 +634,18 @@ export default function ContractDetailsPage() {
         </div>
 
         {/* Dispute Resolution Section */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 mt-8">
+        <div className="bg-white dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-800 p-6 mt-8">
           <div className="flex items-center gap-2 mb-4">
-            <Scale className="h-5 w-5 text-orange-600" />
-            <h2 className="text-lg font-semibold text-gray-900">Dispute Resolution</h2>
+            <Scale className="h-5 w-5 text-blue-600" />
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Dispute Resolution</h2>
           </div>
 
           {existingDispute ? (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <p className="text-sm font-medium text-yellow-800 mb-2">
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+              <p className="text-sm font-medium text-yellow-800 dark:text-yellow-300 mb-2">
                 Active Dispute
               </p>
-              <p className="text-yellow-700 text-sm mb-3">
+              <p className="text-yellow-700 dark:text-yellow-400 text-sm mb-3">
                 This contract has an active dispute. View details or submit evidence.
               </p>
               <button
@@ -666,7 +657,7 @@ export default function ContractDetailsPage() {
             </div>
           ) : (
             <>
-              <p className="text-gray-600 text-sm mb-4">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                 If there's an issue with this contract, you can open a dispute. Both parties
                 will be able to submit evidence, and the DAO will vote on a resolution.
               </p>
@@ -675,7 +666,7 @@ export default function ContractDetailsPage() {
                 contractId={contract.id}
                 clientAddress={contract.client}
                 freelancerAddress={contract.freelancer}
-                currentUserAddress={userAddress || ''}
+                currentUserAddress={userAddress || '-'}
                 hasActiveDispute={!!existingDispute}
                 isSignedIn={isSignedIn}
                 onClick={() => setShowDisputeModal(true)}
@@ -691,7 +682,7 @@ export default function ContractDetailsPage() {
           contractId={contract.id}
           clientAddress={contract.client}
           freelancerAddress={contract.freelancer}
-          currentUserAddress={userAddress || ''}
+          currentUserAddress={userAddress || '-'}
           onSuccess={async (disputeId) => {
             setShowDisputeModal(false);
 
@@ -702,7 +693,7 @@ export default function ContractDetailsPage() {
             }
 
             // Otherwise, wait a bit for transaction to confirm, then fetch the dispute ID
-            console.log('⏳ Waiting for transaction to confirm...');
+            console.log('Waiting for transaction to confirm...');
             setTimeout(async () => {
               try {
                 // Import the function to get dispute ID by contract ID
@@ -710,15 +701,15 @@ export default function ContractDetailsPage() {
                 const dispute = await getContractDispute(contract.id, userAddress || undefined);
 
                 if (dispute && dispute.id) {
-                  console.log('✅ Found dispute ID:', dispute.id);
+                  console.log('Found dispute ID:', dispute.id);
                   router.push(`/disputes/${dispute.id}`);
                 } else {
                   // Fallback: redirect to disputes list
-                  console.log('⚠️ Could not get dispute ID, redirecting to disputes list');
+                  console.log('Could not get dispute ID, redirecting to disputes list');
                   router.push('/disputes');
                 }
               } catch (error) {
-                console.error('❌ Error fetching dispute:', error);
+                console.error('Error fetching dispute:', error);
                 router.push('/disputes');
               }
             }, 3000); // Wait 3 seconds for transaction to confirm
@@ -728,39 +719,39 @@ export default function ContractDetailsPage() {
         {/* Add Milestone Modal */}
         <AnimatePresence>
           {showAddMilestone && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center p-4 z-50">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white rounded-lg p-6 w-full max-w-md"
+                className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 w-full max-w-md"
               >
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Add New Milestone</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Add New Milestone</h3>
                   <button
                     onClick={() => setShowAddMilestone(false)}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
-                
+
                 <form onSubmit={handleAddMilestone} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Description
                     </label>
                     <textarea
                       value={milestoneForm.description}
                       onChange={(e) => setMilestoneForm(prev => ({ ...prev, description: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                       rows={3}
                       required
                     />
                   </div>
-                  
+
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Amount (STX)
                     </label>
                     <input
@@ -769,36 +760,36 @@ export default function ContractDetailsPage() {
                       value={milestoneForm.amount}
                       onChange={(e) => setMilestoneForm(prev => ({ ...prev, amount: e.target.value }))}
                       placeholder="5.0"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                       required
                     />
                   </div>
-                  
+
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Deadline
                     </label>
                     <input
                       type="date"
                       value={milestoneForm.deadline}
                       onChange={(e) => setMilestoneForm(prev => ({ ...prev, deadline: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                       required
                     />
                   </div>
-                  
+
                   <div className="flex gap-3 pt-4">
                     <button
                       type="button"
                       onClick={() => setShowAddMilestone(false)}
-                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                      className="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={transactionInProgress}
-                      className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50"
+                      className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                     >
                       {transactionInProgress ? 'Adding...' : 'Add Milestone'}
                     </button>
@@ -812,23 +803,23 @@ export default function ContractDetailsPage() {
         {/* Submit Work Modal */}
         <AnimatePresence>
           {showSubmitForm && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center p-4 z-50">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white rounded-lg p-6 w-full max-w-md"
+                className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 w-full max-w-md"
               >
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Submit Work</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Submit Work</h3>
                   <button
                     onClick={() => setShowSubmitForm(null)}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
-                
+
                 <form onSubmit={(e) => {
                   e.preventDefault();
                   if (showSubmitForm) {
@@ -836,24 +827,24 @@ export default function ContractDetailsPage() {
                   }
                 }} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Submission Notes
                     </label>
                     <textarea
                       value={submissionForm.notes}
                       onChange={(e) => setSubmissionForm({ notes: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                       rows={4}
                       placeholder="Describe the work completed..."
                       required
                     />
                   </div>
-                  
+
                   <div className="flex gap-3 pt-4">
                     <button
                       type="button"
                       onClick={() => setShowSubmitForm(null)}
-                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                      className="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                     >
                       Cancel
                     </button>
@@ -874,23 +865,23 @@ export default function ContractDetailsPage() {
         {/* Reject Work Modal */}
         <AnimatePresence>
           {showRejectForm && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center p-4 z-50">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white rounded-lg p-6 w-full max-w-md"
+                className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 w-full max-w-md"
               >
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Reject Work</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Reject Work</h3>
                   <button
                     onClick={() => setShowRejectForm(null)}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
-                
+
                 <form onSubmit={(e) => {
                   e.preventDefault();
                   if (showRejectForm) {
@@ -898,24 +889,24 @@ export default function ContractDetailsPage() {
                   }
                 }} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Rejection Reason
                     </label>
                     <textarea
                       value={rejectionForm.reason}
                       onChange={(e) => setRejectionForm({ reason: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      className="w-full px-3 py-2 text-sm bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                       rows={4}
                       placeholder="Explain why the work needs to be revised..."
                       required
                     />
                   </div>
-                  
+
                   <div className="flex gap-3 pt-4">
                     <button
                       type="button"
                       onClick={() => setShowRejectForm(null)}
-                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                      className="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                     >
                       Cancel
                     </button>

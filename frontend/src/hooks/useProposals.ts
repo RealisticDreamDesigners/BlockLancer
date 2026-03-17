@@ -120,7 +120,7 @@ export function useUserVote(
   const addressToCheck = voterAddress || currentUserAddress;
 
   return useQuery({
-    queryKey: PROPOSAL_QUERY_KEYS.vote(proposalId || 0, addressToCheck || ''),
+    queryKey: PROPOSAL_QUERY_KEYS.vote(proposalId || 0, addressToCheck || '-'),
     queryFn: () =>
       proposalId && addressToCheck
         ? getVote(proposalId, addressToCheck)
@@ -159,7 +159,7 @@ export function useDAOMembership() {
   const { userAddress, isSignedIn } = useStacks();
 
   return useQuery({
-    queryKey: [...PROPOSAL_QUERY_KEYS.all, 'membership', userAddress || ''],
+    queryKey: [...PROPOSAL_QUERY_KEYS.all, 'membership', userAddress || '-'],
     queryFn: async () => {
       if (!userAddress) return false;
       return await checkDAOMembership(userAddress);
@@ -345,7 +345,7 @@ export function useRefreshProposals() {
   const queryClient = useQueryClient();
 
   return async () => {
-    console.log('🔄 Refreshing all proposal data...');
+    console.log('Refreshing all proposal data...');
     await queryClient.invalidateQueries({
       queryKey: PROPOSAL_QUERY_KEYS.all,
     });
@@ -367,7 +367,7 @@ export function useRefreshProposal(proposalId: number | null) {
   return async () => {
     if (!proposalId) return;
 
-    console.log(`🔄 Refreshing proposal #${proposalId}...`);
+    console.log(`Refreshing proposal #${proposalId}...`);
     await queryClient.invalidateQueries({
       queryKey: PROPOSAL_QUERY_KEYS.detail(proposalId),
     });

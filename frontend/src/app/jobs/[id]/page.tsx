@@ -176,7 +176,7 @@ export default function JobDetailPage() {
         {isSignedIn && !isJobPoster && job.status === 0 && !hasApplied && !showApplicationForm && (
           <button
             onClick={() => setShowApplicationForm(true)}
-            className="mt-4 px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-md hover:bg-orange-700"
+            className="mt-4 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
           >
             Apply for this Job
           </button>
@@ -280,7 +280,7 @@ export default function JobDetailPage() {
           </p>
           <Link
             href={`/contracts/${job.escrow_id}`}
-            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-md hover:bg-orange-700"
+            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
           >
             View Escrow Contract #{job.escrow_id}
           </Link>

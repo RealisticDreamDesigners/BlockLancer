@@ -42,13 +42,13 @@ export async function POST(request: NextRequest) {
     const expectedToken = process.env.CHAINHOOK_SECRET_TOKEN || 'local_dev_secret';
     
     if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
-      console.warn('🚫 Unauthorized payment chainhook request');
+      console.warn('Unauthorized payment chainhook request');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const payload: ChainhookPayload = await request.json();
     
-    console.log('📥 Received payment chainhook event:', {
+    console.log('Received payment chainhook event:', {
       uuid: payload.chainhook.uuid,
       blocks: payload.apply.length,
       rollbacks: payload.rollback.length,
@@ -56,14 +56,14 @@ export async function POST(request: NextRequest) {
 
     // Process apply events (new blocks)
     for (const block of payload.apply) {
-      console.log(`📦 Processing payment block ${block.block_identifier.index}`);
+      console.log(`Processing payment block ${block.block_identifier.index}`);
       
       for (const transaction of block.transactions) {
         // Look for STX transfer events
         const stxTransfer = transaction.metadata.stx_transfer_event;
         
         if (stxTransfer) {
-          console.log(`💰 STX Transfer detected:`, {
+          console.log(`STX Transfer detected:`, {
             from: stxTransfer.sender,
             to: stxTransfer.recipient,
             amount: stxTransfer.amount,
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
 
     // Process rollback events (chain reorgs)
     for (const rollbackBlock of payload.rollback) {
-      console.log(`↩️ Rolling back payment block ${rollbackBlock.block_identifier.index}`);
+      console.log(`Rolling back payment block ${rollbackBlock.block_identifier.index}`);
       await handlePaymentRollback(rollbackBlock);
     }
 
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('❌ Error processing payment chainhook:', error);
+    console.error('Error processing payment chainhook:', error);
     return NextResponse.json(
       { error: 'Internal server error' }, 
       { status: 500 }
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
 
 // Payment event handlers
 async function handleSTXTransfer(stxTransfer: any, transaction: any, block: any) {
-  console.log('💸 Processing STX transfer:', {
+  console.log('Processing STX transfer:', {
     txHash: transaction.transaction_identifier.hash,
     blockHeight: block.block_identifier.index,
     from: stxTransfer.sender,
@@ -119,7 +119,7 @@ async function handleSTXTransfer(stxTransfer: any, transaction: any, block: any)
   try {
     // Check if this transfer is related to BlockLancer escrow
     if (await isBlockLancerRelatedTransfer(stxTransfer)) {
-      console.log('🛡️ BlockLancer-related payment detected');
+      console.log('BlockLancer-related payment detected');
       
       // TODO: Store payment in database
       // await storePaymentInDatabase({
@@ -143,7 +143,7 @@ async function handleSTXTransfer(stxTransfer: any, transaction: any, block: any)
 }
 
 async function handleContractSTXTransfer(event: any, transaction: any, block: any) {
-  console.log('📄 Contract-generated STX transfer:', {
+  console.log('Contract-generated STX transfer:', {
     txHash: transaction.transaction_identifier.hash,
     blockHeight: block.block_identifier.index,
     event: event,
@@ -165,7 +165,7 @@ async function handleContractSTXTransfer(event: any, transaction: any, block: an
 }
 
 async function handlePaymentRollback(rollbackBlock: any) {
-  console.log('🔄 Handling payment rollback for block:', rollbackBlock.block_identifier.index);
+  console.log('Handling payment rollback for block:', rollbackBlock.block_identifier.index);
   
   // TODO: Reverse payment-related database changes for this block
   // This is crucial for maintaining accurate payment records during chain reorgs

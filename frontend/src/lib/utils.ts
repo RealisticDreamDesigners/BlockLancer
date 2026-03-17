@@ -9,7 +9,7 @@ export function cn(...classes: (string | undefined | null | boolean)[]): string 
     .join(' ');
 }
 
-// ✅ ADDED: Address formatting function (was missing)
+// ADDED: Address formatting function (was missing)
 export function formatAddress(address: string, startChars: number = 6, endChars: number = 4): string {
   if (!address || address.length <= startChars + endChars) {
     return address;

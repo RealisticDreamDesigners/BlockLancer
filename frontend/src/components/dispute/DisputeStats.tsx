@@ -76,7 +76,7 @@ interface StatCardProps {
 
 function StatCard({ label, value, icon, color, description, trend }: StatCardProps) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow">
+    <div className="bg-white dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700/50 p-4 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-2">
         <div className={cn('p-2 rounded-lg', color)}>
           {icon}
@@ -99,10 +99,10 @@ function StatCard({ label, value, icon, color, description, trend }: StatCardPro
         )}
       </div>
       <div className="space-y-1">
-        <p className="text-2xl font-bold text-gray-900">{value}</p>
-        <p className="text-sm font-medium text-gray-700">{label}</p>
+        <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
+        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</p>
         {description && (
-          <p className="text-xs text-gray-500">{description}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
         )}
       </div>
     </div>
@@ -133,12 +133,12 @@ function ProgressBar({
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-sm">
-        <span className="font-medium text-gray-700">{label}</span>
-        <span className="text-gray-600">
+        <span className="font-medium text-gray-700 dark:text-gray-300">{label}</span>
+        <span className="text-gray-600 dark:text-gray-400">
           {value} {showPercentage && `(${percentage}%)`}
         </span>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-2">
+      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
         <div
           className={cn('h-2 rounded-full transition-all duration-300', color)}
           style={{ width: `${percentage}%` }}
@@ -203,11 +203,11 @@ export function DisputeStats({
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="bg-white rounded-lg border border-gray-200 p-4 animate-pulse"
+              className="bg-white dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700/50 p-4 animate-pulse"
             >
-              <div className="h-10 w-10 bg-gray-200 rounded-lg mb-2" />
-              <div className="h-8 bg-gray-200 rounded mb-2" />
-              <div className="h-4 bg-gray-200 rounded w-2/3" />
+              <div className="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-lg mb-2" />
+              <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded mb-2" />
+              <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3" />
             </div>
           ))}
         </div>
@@ -231,7 +231,7 @@ export function DisputeStats({
           label="Total Disputes"
           value={stats.total}
           icon={<Scale className="h-5 w-5 text-blue-600" />}
-          color="bg-blue-100"
+          color="bg-blue-100 dark:bg-blue-900/20"
           description="All time disputes"
         />
 
@@ -239,8 +239,8 @@ export function DisputeStats({
         <StatCard
           label="Open Disputes"
           value={stats.open || 0}
-          icon={<AlertCircle className="h-5 w-5 text-orange-600" />}
-          color="bg-orange-100"
+          icon={<AlertCircle className="h-5 w-5 text-blue-600" />}
+          color="bg-blue-100 dark:bg-blue-900/20"
           description="Awaiting resolution"
         />
 
@@ -249,7 +249,7 @@ export function DisputeStats({
           label="Resolved"
           value={stats.resolved || 0}
           icon={<CheckCircle2 className="h-5 w-5 text-green-600" />}
-          color="bg-green-100"
+          color="bg-green-100 dark:bg-green-900/20"
           description="Successfully resolved"
         />
 
@@ -265,23 +265,23 @@ export function DisputeStats({
 
       {/* User-Specific Stats */}
       {showUserStats && currentUserAddress && (stats.asClient > 0 || stats.asFreelancer > 0) && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-3">
             <Users className="h-5 w-5 text-blue-600" />
-            <h3 className="font-semibold text-blue-900">Your Participation</h3>
+            <h3 className="font-semibold text-blue-900 dark:text-blue-300">Your Participation</h3>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-2 gap-4">
             <div>
-              <p className="text-2xl font-bold text-blue-900">
+              <p className="text-2xl font-bold text-blue-900 dark:text-blue-200">
                 {stats.asClient}
               </p>
-              <p className="text-sm text-blue-700">As Client</p>
+              <p className="text-sm text-blue-700 dark:text-blue-400">As Client</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-blue-900">
+              <p className="text-2xl font-bold text-blue-900 dark:text-blue-200">
                 {stats.asFreelancer}
               </p>
-              <p className="text-sm text-blue-700">As Freelancer</p>
+              <p className="text-sm text-blue-700 dark:text-blue-400">As Worker</p>
             </div>
           </div>
         </div>
@@ -289,10 +289,10 @@ export function DisputeStats({
 
       {/* Resolution Breakdown */}
       {showResolutionBreakdown && stats.total > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-white dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700/50 p-4">
           <div className="flex items-center gap-2 mb-4">
-            <Activity className="h-5 w-5 text-gray-600" />
-            <h3 className="font-semibold text-gray-900">Resolution Breakdown</h3>
+            <Activity className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+            <h3 className="font-semibold text-gray-900 dark:text-white">Resolution Breakdown</h3>
           </div>
 
           <div className="space-y-3">
@@ -301,20 +301,20 @@ export function DisputeStats({
               label="Open/Pending"
               value={stats.open || 0}
               total={stats.total}
-              color="bg-orange-500"
+              color="bg-blue-500"
             />
 
-            {/* Client Wins */}
+            {/* Employer Wins */}
             <ProgressBar
-              label="Client Wins"
+              label="Employer Wins"
               value={stats.clientWins || 0}
               total={stats.total}
               color="bg-blue-500"
             />
 
-            {/* Freelancer Wins */}
+            {/* Worker Wins */}
             <ProgressBar
-              label="Freelancer Wins"
+              label="Worker Wins"
               value={stats.freelancerWins || 0}
               total={stats.total}
               color="bg-purple-500"
@@ -331,17 +331,17 @@ export function DisputeStats({
 
           {/* Resolution Rate */}
           {stats.total > 0 && (
-            <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700/50">
               <div className="flex items-center justify-between text-sm">
-                <span className="font-medium text-gray-700">Resolution Rate</span>
-                <span className="text-gray-900 font-semibold">
+                <span className="font-medium text-gray-700 dark:text-gray-300">Resolution Rate</span>
+                <span className="text-gray-900 dark:text-white font-semibold">
                   {Math.round(
                     ((stats.resolved || 0) / stats.total) * 100
                   )}
                   %
                 </span>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 {stats.resolved || 0} out of {stats.total}{' '}
                 disputes have been resolved
               </p>
@@ -353,26 +353,26 @@ export function DisputeStats({
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Average Resolution */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">
+        <div className="bg-white dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700/50 p-4">
+          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Most Common Resolution
           </h4>
-          <p className="text-xl font-bold text-gray-900">
+          <p className="text-xl font-bold text-gray-900 dark:text-white">
             {stats.open >= (stats.clientWins || 0) &&
             stats.open >= (stats.freelancerWins || 0)
               ? 'Pending'
               : (stats.clientWins || 0) >= (stats.freelancerWins || 0)
-              ? 'Client Wins'
-              : 'Freelancer Wins'}
+              ? 'Employer Wins'
+              : 'Worker Wins'}
           </p>
         </div>
 
         {/* Open Rate */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">
+        <div className="bg-white dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700/50 p-4">
+          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Currently Open
           </h4>
-          <p className="text-xl font-bold text-gray-900">
+          <p className="text-xl font-bold text-gray-900 dark:text-white">
             {stats.total > 0
               ? Math.round(
                   ((stats.open || 0) / stats.total) * 100
@@ -383,11 +383,11 @@ export function DisputeStats({
         </div>
 
         {/* Withdrawal Rate */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">
+        <div className="bg-white dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700/50 p-4">
+          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Withdrawal Rate
           </h4>
-          <p className="text-xl font-bold text-gray-900">
+          <p className="text-xl font-bold text-gray-900 dark:text-white">
             {stats.total > 0
               ? Math.round(
                   ((stats.withdrawn || 0) / stats.total) * 100

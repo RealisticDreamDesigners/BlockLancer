@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 /**
- * Deploy & Wire V4 Contracts
- * ===========================
- * Deploys: escrow-v4, dispute-v5, dao-v3
- * Wires all cross-contract references
- * Migrates DAO members
+ * BlockLancer Full Deploy & Wire Script
+ * ======================================
+ * Deploys ALL 7 contracts in dependency order:
+ *   Batch 1 (no deps): payments-v2, reputation, marketplace, membership
+ *   Batch 2 (depends on batch 1): escrow-v4
+ *   Batch 3 (depends on batch 2): dispute-v5
+ *   Batch 4 (depends on batches 2+3): dao-v3
+ * Then wires all cross-contract references.
  *
  * Usage: node deploy-v4.mjs
  * Requires: DEPLOYER_KEY in .env or environment
@@ -19,7 +22,9 @@ import {
   PostConditionMode,
   AnchorMode,
 } from '@stacks/transactions';
-import { STACKS_TESTNET } from '@stacks/network';
+import pkg from '@stacks/network';
+const { StacksTestnet } = pkg;
+const STACKS_TESTNET = new StacksTestnet();
 import { readFileSync, existsSync } from 'fs';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
@@ -28,11 +33,9 @@ import { config as dotenvConfig } from 'dotenv';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Load .env from the e2e project if running from there, otherwise local
 dotenvConfig();
 dotenvConfig({ path: resolve(__dirname, '../blocklancer-e2e/.env') });
 
-// Resolve contract root: try script dir first, then sibling blocklancer-stacks
 const STACKS_ROOT = existsSync(resolve(__dirname, 'contracts/blocklancer-escrow-v3.clar'))
   ? __dirname
   : resolve(__dirname, '../blocklancer-stacks');
@@ -43,47 +46,72 @@ const HIRO_API_KEY = process.env.HIRO_API_KEY || '49c6e72fb90e5b04c2f53721cd1f9a
 
 const API_BASE = 'https://api.testnet.hiro.so';
 
-// Contract name mapping: file path -> deploy name
-const CONTRACTS_TO_DEPLOY = [
-  { file: resolve(STACKS_ROOT, 'contracts/blocklancer-escrow-v3.clar'), name: 'blocklancer-escrow-v4' },
-  { file: resolve(STACKS_ROOT, 'contracts/blocklancer-dispute-v4.clar'), name: 'blocklancer-dispute-v5' },
-  { file: resolve(STACKS_ROOT, 'contracts/blocklancer-dao-v2.clar'), name: 'blocklancer-dao-v3' },
+// ─── Contract deployment batches (ordered by dependency) ───
+
+const DEPLOY_BATCHES = [
+  {
+    label: 'Batch 1: Base contracts (no dependencies)',
+    contracts: [
+      { file: resolve(STACKS_ROOT, 'contracts/blocklancer-payments-v2.clar'), name: 'blocklancer-payments-v2' },
+      { file: resolve(STACKS_ROOT, 'contracts/blocklancer-reputation.clar'),  name: 'blocklancer-reputation' },
+      { file: resolve(STACKS_ROOT, 'contracts/blocklancer-marketplace.clar'), name: 'blocklancer-marketplace' },
+      { file: resolve(STACKS_ROOT, 'contracts/blocklancer-membership.clar'),  name: 'blocklancer-membership' },
+    ],
+  },
+  {
+    label: 'Batch 2: Escrow (depends on payments-v2, reputation)',
+    contracts: [
+      { file: resolve(STACKS_ROOT, 'contracts/blocklancer-escrow-v3.clar'), name: 'blocklancer-escrow-v4' },
+    ],
+  },
+  {
+    label: 'Batch 3: Dispute (depends on escrow-v4, reputation)',
+    contracts: [
+      { file: resolve(STACKS_ROOT, 'contracts/blocklancer-dispute-v4.clar'), name: 'blocklancer-dispute-v5' },
+    ],
+  },
+  {
+    label: 'Batch 4: DAO (depends on escrow-v4, dispute-v5)',
+    contracts: [
+      { file: resolve(STACKS_ROOT, 'contracts/blocklancer-dao-v2.clar'), name: 'blocklancer-dao-v3' },
+    ],
+  },
 ];
 
-// Cross-contract wiring calls (after all deploys)
+// ─── Cross-contract wiring calls (after all deploys) ───
+
 const WIRING_CALLS = [
   // Escrow-v4 wiring
-  { label: 'escrow-v4.set-dao-contract', contract: 'blocklancer-escrow-v4', fn: 'set-dao-contract', args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-dao-v3')] },
-  { label: 'escrow-v4.set-payments-contract', contract: 'blocklancer-escrow-v4', fn: 'set-payments-contract', args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-payments-v2')] },
-  { label: 'escrow-v4.set-reputation-contract', contract: 'blocklancer-escrow-v4', fn: 'set-reputation-contract', args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-reputation')] },
+  { label: 'escrow-v4.set-dao-contract',        contract: 'blocklancer-escrow-v4',   fn: 'set-dao-contract',        args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-dao-v3')] },
+  { label: 'escrow-v4.set-payments-contract',    contract: 'blocklancer-escrow-v4',   fn: 'set-payments-contract',   args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-payments-v2')] },
+  { label: 'escrow-v4.set-reputation-contract',  contract: 'blocklancer-escrow-v4',   fn: 'set-reputation-contract', args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-reputation')] },
 
   // Dispute-v5 wiring
-  { label: 'dispute-v5.set-dao-contract', contract: 'blocklancer-dispute-v5', fn: 'set-dao-contract', args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-dao-v3')] },
-  { label: 'dispute-v5.set-escrow-contract', contract: 'blocklancer-dispute-v5', fn: 'set-escrow-contract', args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-escrow-v4')] },
-  { label: 'dispute-v5.set-reputation-contract', contract: 'blocklancer-dispute-v5', fn: 'set-reputation-contract', args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-reputation')] },
+  { label: 'dispute-v5.set-dao-contract',        contract: 'blocklancer-dispute-v5',  fn: 'set-dao-contract',        args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-dao-v3')] },
+  { label: 'dispute-v5.set-escrow-contract',     contract: 'blocklancer-dispute-v5',  fn: 'set-escrow-contract',     args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-escrow-v4')] },
+  { label: 'dispute-v5.set-reputation-contract', contract: 'blocklancer-dispute-v5',  fn: 'set-reputation-contract', args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-reputation')] },
 
   // DAO-v3 wiring
-  { label: 'dao-v3.set-escrow-contract', contract: 'blocklancer-dao-v3', fn: 'set-escrow-contract', args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-escrow-v4')] },
-  { label: 'dao-v3.set-dispute-contract', contract: 'blocklancer-dao-v3', fn: 'set-dispute-contract', args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-dispute-v5')] },
-  { label: 'dao-v3.set-membership-contract', contract: 'blocklancer-dao-v3', fn: 'set-membership-contract', args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-membership')] },
+  { label: 'dao-v3.set-escrow-contract',         contract: 'blocklancer-dao-v3',      fn: 'set-escrow-contract',     args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-escrow-v4')] },
+  { label: 'dao-v3.set-dispute-contract',        contract: 'blocklancer-dao-v3',      fn: 'set-dispute-contract',    args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-dispute-v5')] },
+  { label: 'dao-v3.set-membership-contract',     contract: 'blocklancer-dao-v3',      fn: 'set-membership-contract', args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-membership')] },
 
-  // Reputation wiring (point to new escrow/dispute)
-  { label: 'reputation.set-escrow-contract', contract: 'blocklancer-reputation', fn: 'set-escrow-contract', args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-escrow-v4')] },
-  { label: 'reputation.set-dispute-contract', contract: 'blocklancer-reputation', fn: 'set-dispute-contract', args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-dispute-v5')] },
+  // Reputation wiring
+  { label: 'reputation.set-escrow-contract',     contract: 'blocklancer-reputation',  fn: 'set-escrow-contract',     args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-escrow-v4')] },
+  { label: 'reputation.set-dispute-contract',    contract: 'blocklancer-reputation',  fn: 'set-dispute-contract',    args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-dispute-v5')] },
 
-  // Membership wiring (point to new DAO)
-  { label: 'membership.set-dao-contract', contract: 'blocklancer-membership', fn: 'set-dao-contract', args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-dao-v3')] },
+  // Membership wiring
+  { label: 'membership.set-dao-contract',        contract: 'blocklancer-membership',  fn: 'set-dao-contract',        args: () => [contractPrincipalCV(DEPLOYER, 'blocklancer-dao-v3')] },
 ];
 
-// DAO members to migrate (add to dao-v3)
+// DAO members to migrate
 const DAO_MEMBERS = [
   process.env.COMMITTEE_1_ADDR,
   process.env.COMMITTEE_2_ADDR,
   process.env.COMMITTEE_3_ADDR,
-  // Add more if needed
 ].filter(Boolean);
 
-// --------------- Helpers ---------------
+// ─── Helpers ───
 
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
@@ -96,7 +124,15 @@ async function getNonce() {
   return data.nonce;
 }
 
-async function waitForTx(txId, label, maxWaitMs = 180_000) {
+async function getBalance() {
+  const headers = HIRO_API_KEY ? { 'X-API-Key': HIRO_API_KEY } : {};
+  const resp = await fetch(`${API_BASE}/v2/accounts/${DEPLOYER}`, { headers });
+  const data = await resp.json();
+  const balanceHex = data.balance;
+  return Number(BigInt(balanceHex)) / 1_000_000;
+}
+
+async function waitForTx(txId, label, maxWaitMs = 300_000) {
   const cleanId = `0x${txId.replace(/^0x/, '')}`;
   const start = Date.now();
   const headers = HIRO_API_KEY ? { 'X-API-Key': HIRO_API_KEY } : {};
@@ -106,28 +142,39 @@ async function waitForTx(txId, label, maxWaitMs = 180_000) {
     const data = await resp.json();
 
     if (data.tx_status === 'success') {
-      console.log(`   ✅ ${label} confirmed (block ${data.block_height})`);
+      console.log(`   [OK] ${label} confirmed (block ${data.block_height})`);
       return true;
     }
     if (data.tx_status === 'abort_by_response' || data.tx_status === 'abort_by_post_condition') {
       const reason = data.tx_result?.repr || data.tx_status;
-      console.error(`   ❌ ${label} aborted: ${reason}`);
+      console.error(`   [FAIL] ${label} aborted: ${reason}`);
       return false;
     }
 
     const elapsed = Math.round((Date.now() - start) / 1000);
-    process.stdout.write(`\r   ⏳ ${label}: ${data.tx_status || 'pending'} (${elapsed}s)`);
+    process.stdout.write(`\r   [WAIT] ${label}: ${data.tx_status || 'pending'} (${elapsed}s)   `);
     await sleep(10_000);
   }
 
-  console.warn(`\n   ⚠️  ${label} timed out`);
+  console.warn(`\n   [TIMEOUT] ${label} timed out after ${maxWaitMs / 1000}s`);
   return false;
 }
 
-// --------------- Deploy ---------------
+async function checkContractExists(contractName) {
+  const headers = HIRO_API_KEY ? { 'X-API-Key': HIRO_API_KEY } : {};
+  try {
+    const resp = await fetch(`${API_BASE}/v2/contracts/interface/${DEPLOYER}/${contractName}`, { headers });
+    const data = await resp.json();
+    return !!data.functions;
+  } catch {
+    return false;
+  }
+}
+
+// ─── Deploy ───
 
 async function deployContract(contractFile, contractName, nonce) {
-  console.log(`\n📦 Deploying ${contractName} from ${contractFile}...`);
+  console.log(`\n  Deploying ${contractName} ...`);
 
   const codeBody = readFileSync(contractFile, 'utf8');
 
@@ -138,27 +185,27 @@ async function deployContract(contractFile, contractName, nonce) {
     network: STACKS_TESTNET,
     anchorMode: AnchorMode.Any,
     postConditionMode: PostConditionMode.Allow,
-    fee: 100000n, // Higher fee for deploy
+    fee: 100000n,
     nonce: BigInt(nonce),
     clarityVersion: 4,
   });
 
-  const result = await broadcastTransaction({ transaction: tx, network: STACKS_TESTNET });
+  const result = await broadcastTransaction(tx, STACKS_TESTNET);
 
   if (result.error) {
-    console.error(`   ❌ Deploy broadcast failed: ${result.error} - ${result.reason}`);
+    console.error(`   [FAIL] Deploy broadcast failed: ${result.error} - ${result.reason}`);
     return null;
   }
 
   const txId = typeof result === 'string' ? result : result.txid;
-  console.log(`   📡 TX: ${txId}`);
+  console.log(`   TX: ${txId}`);
   return txId;
 }
 
-// --------------- Wire ---------------
+// ─── Wire ───
 
 async function wireContract(call, nonce) {
-  console.log(`\n🔗 ${call.label}`);
+  console.log(`\n  Wiring ${call.label} ...`);
 
   const tx = await makeContractCall({
     contractAddress: DEPLOYER,
@@ -173,22 +220,22 @@ async function wireContract(call, nonce) {
     nonce: BigInt(nonce),
   });
 
-  const result = await broadcastTransaction({ transaction: tx, network: STACKS_TESTNET });
+  const result = await broadcastTransaction(tx, STACKS_TESTNET);
 
   if (result.error) {
-    console.error(`   ❌ Wire failed: ${result.error} - ${result.reason}`);
+    console.error(`   [FAIL] Wire failed: ${result.error} - ${result.reason}`);
     return null;
   }
 
   const txId = typeof result === 'string' ? result : result.txid;
-  console.log(`   📡 TX: ${txId}`);
+  console.log(`   TX: ${txId}`);
   return txId;
 }
 
-// --------------- Migrate DAO Members ---------------
+// ─── Migrate DAO Members ───
 
 async function addDAOMember(memberAddr, nonce) {
-  console.log(`\n👤 Adding DAO member: ${memberAddr}`);
+  console.log(`\n  Adding DAO member: ${memberAddr}`);
 
   const tx = await makeContractCall({
     contractAddress: DEPLOYER,
@@ -203,59 +250,94 @@ async function addDAOMember(memberAddr, nonce) {
     nonce: BigInt(nonce),
   });
 
-  const result = await broadcastTransaction({ transaction: tx, network: STACKS_TESTNET });
+  const result = await broadcastTransaction(tx, STACKS_TESTNET);
 
   if (result.error) {
-    console.error(`   ❌ Add member failed: ${result.error} - ${result.reason}`);
+    console.error(`   [FAIL] Add member failed: ${result.error} - ${result.reason}`);
     return null;
   }
 
   const txId = typeof result === 'string' ? result : result.txid;
-  console.log(`   📡 TX: ${txId}`);
+  console.log(`   TX: ${txId}`);
   return txId;
 }
 
-// --------------- Main ---------------
+// ─── Main ───
 
 async function main() {
-  console.log('═══════════════════════════════════════════════');
-  console.log('  BlockLancer V4 Deploy & Wire Script');
-  console.log('═══════════════════════════════════════════════');
-  console.log(`Deployer: ${DEPLOYER}`);
+  console.log('====================================================');
+  console.log('  BlockLancer — Full Deploy & Wire (All 7 Contracts)');
+  console.log('====================================================');
+  console.log(`Deployer:  ${DEPLOYER}`);
+
+  const balance = await getBalance();
+  console.log(`Balance:   ${balance.toFixed(2)} STX`);
+
+  if (balance < 2) {
+    console.error('\n[FAIL] Insufficient balance. Need at least 2 STX for deployment.');
+    process.exit(1);
+  }
 
   let nonce = await getNonce();
-  console.log(`Starting nonce: ${nonce}\n`);
+  console.log(`Nonce:     ${nonce}`);
 
-  // Phase 1: Deploy contracts
-  console.log('━━━ Phase 1: Deploy Contracts ━━━');
-  const deployTxIds = [];
-  for (const contract of CONTRACTS_TO_DEPLOY) {
-    const txId = await deployContract(contract.file, contract.name, nonce);
-    if (!txId) {
-      console.error('Deploy failed, aborting.');
-      process.exit(1);
-    }
-    deployTxIds.push({ txId, label: contract.name });
-    nonce++;
-    await sleep(2000);
+  // Pre-flight: check if contracts already exist
+  console.log('\n--- Pre-flight: Checking existing contracts ---');
+  const allContracts = DEPLOY_BATCHES.flatMap(b => b.contracts);
+  for (const c of allContracts) {
+    const exists = await checkContractExists(c.name);
+    console.log(`  ${c.name}: ${exists ? 'ALREADY DEPLOYED (will skip)' : 'not found (will deploy)'}`);
   }
 
-  // Wait for all deploys to confirm
-  console.log('\n━━━ Waiting for deploys to confirm ━━━');
-  for (const { txId, label } of deployTxIds) {
-    const ok = await waitForTx(txId, label);
-    if (!ok) {
-      console.error(`\n❌ ${label} deploy failed. Aborting.`);
-      process.exit(1);
+  // Phase 1: Deploy contracts in batches
+  console.log('\n====================================================');
+  console.log('  Phase 1: Deploy Contracts');
+  console.log('====================================================');
+
+  for (const batch of DEPLOY_BATCHES) {
+    console.log(`\n--- ${batch.label} ---`);
+
+    const batchTxIds = [];
+    for (const contract of batch.contracts) {
+      // Skip if already deployed
+      const exists = await checkContractExists(contract.name);
+      if (exists) {
+        console.log(`\n  ${contract.name} already deployed, skipping.`);
+        continue;
+      }
+
+      const txId = await deployContract(contract.file, contract.name, nonce);
+      if (!txId) {
+        console.error(`\n[FAIL] ${contract.name} deploy failed. Aborting.`);
+        process.exit(1);
+      }
+      batchTxIds.push({ txId, label: contract.name });
+      nonce++;
+      await sleep(2000);
+    }
+
+    // Wait for this batch to confirm before moving to next
+    if (batchTxIds.length > 0) {
+      console.log(`\n  Waiting for ${batch.label} to confirm...`);
+      for (const { txId, label } of batchTxIds) {
+        const ok = await waitForTx(txId, label);
+        if (!ok) {
+          console.error(`\n[FAIL] ${label} deploy failed. Aborting.`);
+          process.exit(1);
+        }
+      }
     }
   }
 
-  // Refresh nonce after deploys
+  // Refresh nonce after all deploys
   nonce = await getNonce();
   console.log(`\nNonce after deploys: ${nonce}`);
 
   // Phase 2: Wire contracts
-  console.log('\n━━━ Phase 2: Wire Cross-Contract References ━━━');
+  console.log('\n====================================================');
+  console.log('  Phase 2: Wire Cross-Contract References');
+  console.log('====================================================');
+
   const wireTxIds = [];
   for (const call of WIRING_CALLS) {
     const txId = await wireContract(call, nonce);
@@ -266,8 +348,7 @@ async function main() {
     await sleep(1000);
   }
 
-  // Wait for wiring to confirm
-  console.log('\n━━━ Waiting for wiring to confirm ━━━');
+  console.log('\n  Waiting for wiring to confirm...');
   for (const { txId, label } of wireTxIds) {
     await waitForTx(txId, label);
   }
@@ -275,8 +356,9 @@ async function main() {
   // Phase 3: Migrate DAO members
   if (DAO_MEMBERS.length > 0) {
     nonce = await getNonce();
-    console.log(`\n━━━ Phase 3: Migrate DAO Members ━━━`);
-    console.log(`Members to add: ${DAO_MEMBERS.length}`);
+    console.log('\n====================================================');
+    console.log(`  Phase 3: Migrate DAO Members (${DAO_MEMBERS.length})`);
+    console.log('====================================================');
 
     const memberTxIds = [];
     for (const member of DAO_MEMBERS) {
@@ -288,24 +370,29 @@ async function main() {
       await sleep(1000);
     }
 
-    console.log('\n━━━ Waiting for member additions to confirm ━━━');
+    console.log('\n  Waiting for member additions to confirm...');
     for (const { txId, label } of memberTxIds) {
       await waitForTx(txId, label);
     }
   }
 
   // Summary
-  console.log('\n═══════════════════════════════════════════════');
+  const finalBalance = await getBalance();
+  console.log('\n====================================================');
   console.log('  Deployment Complete!');
-  console.log('═══════════════════════════════════════════════');
-  console.log('\nNew contract addresses:');
-  console.log(`  Escrow:  ${DEPLOYER}.blocklancer-escrow-v4`);
-  console.log(`  Dispute: ${DEPLOYER}.blocklancer-dispute-v5`);
-  console.log(`  DAO:     ${DEPLOYER}.blocklancer-dao-v3`);
-  console.log('\nUpdate your .env files:');
-  console.log(`  NEXT_PUBLIC_ESCROW_CONTRACT=${DEPLOYER}.blocklancer-escrow-v4`);
-  console.log(`  NEXT_PUBLIC_DISPUTE_CONTRACT=${DEPLOYER}.blocklancer-dispute-v5`);
-  console.log(`  NEXT_PUBLIC_DAO_CONTRACT=${DEPLOYER}.blocklancer-dao-v3`);
+  console.log('====================================================');
+  console.log(`\nDeployer:        ${DEPLOYER}`);
+  console.log(`Balance before:  ${balance.toFixed(2)} STX`);
+  console.log(`Balance after:   ${finalBalance.toFixed(2)} STX`);
+  console.log(`Cost:            ${(balance - finalBalance).toFixed(2)} STX`);
+  console.log('\nAll contract addresses:');
+  console.log(`  Payments:    ${DEPLOYER}.blocklancer-payments-v2`);
+  console.log(`  Reputation:  ${DEPLOYER}.blocklancer-reputation`);
+  console.log(`  Marketplace: ${DEPLOYER}.blocklancer-marketplace`);
+  console.log(`  Membership:  ${DEPLOYER}.blocklancer-membership`);
+  console.log(`  Escrow:      ${DEPLOYER}.blocklancer-escrow-v4`);
+  console.log(`  Dispute:     ${DEPLOYER}.blocklancer-dispute-v5`);
+  console.log(`  DAO:         ${DEPLOYER}.blocklancer-dao-v3`);
 }
 
 main().catch(err => {

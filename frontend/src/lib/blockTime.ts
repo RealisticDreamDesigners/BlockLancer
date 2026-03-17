@@ -118,16 +118,16 @@ export function formatBlockDuration(blocks: number): string {
 
   if (totalMinutes < 60) {
     const rounded = Math.round(totalMinutes);
-    return `~${rounded} minute${rounded !== 1 ? 's' : ''}`;
+    return `~${rounded} minute${rounded !== 1 ? 's' : '-'}`;
   }
 
   const totalHours = totalMinutes / 60;
   if (totalHours < 24) {
     const rounded = Math.round(totalHours);
-    return `~${rounded} hour${rounded !== 1 ? 's' : ''}`;
+    return `~${rounded} hour${rounded !== 1 ? 's' : '-'}`;
   }
 
   const totalDays = totalHours / 24;
   const rounded = Math.round(totalDays);
-  return `~${rounded} day${rounded !== 1 ? 's' : ''}`;
+  return `~${rounded} day${rounded !== 1 ? 's' : '-'}`;
 }

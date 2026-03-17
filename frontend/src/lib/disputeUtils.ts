@@ -49,18 +49,18 @@ export function getVotingTimeRemaining(votingEndsAt: number): {
   const hoursRemaining = Math.floor((minutesRemaining % (60 * 24)) / 60);
   const minsRemaining = Math.floor(minutesRemaining % 60);
 
-  let text = '';
+  let text = '-';
   let color = 'text-green-600';
 
   if (daysRemaining > 3) {
     text = `${daysRemaining} days left`;
     color = 'text-green-600';
   } else if (daysRemaining >= 1) {
-    text = `${daysRemaining} day${daysRemaining > 1 ? 's' : ''} left`;
+    text = `${daysRemaining} day${daysRemaining > 1 ? 's' : '-'} left`;
     color = 'text-yellow-600';
   } else if (hoursRemaining > 0) {
     text = `${hoursRemaining}h ${minsRemaining}m left`;
-    color = 'text-orange-600';
+    color = 'text-blue-600';
   } else if (minsRemaining > 0) {
     text = `${minsRemaining} min left`;
     color = 'text-red-600';
@@ -538,7 +538,7 @@ export function sortProposals(
  * Truncate Stacks address for display
  */
 export function truncateAddress(address: string, startChars: number = 6, endChars: number = 4): string {
-  if (!address) return '';
+  if (!address) return '-';
   if (address.length <= startChars + endChars) return address;
   return `${address.slice(0, startChars)}...${address.slice(-endChars)}`;
 }
@@ -678,7 +678,7 @@ export function getResolutionInfo(resolutionType: ResolutionType): {
       };
     case ResolutionType.FREELANCER_WINS:
       return {
-        text: 'Pay Freelancer',
+        text: 'Pay Worker',
         color: 'text-green-700',
         bgColor: 'bg-green-100'
       };

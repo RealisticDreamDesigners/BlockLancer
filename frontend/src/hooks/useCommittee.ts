@@ -82,7 +82,7 @@ export function useCommittee(userAddress?: string) {
     try {
       const backendStatus = await getCommitteeStatusFromBackend(memberAddress);
       if (backendStatus) {
-        console.log(`✅ Got committee status from backend for ${memberAddress}`);
+        console.log(`Got committee status from backend for ${memberAddress}`);
         return {
           isMember: backendStatus.isMember,
           committeeCount: backendStatus.committeeCount,
@@ -94,7 +94,7 @@ export function useCommittee(userAddress?: string) {
 
     // Fallback: existing Hiro API code
     try {
-      console.log(`🔍 Checking committee status for ${memberAddress} (Hiro fallback)...`);
+      console.log(`Checking committee status for ${memberAddress} (Hiro fallback)...`);
 
       const result = await fetchCallReadOnlyFunction({
         network,
@@ -106,14 +106,14 @@ export function useCommittee(userAddress?: string) {
       });
 
       const data = cvToJSON(result);
-      console.log('📊 Committee status:', data);
+      console.log('Committee status:', data);
 
       return {
         isMember: data.value['is-member']?.value || false,
         committeeCount: parseInt(data.value['committee-count']?.value || '0'),
       };
     } catch (err) {
-      console.error('❌ Error checking committee member:', err);
+      console.error('Error checking committee member:', err);
       return {
         isMember: false,
         committeeCount: 0,
@@ -215,7 +215,7 @@ export function useCommittee(userAddress?: string) {
     try {
       const bp = await getMembershipProposalFromBackend(proposalId);
       if (bp) {
-        console.log(`✅ Got membership proposal #${proposalId} from backend`);
+        console.log(`Got membership proposal #${proposalId} from backend`);
         return {
           id: bp.id,
           nominee: bp.nominee,
@@ -234,7 +234,7 @@ export function useCommittee(userAddress?: string) {
 
     // Fallback: existing Hiro API code
     try {
-      console.log(`🔍 Fetching proposal #${proposalId} (Hiro fallback)...`);
+      console.log(`Fetching proposal #${proposalId} (Hiro fallback)...`);
 
       const result = await fetchCallReadOnlyFunction({
         network,
@@ -257,7 +257,7 @@ export function useCommittee(userAddress?: string) {
       // We need to access data.value to get the actual proposal data
       const proposalData = data.value.value || data.value;
 
-      console.log('📊 Proposal #' + proposalId + ' data:', {
+      console.log('Proposal #' + proposalId + ' data:', {
         nominee: proposalData.nominee?.value,
         stakeAmount: proposalData['stake-amount']?.value,
         approvals: proposalData.approvals?.value,
@@ -267,8 +267,8 @@ export function useCommittee(userAddress?: string) {
 
       return {
         id: proposalId,
-        nominee: proposalData.nominee?.value || '',
-        proposer: proposalData.proposer?.value || '',
+        nominee: proposalData.nominee?.value || '-',
+        proposer: proposalData.proposer?.value || '-',
         stakeAmount: parseInt(proposalData['stake-amount']?.value || '0'),
         approvals: parseInt(proposalData.approvals?.value || '0'),
         rejections: parseInt(proposalData.rejections?.value || '0'),
@@ -282,7 +282,7 @@ export function useCommittee(userAddress?: string) {
       const errorMsg = err instanceof Error ? err.message : 'Unknown error';
       // Silently fail for network errors - don't spam console
       if (!errorMsg.includes('Failed to fetch') && !errorMsg.includes('NetworkError')) {
-        console.error(`❌ Error fetching proposal #${proposalId}:`, err);
+        console.error(`Error fetching proposal #${proposalId}:`, err);
       }
       return null;
     }
@@ -305,7 +305,7 @@ export function useCommittee(userAddress?: string) {
       const data = cvToJSON(result);
       return data.value !== null;
     } catch (err) {
-      console.error('❌ Error checking vote status:', err);
+      console.error('Error checking vote status:', err);
       return false;
     }
   }, [userAddress]);
@@ -398,7 +398,7 @@ export function useCommittee(userAddress?: string) {
     try {
       const proposals = await getPendingMembershipProposalsFromBackend();
       if (proposals && proposals.length > 0) {
-        console.log(`✅ Got ${proposals.length} pending proposals from backend`);
+        console.log(`Got ${proposals.length} pending proposals from backend`);
         return proposals.map(p => ({
           id: p.id,
           nominee: p.nominee,

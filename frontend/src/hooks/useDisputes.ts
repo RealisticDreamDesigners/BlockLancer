@@ -150,7 +150,7 @@ export function useUserDisputes(
   const { userAddress, isSignedIn } = useStacks();
 
   return useQuery({
-    queryKey: DISPUTE_QUERY_KEYS.userDisputes(userAddress || ''),
+    queryKey: DISPUTE_QUERY_KEYS.userDisputes(userAddress || '-'),
     queryFn: async () => {
       if (!userAddress) return [];
 
@@ -262,7 +262,7 @@ export function useRefreshDisputes() {
   const queryClient = useQueryClient();
 
   return async () => {
-    console.log('🔄 Refreshing all dispute data...');
+    console.log('Refreshing all dispute data...');
     await queryClient.invalidateQueries({
       queryKey: DISPUTE_QUERY_KEYS.all,
     });
@@ -284,7 +284,7 @@ export function useRefreshDispute(disputeId: number | null) {
   return async () => {
     if (!disputeId) return;
 
-    console.log(`🔄 Refreshing dispute #${disputeId}...`);
+    console.log(`Refreshing dispute #${disputeId}...`);
     await queryClient.invalidateQueries({
       queryKey: DISPUTE_QUERY_KEYS.detail(disputeId),
     });

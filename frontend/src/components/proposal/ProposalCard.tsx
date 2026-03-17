@@ -118,10 +118,10 @@ export function ProposalCard({
     <div
       className={cn(
         // Base styles
-        'group relative rounded-lg border bg-white p-4 shadow-sm',
+        'group relative rounded-lg border bg-white dark:bg-gray-800/50 p-4 shadow-sm',
         'transition-all duration-200',
         // Hover state
-        'hover:shadow-md hover:border-gray-300',
+        'hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600',
         // Highlighted state
         highlighted && 'ring-2 ring-blue-500 border-blue-500',
         // Click handler cursor
@@ -136,21 +136,21 @@ export function ProposalCard({
       {/* Header: ID, Status, and Date */}
       <div className="flex items-start justify-between gap-4 mb-3">
         <div className="flex items-center gap-2 flex-1">
-          <FileText className="h-4 w-4 text-gray-500 flex-shrink-0" />
+          <FileText className="h-4 w-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
           <Link
             href={`/dao/proposals/${proposal.id}`}
-            className="font-semibold text-gray-900 hover:text-blue-600 transition-colors"
+            className="font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             onClick={(e) => e.stopPropagation()}
           >
             Proposal #{proposal.id}
           </Link>
           {isProposer && (
-            <span className="text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full">
+            <span className="text-xs bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 px-2 py-0.5 rounded-full">
               You created this
             </span>
           )}
           {hasVoted && isActive && (
-            <span className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full">
+            <span className="text-xs bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-2 py-0.5 rounded-full">
               You voted
             </span>
           )}
@@ -166,13 +166,13 @@ export function ProposalCard({
             className={cn(
               'text-xs px-2 py-1 rounded-full font-medium',
               proposal.proposalType === 0
-                ? 'bg-orange-100 text-orange-700'
-                : 'bg-blue-100 text-blue-700'
+                ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                : 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
             )}
           >
             {proposal.proposalType === 0 ? 'Dispute Resolution' : 'Escrow Release'}
           </span>
-          <span className="text-xs text-gray-600">
+          <span className="text-xs text-gray-600 dark:text-gray-400">
             Contract #{proposal.targetContractId}
           </span>
         </div>
@@ -181,14 +181,14 @@ export function ProposalCard({
       {/* Proposer */}
       {!isCompact && (
         <div className="flex items-center gap-2 mb-3 text-sm">
-          <User className="h-3.5 w-3.5 text-gray-400" />
-          <span className="text-gray-600">Proposer:</span>
+          <User className="h-3.5 w-3.5 text-gray-400 dark:text-gray-500" />
+          <span className="text-gray-600 dark:text-gray-400">Proposer:</span>
           <code
             className={cn(
               'font-mono text-sm px-1.5 py-0.5 rounded',
               isProposer
-                ? 'bg-purple-100 text-purple-700 font-semibold'
-                : 'bg-gray-100 text-gray-700'
+                ? 'bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 font-semibold'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
             )}
           >
             {truncateAddress(proposal.proposer)}
@@ -199,7 +199,7 @@ export function ProposalCard({
       {/* Description */}
       {!isCompact && (
         <div className="mb-3">
-          <p className="text-sm text-gray-700 line-clamp-2">
+          <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
             {proposal.description}
           </p>
         </div>
@@ -208,11 +208,11 @@ export function ProposalCard({
       {/* Voting Progress */}
       {showProgress && isActive && !isCompact && (
         <div className="mb-3 space-y-2">
-          <div className="flex items-center justify-between text-xs text-gray-600">
+          <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
             <span>Voting Progress</span>
             <span className="font-medium">{votingProgress}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2">
             <div
               className={cn(
                 'h-2 rounded-full transition-all duration-300',
@@ -233,21 +233,21 @@ export function ProposalCard({
       {/* Vote Counts */}
       {showProgress && !isCompact && (
         <div className="grid grid-cols-3 gap-2 mb-3">
-          <div className="bg-green-50 rounded p-2">
-            <div className="text-xs text-green-700 font-medium mb-1">Yes</div>
-            <div className="text-lg font-bold text-green-900">
+          <div className="bg-blue-50 dark:bg-blue-900/10 rounded p-2">
+            <div className="text-xs text-blue-700 dark:text-blue-400 font-medium mb-1">Yes</div>
+            <div className="text-lg font-bold text-blue-900 dark:text-blue-200">
               {proposal.yesVotes}
             </div>
           </div>
-          <div className="bg-red-50 rounded p-2">
-            <div className="text-xs text-red-700 font-medium mb-1">No</div>
-            <div className="text-lg font-bold text-red-900">
+          <div className="bg-gray-100 dark:bg-gray-800 rounded p-2">
+            <div className="text-xs text-gray-600 dark:text-gray-400 font-medium mb-1">No</div>
+            <div className="text-lg font-bold text-gray-900 dark:text-white">
               {proposal.noVotes}
             </div>
           </div>
-          <div className="bg-gray-50 rounded p-2">
-            <div className="text-xs text-gray-700 font-medium mb-1">Abstain</div>
-            <div className="text-lg font-bold text-gray-900">
+          <div className="bg-gray-50 dark:bg-gray-950 rounded p-2">
+            <div className="text-xs text-gray-700 dark:text-gray-300 font-medium mb-1">Abstain</div>
+            <div className="text-lg font-bold text-gray-900 dark:text-white">
               {proposal.abstainVotes}
             </div>
           </div>
@@ -255,8 +255,8 @@ export function ProposalCard({
       )}
 
       {/* Footer: Date and Time Remaining */}
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-        <div className="flex items-center gap-4 text-xs text-gray-600">
+      <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700/50">
+        <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
           <div className="flex items-center gap-1.5">
             <Calendar className="h-3.5 w-3.5" />
             <span>Created {formatBlockTime(proposal.createdAt)}</span>
@@ -274,7 +274,7 @@ export function ProposalCard({
         {showActions && (
           <Link
             href={`/dao/proposals/${proposal.id}`}
-            className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+            className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
             onClick={(e) => e.stopPropagation()}
           >
             {isActive ? 'Vote Now' : 'View Details'}
@@ -285,16 +285,16 @@ export function ProposalCard({
 
       {/* Participation Stats (for detailed variant) */}
       {isDetailed && !isCompact && (
-        <div className="mt-3 pt-3 border-t border-gray-100">
+        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700/50">
           <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-1.5 text-gray-600">
+            <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
               <Users className="h-3.5 w-3.5" />
               <span>
                 {proposal.yesVotes + proposal.noVotes + proposal.abstainVotes} /{' '}
                 {proposal.totalEligibleVoters} members voted
               </span>
             </div>
-            <div className="flex items-center gap-1.5 text-gray-600">
+            <div className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
               <TrendingUp className="h-3.5 w-3.5" />
               <span>
                 {Math.round(
@@ -341,44 +341,44 @@ export function ProposalCardSkeleton({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'rounded-lg border bg-white p-4 shadow-sm animate-pulse',
+        'rounded-lg border bg-white dark:bg-gray-800/50 p-4 shadow-sm animate-pulse',
         className
       )}
     >
       {/* Header skeleton */}
       <div className="flex items-start justify-between gap-4 mb-3">
-        <div className="h-5 bg-gray-200 rounded w-32" />
-        <div className="h-6 bg-gray-200 rounded-full w-20" />
+        <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-32" />
+        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-full w-20" />
       </div>
 
       {/* Type badge skeleton */}
-      <div className="h-6 bg-gray-200 rounded-full w-36 mb-3" />
+      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-full w-36 mb-3" />
 
       {/* Proposer skeleton */}
-      <div className="h-4 bg-gray-200 rounded w-48 mb-3" />
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-3" />
 
       {/* Description skeleton */}
       <div className="space-y-2 mb-3">
-        <div className="h-4 bg-gray-200 rounded w-full" />
-        <div className="h-4 bg-gray-200 rounded w-3/4" />
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full" />
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
       </div>
 
       {/* Progress bar skeleton */}
       <div className="mb-3">
-        <div className="h-2 bg-gray-200 rounded w-full mb-2" />
+        <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2" />
       </div>
 
       {/* Vote counts skeleton */}
       <div className="grid grid-cols-3 gap-2 mb-3">
-        <div className="h-16 bg-gray-100 rounded" />
-        <div className="h-16 bg-gray-100 rounded" />
-        <div className="h-16 bg-gray-100 rounded" />
+        <div className="h-16 bg-gray-100 dark:bg-gray-700 rounded" />
+        <div className="h-16 bg-gray-100 dark:bg-gray-700 rounded" />
+        <div className="h-16 bg-gray-100 dark:bg-gray-700 rounded" />
       </div>
 
       {/* Footer skeleton */}
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-        <div className="h-4 bg-gray-200 rounded w-32" />
-        <div className="h-4 bg-gray-200 rounded w-20" />
+      <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700/50">
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32" />
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20" />
       </div>
     </div>
   );

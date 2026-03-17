@@ -41,13 +41,13 @@ export async function POST(request: NextRequest) {
     const expectedToken = process.env.CHAINHOOK_SECRET_TOKEN || 'local_dev_secret';
     
     if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
-      console.warn('🚫 Unauthorized organization chainhook request');
+      console.warn('Unauthorized organization chainhook request');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const payload: ChainhookPayload = await request.json();
     
-    console.log('📥 Received organization chainhook event:', {
+    console.log('Received organization chainhook event:', {
       uuid: payload.chainhook.uuid,
       blocks: payload.apply.length,
       rollbacks: payload.rollback.length,
@@ -55,13 +55,13 @@ export async function POST(request: NextRequest) {
 
     // Process apply events (new blocks)
     for (const block of payload.apply) {
-      console.log(`📦 Processing organization block ${block.block_identifier.index}`);
+      console.log(`Processing organization block ${block.block_identifier.index}`);
       
       for (const transaction of block.transactions) {
         const contractCall = transaction.metadata.contract_call;
         
         if (contractCall) {
-          console.log(`🏢 Organization call: ${contractCall.function_name}`);
+          console.log(`Organization call: ${contractCall.function_name}`);
           
           // Process different organization events
           switch (contractCall.function_name) {
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
               await handleUpdateMemberRole(transaction, block);
               break;
             default:
-              console.log(`⚠️ Unknown organization function: ${contractCall.function_name}`);
+              console.log(`Unknown organization function: ${contractCall.function_name}`);
           }
         }
       }
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
 
     // Process rollback events (chain reorgs)
     for (const rollbackBlock of payload.rollback) {
-      console.log(`↩️ Rolling back organization block ${rollbackBlock.block_identifier.index}`);
+      console.log(`Rolling back organization block ${rollbackBlock.block_identifier.index}`);
       await handleOrganizationRollback(rollbackBlock);
     }
 
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('❌ Error processing organization chainhook:', error);
+    console.error('Error processing organization chainhook:', error);
     return NextResponse.json(
       { error: 'Internal server error' }, 
       { status: 500 }
@@ -106,14 +106,14 @@ export async function POST(request: NextRequest) {
 
 // Organization event handlers
 async function handleCreateOrganization(transaction: any, block: any) {
-  console.log('🏢 New organization created:', {
+  console.log('New organization created:', {
     txHash: transaction.transaction_identifier.hash,
     blockHeight: block.block_identifier.index,
   });
   
   try {
     const contractArgs = transaction.metadata.contract_call.function_args;
-    console.log('📋 Organization args:', contractArgs);
+    console.log('Organization args:', contractArgs);
     
     // TODO: Extract organization data from contract args
     // const orgName = contractArgs[0]; // name
@@ -136,14 +136,14 @@ async function handleCreateOrganization(transaction: any, block: any) {
 }
 
 async function handleAddOrganizationMember(transaction: any, block: any) {
-  console.log('👥 Organization member added:', {
+  console.log('Organization member added:', {
     txHash: transaction.transaction_identifier.hash,
     blockHeight: block.block_identifier.index,
   });
   
   try {
     const contractArgs = transaction.metadata.contract_call.function_args;
-    console.log('📋 Member args:', contractArgs);
+    console.log('Member args:', contractArgs);
     
     // TODO: Extract member data from contract args
     // const orgId = contractArgs[0]; // organization-id
@@ -167,14 +167,14 @@ async function handleAddOrganizationMember(transaction: any, block: any) {
 }
 
 async function handleUpdateMemberRole(transaction: any, block: any) {
-  console.log('🔄 Organization member role updated:', {
+  console.log('Organization member role updated:', {
     txHash: transaction.transaction_identifier.hash,
     blockHeight: block.block_identifier.index,
   });
   
   try {
     const contractArgs = transaction.metadata.contract_call.function_args;
-    console.log('📋 Role update args:', contractArgs);
+    console.log('Role update args:', contractArgs);
     
     // TODO: Extract role update data from contract args
     // const orgId = contractArgs[0]; // organization-id
@@ -198,7 +198,7 @@ async function handleUpdateMemberRole(transaction: any, block: any) {
 }
 
 async function handleOrganizationRollback(rollbackBlock: any) {
-  console.log('🔄 Handling organization rollback for block:', rollbackBlock.block_identifier.index);
+  console.log('Handling organization rollback for block:', rollbackBlock.block_identifier.index);
   
   // TODO: Reverse organization-related database changes for this block
   // This ensures data consistency during chain reorgs

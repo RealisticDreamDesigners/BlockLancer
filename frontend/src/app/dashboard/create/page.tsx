@@ -36,7 +36,7 @@ interface FormErrors {
 export default function CreateContractPage() {
   const router = useRouter();
   
-  // ✅ FIXED: Added userAddress to the destructuring
+  // FIXED: Added userAddress to the destructuring
   const { 
     userData, 
     isSignedIn, 
@@ -44,16 +44,16 @@ export default function CreateContractPage() {
     validateAddress, 
     transactionInProgress,
     connectWallet,
-    userAddress  // ✅ ADDED: This was missing
+    userAddress  // ADDED: This was missing
   } = useStacks();
 
   const [formData, setFormData] = useState<FormData>({
-    freelancer: '',
-    description: '',
-    totalAmount: '',
-    endDate: '',
+    freelancer: '-',
+    description: '-',
+    totalAmount: '-',
+    endDate: '-',
     tokenType: 'stx',
-    tokenContract: '',
+    tokenContract: '-',
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -63,14 +63,14 @@ export default function CreateContractPage() {
   // Prime block height cache for accurate date-to-block conversion
   useEffect(() => { fetchCurrentBlockHeight(); }, []);
 
-  // ✅ REAL-TIME VALIDATION
+  // REAL-TIME VALIDATION
   const validateField = (name: string, value: string): ValidationError[] => {
     const errors: ValidationError[] = [];
     
     switch (name) {
       case 'freelancer':
         if (!value.trim()) {
-          errors.push({ field: name, message: 'Freelancer address is required', type: 'error' });
+          errors.push({ field: name, message: 'Worker address is required', type: 'error' });
         } else {
           const addressValidation = validateAddress(value.trim());
           if (!addressValidation) {
@@ -79,9 +79,9 @@ export default function CreateContractPage() {
             // Check if same as client
             const clientAddress = userData?.profile?.stxAddress?.testnet || userData?.profile?.stxAddress?.mainnet;
             if (value.trim() === clientAddress) {
-              errors.push({ field: name, message: 'Freelancer cannot be the same as client', type: 'error' });
+              errors.push({ field: name, message: 'Worker cannot be the same as client', type: 'error' });
             } else {
-              errors.push({ field: name, message: '✓ Valid address', type: 'info' });
+              errors.push({ field: name, message: 'Valid address', type: 'info' });
             }
           }
         }
@@ -95,7 +95,7 @@ export default function CreateContractPage() {
         } else if (value.trim().length > 500) {
           errors.push({ field: name, message: 'Description cannot exceed 500 characters', type: 'error' });
         } else {
-          errors.push({ field: name, message: `✓ ${value.trim().length}/500 characters`, type: 'info' });
+          errors.push({ field: name, message: `${value.trim().length}/500 characters`, type: 'info' });
         }
         break;
         
@@ -111,7 +111,7 @@ export default function CreateContractPage() {
           } else if (amount > 1000000) {
             errors.push({ field: name, message: 'Maximum amount is 1,000,000 STX', type: 'warning' });
           } else {
-            errors.push({ field: name, message: `✓ ${amount.toLocaleString()} STX`, type: 'info' });
+            errors.push({ field: name, message: `${amount.toLocaleString()} STX`, type: 'info' });
           }
         }
         break;
@@ -133,7 +133,7 @@ export default function CreateContractPage() {
             errors.push({ field: name, message: 'End date cannot be more than 1 year from now', type: 'warning' });
           } else {
             const days = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-            errors.push({ field: name, message: `✓ ${days} days from now`, type: 'info' });
+            errors.push({ field: name, message: `${days} days from now`, type: 'info' });
           }
         }
         break;
@@ -142,7 +142,7 @@ export default function CreateContractPage() {
     return errors;
   };
 
-  // ✅ HANDLE INPUT CHANGES WITH REAL-TIME VALIDATION
+  // HANDLE INPUT CHANGES WITH REAL-TIME VALIDATION
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     
@@ -161,22 +161,22 @@ export default function CreateContractPage() {
     // Clear form errors for this field
     setErrors(prev => ({
       ...prev,
-      [name]: ''
+      [name]: '-'
     }));
   };
 
-  // ✅ COMPREHENSIVE FORM VALIDATION
+  // COMPREHENSIVE FORM VALIDATION
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
 
     // Validate freelancer address with detailed logging
     if (!formData.freelancer.trim()) {
-      newErrors.freelancer = 'Freelancer address is required';
+      newErrors.freelancer = 'Worker address is required';
     } else {
       const address = formData.freelancer.trim();
       
-      // ✅ FIXED: Use validateAddress correctly (returns boolean)
+      // FIXED: Use validateAddress correctly (returns boolean)
       const isValid = validateAddress(address);
       
       if (!isValid) {
@@ -220,7 +220,7 @@ export default function CreateContractPage() {
     return isValid;
   };
 
-  // ✅ FIXED: Complete handleSubmit function with proper userAddress usage
+  // FIXED: Complete handleSubmit function with proper userAddress usage
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -233,8 +233,8 @@ export default function CreateContractPage() {
       return;
     }
 
-    // ✅ FIXED: Use the destructured userAddress
-    // Client is automatically the current user
+    // FIXED: Use the destructured userAddress
+    // Employer is automatically the current user
     const clientAddress = userData?.profile?.stxAddress?.testnet || userData?.profile?.stxAddress?.mainnet;
 
     if (!clientAddress) {
@@ -249,7 +249,7 @@ export default function CreateContractPage() {
       endDate.setHours(23, 59, 59);
       const endDateBlockHeight = dateToBlockHeight(endDate); // Convert to Stacks block height
 
-      // ✅ FIXED: Call createEscrow with correct 5 parameters matching smart contract
+      // FIXED: Call createEscrow with correct 5 parameters matching smart contract
       const result = await createEscrow(
         clientAddress,
         formData.freelancer.trim(),     // freelancer
@@ -263,12 +263,12 @@ export default function CreateContractPage() {
       if (result.success) {
         // Reset form on success
         setFormData({
-          freelancer: '',
-          description: '',
-          totalAmount: '',
-          endDate: '',
+          freelancer: '-',
+          description: '-',
+          totalAmount: '-',
+          endDate: '-',
           tokenType: 'stx',
-          tokenContract: '',
+          tokenContract: '-',
         });
         setErrors({});
         setValidationErrors([]);
@@ -287,24 +287,24 @@ export default function CreateContractPage() {
     }
   };
 
-  // ✅ VALIDATION DISPLAY COMPONENT
+  // VALIDATION DISPLAY COMPONENT
   const ValidationDisplay = ({ field }: { field: string }) => {
     const fieldErrors = validationErrors.filter(e => e.field === field);
     
     if (fieldErrors.length === 0) return null;
     
     return (
-      <div className="mt-1 space-y-1">
+      <div className="mt-1.5 space-y-1">
         {fieldErrors.map((error, index) => (
-          <div key={index} className={`flex items-center text-sm ${
-            error.type === 'error' ? 'text-red-600' : 
-            error.type === 'warning' ? 'text-yellow-600' : 
-            'text-green-600'
+          <div key={index} className={`flex items-center gap-1.5 text-xs ${
+            error.type === 'error' ? 'text-red-600 dark:text-red-400' :
+            error.type === 'warning' ? 'text-amber-600 dark:text-amber-400' :
+            'text-green-600 dark:text-green-400'
           }`}>
-            {error.type === 'error' && <XCircle className="w-4 h-4 mr-1" />}
-            {error.type === 'warning' && <AlertCircle className="w-4 h-4 mr-1" />}
-            {error.type === 'info' && <CheckCircle className="w-4 h-4 mr-1" />}
-            {error.message}
+            {error.type === 'error' && <XCircle className="w-3.5 h-3.5 flex-shrink-0" />}
+            {error.type === 'warning' && <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />}
+            {error.type === 'info' && <CheckCircle className="w-3.5 h-3.5 flex-shrink-0" />}
+            <span>{error.message}</span>
           </div>
         ))}
       </div>
@@ -313,17 +313,17 @@ export default function CreateContractPage() {
 
   // Check if form is valid (no error-type validations)
   const hasErrors = validationErrors.some(e => e.type === 'error');
-  const canSubmit = !hasErrors && Object.values(formData).every(v => v.trim() !== '');
+  const canSubmit = !hasErrors && Object.values(formData).every(v => v.trim() !== '-');
 
   if (!isSignedIn) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-2xl shadow-xl text-center">
-          <h2 className="text-2xl font-bold mb-4">Connect Your Wallet</h2>
-          <p className="text-gray-600 mb-6">You need to connect your wallet to create a contract</p>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+        <div className="bg-white dark:bg-gray-900/50 p-8 rounded-xl border border-gray-200 dark:border-gray-800 text-center max-w-sm">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Connect Your Wallet</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">You need to connect your wallet to create a contract</p>
           <button
             onClick={connectWallet}
-            className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-semibold transition-colors"
+            className="w-full px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
           >
             Connect Wallet
           </button>
@@ -333,30 +333,30 @@ export default function CreateContractPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 py-8">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8">
+      <div className="max-w-xl mx-auto px-4 sm:px-6">
         {/* Header */}
         <div className="mb-8">
           <button
             onClick={() => router.push('/dashboard')}
-            className="flex items-center text-orange-600 hover:text-orange-700 mb-4"
+            className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white mb-4 transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 mr-2" />
+            <ArrowLeft className="w-4 h-4" />
             Back to Dashboard
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">Create New Contract</h1>
-          <p className="text-gray-600 mt-2">Set up a milestone-based payment contract with enhanced validation</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">New Escrow Contract</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Set up a milestone-based payment contract secured on-chain</p>
         </div>
 
         {/* Main Form */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="px-6 py-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Freelancer Address */}
+        <div className="bg-white dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-800">
+          <div className="p-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Worker Address */}
               <div>
-                <label htmlFor="freelancer" className="block text-sm font-medium text-gray-700 mb-2">
-                  <User className="w-4 h-4 inline mr-2" />
-                  Freelancer Address
+                <label htmlFor="freelancer" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <User className="w-4 h-4 text-gray-400" />
+                  Worker Address
                 </label>
                 <input
                   type="text"
@@ -364,8 +364,8 @@ export default function CreateContractPage() {
                   name="freelancer"
                   value={formData.freelancer}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 transition-colors ${
-                    errors.freelancer ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-4 py-3 text-sm bg-white dark:bg-gray-900/50 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-colors text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 ${
+                    errors.freelancer ? 'border-red-300 dark:border-red-500' : 'border-gray-200 dark:border-gray-700'
                   }`}
                   placeholder="ST2C36S11ETAE5TAE1Z1F1Q2SYTMF1FW7VQZEJNGZ"
                 />
@@ -374,8 +374,8 @@ export default function CreateContractPage() {
 
               {/* Description */}
               <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-                  <FileText className="w-4 h-4 inline mr-2" />
+                <label htmlFor="description" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <FileText className="w-4 h-4 text-gray-400" />
                   Project Description
                 </label>
                 <textarea
@@ -383,9 +383,9 @@ export default function CreateContractPage() {
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
-                  rows={4}
-                  className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 transition-colors ${
-                    errors.description ? 'border-red-300' : 'border-gray-300'
+                  rows={3}
+                  className={`w-full px-4 py-3 text-sm bg-white dark:bg-gray-900/50 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-colors text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 resize-none ${
+                    errors.description ? 'border-red-300 dark:border-red-500' : 'border-gray-200 dark:border-gray-700'
                   }`}
                   placeholder="Describe the project, deliverables, and requirements..."
                 />
@@ -394,8 +394,8 @@ export default function CreateContractPage() {
 
               {/* Total Amount */}
               <div>
-                <label htmlFor="totalAmount" className="block text-sm font-medium text-gray-700 mb-2">
-                  <DollarSign className="w-4 h-4 inline mr-2" />
+                <label htmlFor="totalAmount" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <DollarSign className="w-4 h-4 text-gray-400" />
                   Total Amount (STX)
                 </label>
                 <input
@@ -406,8 +406,8 @@ export default function CreateContractPage() {
                   onChange={handleInputChange}
                   step="0.000001"
                   min="0.000001"
-                  className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 transition-colors ${
-                    errors.totalAmount ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-4 py-3 text-sm bg-white dark:bg-gray-900/50 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-colors text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 ${
+                    errors.totalAmount ? 'border-red-300 dark:border-red-500' : 'border-gray-200 dark:border-gray-700'
                   }`}
                   placeholder="100.0"
                 />
@@ -416,18 +416,18 @@ export default function CreateContractPage() {
 
               {/* Token Type Selector */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <DollarSign className="w-4 h-4 inline mr-2" />
+                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <DollarSign className="w-4 h-4 text-gray-400" />
                   Payment Token
                 </label>
-                <div className="flex gap-3">
+                <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, tokenType: 'stx', tokenContract: '' }))}
-                    className={`flex-1 py-3 px-4 rounded-xl border-2 text-sm font-medium transition-colors ${
+                    onClick={() => setFormData(prev => ({ ...prev, tokenType: 'stx', tokenContract: '-' }))}
+                    className={`flex-1 py-2.5 px-4 rounded-lg border text-sm font-medium transition-colors ${
                       formData.tokenType === 'stx'
-                        ? 'border-orange-500 bg-orange-50 text-orange-700'
-                        : 'border-gray-300 text-gray-600 hover:border-gray-400'
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-600'
+                        : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600'
                     }`}
                   >
                     STX (Default)
@@ -435,10 +435,10 @@ export default function CreateContractPage() {
                   <button
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, tokenType: 'sip010' }))}
-                    className={`flex-1 py-3 px-4 rounded-xl border-2 text-sm font-medium transition-colors ${
+                    className={`flex-1 py-2.5 px-4 rounded-lg border text-sm font-medium transition-colors ${
                       formData.tokenType === 'sip010'
-                        ? 'border-orange-500 bg-orange-50 text-orange-700'
-                        : 'border-gray-300 text-gray-600 hover:border-gray-400'
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-600'
+                        : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600'
                     }`}
                   >
                     SIP-010 Token
@@ -450,10 +450,10 @@ export default function CreateContractPage() {
                       type="text"
                       value={formData.tokenContract}
                       onChange={(e) => setFormData(prev => ({ ...prev, tokenContract: e.target.value }))}
-                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full px-4 py-3 text-sm bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                       placeholder="SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-token"
                     />
-                    <p className="text-xs text-yellow-600 mt-1">
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1.5">
                       SIP-010 token support is coming soon. Currently only STX payments are processed on-chain.
                     </p>
                   </div>
@@ -462,8 +462,8 @@ export default function CreateContractPage() {
 
               {/* End Date */}
               <div>
-                <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-2">
-                  <Calendar className="w-4 h-4 inline mr-2" />
+                <label htmlFor="endDate" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <Calendar className="w-4 h-4 text-gray-400" />
                   Project End Date
                 </label>
                 <input
@@ -472,54 +472,54 @@ export default function CreateContractPage() {
                   name="endDate"
                   value={formData.endDate}
                   onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 transition-colors ${
-                    errors.endDate ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-4 py-3 text-sm bg-white dark:bg-gray-900/50 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-colors text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 ${
+                    errors.endDate ? 'border-red-300 dark:border-red-500' : 'border-gray-200 dark:border-gray-700'
                   }`}
                 />
                 <ValidationDisplay field="endDate" />
               </div>
 
               {/* Submit Button */}
-              <div className="pt-6">
+              <div className="pt-4">
                 <button
                   type="submit"
                   disabled={!canSubmit || transactionInProgress}
-                  className={`w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all transform ${
+                  className={`w-full py-3 px-6 rounded-lg font-medium text-sm transition-all ${
                     canSubmit && !transactionInProgress
-                      ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white hover:scale-105 shadow-lg'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed'
                   }`}
                 >
-                  {transactionInProgress ? 'Creating Contract...' : 'Create Contract'}
+                  {transactionInProgress ? 'Creating Contract...' : 'Create Escrow Contract'}
                 </button>
               </div>
             </form>
 
             {/* Transaction Result */}
             {txResult && (
-              <div className={`mt-6 p-4 rounded-xl ${
-                txResult.success 
-                  ? 'bg-green-50 border border-green-200' 
-                  : 'bg-red-50 border border-red-200'
+              <div className={`mt-5 p-4 rounded-lg border ${
+                txResult.success
+                  ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                  : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
               }`}>
-                <div className="flex items-center">
+                <div className="flex items-center gap-2">
                   {txResult.success ? (
-                    <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
+                    <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
                   ) : (
-                    <XCircle className="w-5 h-5 text-red-600 mr-2" />
+                    <XCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
                   )}
-                  <span className={`font-medium ${
-                    txResult.success ? 'text-green-800' : 'text-red-800'
+                  <span className={`text-sm font-medium ${
+                    txResult.success ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'
                   }`}>
                     {txResult.success ? 'Contract Created Successfully!' : 'Contract Creation Failed'}
                   </span>
                 </div>
                 {txResult.error && (
-                  <p className="text-red-700 mt-2 text-sm">{txResult.error}</p>
+                  <p className="text-sm text-red-600 dark:text-red-400 mt-1.5">{txResult.error}</p>
                 )}
                 {txResult.success && (
-                  <p className="text-green-700 mt-2 text-sm">
-                    Redirecting to dashboard in 2 seconds...
+                  <p className="text-sm text-green-600 dark:text-green-400 mt-1.5">
+                    Redirecting to dashboard...
                   </p>
                 )}
               </div>
@@ -527,15 +527,15 @@ export default function CreateContractPage() {
           </div>
         </div>
 
-        {/* API Integration Notice */}
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-4">
-          <div className="flex items-center">
-            <CheckCircle className="w-5 h-5 text-blue-600 mr-2" />
-            <span className="font-medium text-blue-800">Enhanced with Hiro API Integration</span>
+        {/* Info Notice */}
+        <div className="mt-4 flex items-start gap-3 p-4 bg-white dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-800">
+          <CheckCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Secured by blockchain</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              Your contract will be deployed on-chain with real-time address validation and milestone-based payments.
+            </p>
           </div>
-          <p className="text-blue-700 mt-1 text-sm">
-            This form includes real-time address validation and reduced rate limiting using your Hiro API key.
-          </p>
         </div>
       </div>
     </div>

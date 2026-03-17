@@ -137,7 +137,7 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
                 functionName: callOptions.functionName,
                 contractName: callOptions.contractName,
                 args: {},
-                senderAddress: '',
+                senderAddress: '-',
               }).catch(() => {});
 
               onBroadcast?.(txId);

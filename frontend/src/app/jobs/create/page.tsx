@@ -13,14 +13,14 @@ export default function CreateJobPage() {
   const { isSignedIn } = useStacks();
   const { postJob } = useMarketplace();
 
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [budgetMin, setBudgetMin] = useState('');
-  const [budgetMax, setBudgetMax] = useState('');
-  const [deadlineDate, setDeadlineDate] = useState('');
-  const [skills, setSkills] = useState('');
+  const [title, setTitle] = useState('-');
+  const [description, setDescription] = useState('-');
+  const [budgetMin, setBudgetMin] = useState('-');
+  const [budgetMax, setBudgetMax] = useState('-');
+  const [deadlineDate, setDeadlineDate] = useState('-');
+  const [skills, setSkills] = useState('-');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState('-');
 
   // Prime the block height cache on mount for accurate date-to-block conversion
   useEffect(() => { fetchCurrentBlockHeight(); }, []);
@@ -54,7 +54,7 @@ export default function CreateJobPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError('-');
 
     if (!title.trim()) { setError('Title is required'); return; }
     if (!description.trim()) { setError('Description is required'); return; }
@@ -107,7 +107,7 @@ export default function CreateJobPage() {
             onChange={(e) => setTitle(e.target.value)}
             placeholder="e.g. Smart Contract Developer Needed"
             maxLength={200}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-orange-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -118,7 +118,7 @@ export default function CreateJobPage() {
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe the job requirements, deliverables, and expectations..."
             maxLength={500}
-            className="w-full h-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-orange-500 resize-none"
+            className="w-full h-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 resize-none"
           />
           <p className="text-xs text-gray-400 mt-1">{description.length}/500</p>
         </div>
@@ -135,7 +135,7 @@ export default function CreateJobPage() {
               placeholder="0.00"
               step="0.01"
               min="0"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-orange-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div>
@@ -149,7 +149,7 @@ export default function CreateJobPage() {
               placeholder="100.00"
               step="0.01"
               min="0"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-orange-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
             />
           </div>
         </div>
@@ -163,7 +163,7 @@ export default function CreateJobPage() {
             value={deadlineDate}
             onChange={(e) => setDeadlineDate(e.target.value)}
             min={minDate}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-orange-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
           />
           {deadlineDate && deadlineBlockHeight > 0 && (
             <p className="text-xs text-gray-500 mt-1">
@@ -182,7 +182,7 @@ export default function CreateJobPage() {
             onChange={(e) => setSkills(e.target.value)}
             placeholder="e.g. Clarity, React, TypeScript"
             maxLength={200}
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-orange-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -199,7 +199,7 @@ export default function CreateJobPage() {
           <button
             type="submit"
             disabled={loading}
-            className="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-md hover:bg-orange-700 disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
           >
             {loading ? 'Posting...' : 'Post Job'}
           </button>

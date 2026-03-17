@@ -3,7 +3,7 @@ import { STACKS_TESTNET, STACKS_MAINNET, STACKS_DEVNET } from '@stacks/network';
 export type NetworkType = 'mainnet' | 'testnet' | 'devnet';
 
 const NETWORK_TYPE = (process.env.NEXT_PUBLIC_NETWORK || 'testnet') as NetworkType;
-const API_KEY = process.env.NEXT_PUBLIC_HIRO_API_KEY || '';
+const API_KEY = process.env.NEXT_PUBLIC_HIRO_API_KEY || '-';
 
 export function getNetworkType(): NetworkType {
   return NETWORK_TYPE;

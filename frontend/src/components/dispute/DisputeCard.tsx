@@ -121,10 +121,10 @@ export function DisputeCard({
     <div
       className={cn(
         // Base styles
-        'group relative rounded-lg border bg-white p-4 shadow-sm',
+        'group relative rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/50 p-4 shadow-sm',
         'transition-all duration-200',
         // Hover state
-        'hover:shadow-md hover:border-gray-300',
+        'hover:shadow-md hover:border-gray-300 dark:hover:border-gray-600',
         // Highlighted state
         highlighted && 'ring-2 ring-blue-500 border-blue-500',
         // Click handler cursor
@@ -139,16 +139,16 @@ export function DisputeCard({
       {/* Header: ID, Status, and Date */}
       <div className="flex items-start justify-between gap-4 mb-3">
         <div className="flex items-center gap-2 flex-1">
-          <FileText className="h-4 w-4 text-gray-500 flex-shrink-0" />
+          <FileText className="h-4 w-4 text-gray-500 dark:text-gray-400 flex-shrink-0" />
           <Link
             href={`/disputes/${dispute.id}`}
-            className="font-semibold text-gray-900 hover:text-blue-600 transition-colors"
+            className="font-semibold text-gray-900 dark:text-white hover:text-blue-600 transition-colors"
             onClick={(e) => e.stopPropagation()}
           >
             Dispute #{dispute.id}
           </Link>
           {isParticipant && (
-            <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
+            <span className="text-xs bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 px-2 py-0.5 rounded-full">
               You're involved
             </span>
           )}
@@ -159,7 +159,7 @@ export function DisputeCard({
 
       {/* Contract Info */}
       {!isCompact && (
-        <div className="flex items-center gap-2 mb-3 text-sm text-gray-600">
+        <div className="flex items-center gap-2 mb-3 text-sm text-gray-600 dark:text-gray-400">
           <AlertCircle className="h-3.5 w-3.5" />
           <span>Contract #{dispute.contractId}</span>
         </div>
@@ -167,16 +167,16 @@ export function DisputeCard({
 
       {/* Parties */}
       <div className={cn('space-y-2 mb-3', isCompact && 'text-sm')}>
-        {/* Client */}
+        {/* Employer */}
         <div className="flex items-center gap-2">
           <User className={cn('flex-shrink-0 text-gray-400', isCompact ? 'h-3.5 w-3.5' : 'h-4 w-4')} />
-          <span className="text-gray-600 text-sm">Client:</span>
+          <span className="text-gray-600 dark:text-gray-400 text-sm">Employer:</span>
           <code
             className={cn(
               'font-mono text-sm px-1.5 py-0.5 rounded',
               isClient
-                ? 'bg-blue-100 text-blue-700 font-semibold'
-                : 'bg-gray-100 text-gray-700'
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 font-semibold'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
             )}
           >
             {truncateAddress(dispute.client)}
@@ -189,16 +189,16 @@ export function DisputeCard({
           )}
         </div>
 
-        {/* Freelancer */}
+        {/* Worker */}
         <div className="flex items-center gap-2">
           <User className={cn('flex-shrink-0 text-gray-400', isCompact ? 'h-3.5 w-3.5' : 'h-4 w-4')} />
-          <span className="text-gray-600 text-sm">Freelancer:</span>
+          <span className="text-gray-600 dark:text-gray-400 text-sm">Worker:</span>
           <code
             className={cn(
               'font-mono text-sm px-1.5 py-0.5 rounded',
               isFreelancer
-                ? 'bg-blue-100 text-blue-700 font-semibold'
-                : 'bg-gray-100 text-gray-700'
+                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400 font-semibold'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
             )}
           >
             {truncateAddress(dispute.freelancer)}
@@ -215,15 +215,15 @@ export function DisputeCard({
       {/* Reason */}
       {!isCompact && (
         <div className="mb-3">
-          <p className="text-sm text-gray-700 line-clamp-2">
+          <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
             {dispute.reason}
           </p>
         </div>
       )}
 
       {/* Footer: Date and Actions */}
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+      <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700/50">
+        <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
           <Calendar className="h-3.5 w-3.5" />
           <span>Opened {formatBlockTime(dispute.createdAt)}</span>
         </div>
@@ -254,14 +254,14 @@ export function DisputeCard({
 
       {/* Evidence Progress Indicator (for detailed variant) */}
       {isDetailed && showEvidence && dispute.status === DisputeStatus.OPEN && (
-        <div className="mt-3 pt-3 border-t border-gray-100">
-          <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700/50">
+          <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
             <span>Evidence Submission</span>
             <span>
               {(hasClientEvidence ? 1 : 0) + (hasFreelancerEvidence ? 1 : 0)} / 2
             </span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-1.5">
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
             <div
               className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
               style={{
@@ -306,35 +306,35 @@ export function DisputeCardSkeleton({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'rounded-lg border bg-white p-4 shadow-sm animate-pulse',
+        'rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/50 p-4 shadow-sm animate-pulse',
         className
       )}
     >
       {/* Header skeleton */}
       <div className="flex items-start justify-between gap-4 mb-3">
-        <div className="h-5 bg-gray-200 rounded w-32" />
-        <div className="h-6 bg-gray-200 rounded-full w-20" />
+        <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-32" />
+        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-full w-20" />
       </div>
 
       {/* Contract info skeleton */}
-      <div className="h-4 bg-gray-200 rounded w-24 mb-3" />
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24 mb-3" />
 
       {/* Parties skeleton */}
       <div className="space-y-2 mb-3">
-        <div className="h-6 bg-gray-200 rounded w-full" />
-        <div className="h-6 bg-gray-200 rounded w-full" />
+        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-full" />
+        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-full" />
       </div>
 
       {/* Reason skeleton */}
       <div className="space-y-2 mb-3">
-        <div className="h-4 bg-gray-200 rounded w-full" />
-        <div className="h-4 bg-gray-200 rounded w-3/4" />
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full" />
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
       </div>
 
       {/* Footer skeleton */}
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-        <div className="h-4 bg-gray-200 rounded w-24" />
-        <div className="h-4 bg-gray-200 rounded w-20" />
+      <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700/50">
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24" />
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20" />
       </div>
     </div>
   );

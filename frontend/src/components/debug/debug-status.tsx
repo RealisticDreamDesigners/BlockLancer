@@ -24,7 +24,7 @@ interface DebugStatusProps {
   className?: string;
 }
 
-const DebugStatus: React.FC<DebugStatusProps> = ({ className = '' }) => {
+const DebugStatus: React.FC<DebugStatusProps> = ({ className = '-' }) => {
   const { 
     isSignedIn, 
     userData, 
@@ -36,7 +36,7 @@ const DebugStatus: React.FC<DebugStatusProps> = ({ className = '' }) => {
     transactionInProgress
   } = useStacks();
 
-  // ✅ FIXED: Proper network type checking
+  // FIXED: Proper network type checking
   const isMainnet = () => {
     if (!network) return false;
     
@@ -78,13 +78,13 @@ const DebugStatus: React.FC<DebugStatusProps> = ({ className = '' }) => {
       color: userAddress ? 'text-green-600' : 'text-gray-600'
     },
     {
-      label: 'Client Contracts',
+      label: 'Employer Contracts',
       value: clientContracts?.length?.toString() || '0',
       icon: Database,
       color: 'text-blue-600'
     },
     {
-      label: 'Freelancer Contracts', 
+      label: 'Worker Contracts', 
       value: freelancerContracts?.length?.toString() || '0',
       icon: Database,
       color: 'text-purple-600'
@@ -125,7 +125,7 @@ const DebugStatus: React.FC<DebugStatusProps> = ({ className = '' }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {debugItems.map((item, index) => (
           <div key={index} className="flex items-center gap-2">
-            <item.icon className={`w-4 h-4 ${item.color} ${transactionInProgress && item.label === 'Transaction Status' ? 'animate-spin' : ''}`} />
+            <item.icon className={`w-4 h-4 ${item.color} ${transactionInProgress && item.label === 'Transaction Status' ? 'animate-spin' : '-'}`} />
             <div className="flex-1 min-w-0">
               <p className="text-xs text-gray-600 truncate">{item.label}</p>
               <p className={`text-sm font-medium ${item.color} truncate`}>{item.value}</p>

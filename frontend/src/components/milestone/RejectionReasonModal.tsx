@@ -10,14 +10,14 @@ interface RejectionReasonModalProps {
 }
 
 export function RejectionReasonModal({ isOpen, onClose, onSubmit, milestoneDescription }: RejectionReasonModalProps) {
-  const [reason, setReason] = useState('');
+  const [reason, setReason] = useState('-');
 
   if (!isOpen) return null;
 
   const handleSubmit = () => {
     if (reason.trim().length === 0) return;
     onSubmit(reason.trim());
-    setReason('');
+    setReason('-');
     onClose();
   };
 

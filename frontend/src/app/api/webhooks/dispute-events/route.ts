@@ -45,13 +45,13 @@ export async function POST(request: NextRequest) {
     const expectedToken = process.env.CHAINHOOK_SECRET_TOKEN || 'local_dev_secret';
 
     if (!authHeader || authHeader !== `Bearer ${expectedToken}`) {
-      console.warn('🚫 Unauthorized chainhook request');
+      console.warn('Unauthorized chainhook request');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const payload: ChainhookPayload = await request.json();
 
-    console.log('📥 Received dispute chainhook event:', {
+    console.log('Received dispute chainhook event:', {
       uuid: payload.chainhook.uuid,
       blocks: payload.apply.length,
       rollbacks: payload.rollback.length,
@@ -59,13 +59,13 @@ export async function POST(request: NextRequest) {
 
     // Process apply events (new blocks)
     for (const block of payload.apply) {
-      console.log(`📦 Processing block ${block.block_identifier.index}`);
+      console.log(`Processing block ${block.block_identifier.index}`);
 
       for (const transaction of block.transactions) {
         const contractCall = transaction.metadata.contract_call;
 
         if (contractCall) {
-          console.log(`🔧 Contract call: ${contractCall.function_name}`);
+          console.log(`Contract call: ${contractCall.function_name}`);
 
           // Process different dispute events
           switch (contractCall.function_name) {
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
               await handleResolveDispute(transaction, block);
               break;
             default:
-              console.log(`⚠️ Unknown function: ${contractCall.function_name}`);
+              console.log(`Unknown function: ${contractCall.function_name}`);
           }
         }
       }
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
 
     // Process rollback events (chain reorgs)
     for (const rollbackBlock of payload.rollback) {
-      console.log(`↩️ Rolling back block ${rollbackBlock.block_identifier.index}`);
+      console.log(`Rolling back block ${rollbackBlock.block_identifier.index}`);
       await handleRollback(rollbackBlock);
     }
 
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('❌ Error processing dispute chainhook:', error);
+    console.error('Error processing dispute chainhook:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
 
 // Event handlers
 async function handleOpenDispute(transaction: any, block: any) {
-  console.log('🚨 New dispute opened:', {
+  console.log('New dispute opened:', {
     txHash: transaction.transaction_identifier.hash,
     blockHeight: block.block_identifier.index,
   });
@@ -126,7 +126,7 @@ async function handleOpenDispute(transaction: any, block: any) {
   const printEvent = events.find((e: any) => e.type === 'print_event');
 
   if (printEvent) {
-    console.log('📄 Dispute data:', printEvent.data);
+    console.log('Dispute data:', printEvent.data);
   }
 
   // TODO: Store dispute in database/cache
@@ -139,7 +139,7 @@ async function handleOpenDispute(transaction: any, block: any) {
 }
 
 async function handleSubmitEvidence(transaction: any, block: any) {
-  console.log('📝 Evidence submitted:', {
+  console.log('Evidence submitted:', {
     txHash: transaction.transaction_identifier.hash,
     blockHeight: block.block_identifier.index,
   });
@@ -158,7 +158,7 @@ async function handleSubmitEvidence(transaction: any, block: any) {
 }
 
 async function handleWithdrawDispute(transaction: any, block: any) {
-  console.log('↩️ Dispute withdrawn:', {
+  console.log('Dispute withdrawn:', {
     txHash: transaction.transaction_identifier.hash,
     blockHeight: block.block_identifier.index,
   });
@@ -173,7 +173,7 @@ async function handleWithdrawDispute(transaction: any, block: any) {
 }
 
 async function handleResolveDispute(transaction: any, block: any) {
-  console.log('⚖️ Dispute resolved by DAO:', {
+  console.log('Dispute resolved by DAO:', {
     txHash: transaction.transaction_identifier.hash,
     blockHeight: block.block_identifier.index,
   });
@@ -191,7 +191,7 @@ async function handleResolveDispute(transaction: any, block: any) {
 }
 
 async function handleRollback(rollbackBlock: any) {
-  console.log('🔄 Handling rollback for block:', rollbackBlock.block_identifier.index);
+  console.log('Handling rollback for block:', rollbackBlock.block_identifier.index);
 
   // TODO: Reverse database changes for this block
   // This is critical for maintaining data consistency during chain reorgs

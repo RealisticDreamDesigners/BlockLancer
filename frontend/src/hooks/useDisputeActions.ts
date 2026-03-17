@@ -62,7 +62,7 @@ export function useOpenDispute() {
         throw new Error('You must be either the client or freelancer to open a dispute');
       }
 
-      console.log('🔧 Opening dispute for contract #', data.contractId);
+      console.log('Opening dispute for contract #', data.contractId);
 
       // Call contract function
       const response = await openDispute(
@@ -79,7 +79,7 @@ export function useOpenDispute() {
       return response;
     },
     onSuccess: (response, variables) => {
-      console.log('✅ Dispute opened successfully:', response);
+      console.log('Dispute opened successfully:', response);
 
       // Show success toast
       toast.success('Dispute Opened', {
@@ -104,7 +104,7 @@ export function useOpenDispute() {
       }
     },
     onError: (error: Error) => {
-      console.error('❌ Error opening dispute:', error);
+      console.error('Error opening dispute:', error);
 
       // Show error toast
       toast.error('Failed to Open Dispute', {
@@ -147,7 +147,7 @@ export function useSubmitEvidence() {
         throw new Error(validation.error);
       }
 
-      console.log('🔧 Submitting evidence for dispute #', data.disputeId);
+      console.log('Submitting evidence for dispute #', data.disputeId);
 
       // Call contract function
       const response = await submitEvidence(data.disputeId, data.evidence);
@@ -159,7 +159,7 @@ export function useSubmitEvidence() {
       return response;
     },
     onSuccess: (response, variables) => {
-      console.log('✅ Evidence submitted successfully:', response);
+      console.log('Evidence submitted successfully:', response);
 
       // Show success toast
       toast.success('Evidence Submitted', {
@@ -176,7 +176,7 @@ export function useSubmitEvidence() {
       });
     },
     onError: (error: Error) => {
-      console.error('❌ Error submitting evidence:', error);
+      console.error('Error submitting evidence:', error);
 
       // Parse error for user-friendly messages
       let errorMessage = error.message;
@@ -218,7 +218,7 @@ export function useWithdrawDispute() {
         throw new Error('Please connect your wallet first');
       }
 
-      console.log('🔧 Withdrawing dispute #', data.disputeId);
+      console.log('Withdrawing dispute #', data.disputeId);
 
       // Call contract function
       const response = await withdrawDispute(data.disputeId);
@@ -230,7 +230,7 @@ export function useWithdrawDispute() {
       return response;
     },
     onSuccess: (response, variables) => {
-      console.log('✅ Dispute withdrawn successfully:', response);
+      console.log('Dispute withdrawn successfully:', response);
 
       // Show success toast
       toast.success('Dispute Withdrawn', {
@@ -254,7 +254,7 @@ export function useWithdrawDispute() {
       }
     },
     onError: (error: Error) => {
-      console.error('❌ Error withdrawing dispute:', error);
+      console.error('Error withdrawing dispute:', error);
 
       // Parse error for user-friendly messages
       let errorMessage = error.message;
@@ -379,7 +379,7 @@ export function useOpenDisputeOptimistic() {
       const optimisticDispute = {
         id: Date.now(), // Temporary ID
         contractId: variables.contractId,
-        openedBy: userAddress || '',
+        openedBy: userAddress || '-',
         client: variables.clientAddress,
         freelancer: variables.freelancerAddress,
         reason: variables.reason,

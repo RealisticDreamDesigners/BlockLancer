@@ -43,7 +43,7 @@ function ScoreChangeBadge({ change }: { change: number }) {
 
 export function ReputationCard({ reputation, showAddress = true, scoreChange = 0, history = [] }: ReputationCardProps) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-orange-300 dark:hover:border-orange-600 transition-colors">
+    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-blue-300 dark:hover:border-blue-600 transition-colors">
       <div className="flex items-center justify-between mb-4">
         {showAddress && (
           <span className="text-sm font-mono text-gray-500 dark:text-gray-400">
@@ -106,7 +106,7 @@ export function ReputationCard({ reputation, showAddress = true, scoreChange = 0
               return (
                 <div
                   key={i}
-                  className="flex-1 rounded-t bg-orange-400 dark:bg-orange-500 hover:bg-orange-500 dark:hover:bg-orange-400 transition-colors"
+                  className="flex-1 rounded-t bg-blue-400 dark:bg-blue-500 hover:bg-blue-500 dark:hover:bg-blue-400 transition-colors"
                   style={{ height: `${barHeight}%` }}
                   title={`Score: ${entry.score} (${new Date(entry.created_at).toLocaleDateString()})`}
                 />

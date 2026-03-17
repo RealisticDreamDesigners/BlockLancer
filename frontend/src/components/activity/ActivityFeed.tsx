@@ -89,7 +89,7 @@ export function ActivityFeed({
       case ActivityType.PROPOSAL_CREATED:
         return <FileText className="h-5 w-5 text-purple-600" />;
       case ActivityType.VOTE_CAST:
-        return <Vote className="h-5 w-5 text-orange-600" />;
+        return <Vote className="h-5 w-5 text-blue-600" />;
       case ActivityType.PROPOSAL_FINALIZED:
         return <CheckCircle className="h-5 w-5 text-green-600" />;
       default:
@@ -142,7 +142,7 @@ export function ActivityFeed({
           transition={{ delay: index * 0.05 }}
           onClick={() => onItemClick?.(activity)}
           className={`flex gap-4 ${
-            onItemClick ? 'cursor-pointer hover:bg-gray-50 -mx-4 px-4 py-2 rounded-lg transition-colors' : ''
+            onItemClick ? 'cursor-pointer hover:bg-gray-50 -mx-4 px-4 py-2 rounded-lg transition-colors' : '-'
           }`}
         >
           {/* Icon */}

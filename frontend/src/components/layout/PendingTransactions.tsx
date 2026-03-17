@@ -47,7 +47,7 @@ export function PendingTransactions() {
       >
         <span className="inline-block h-2 w-2 rounded-full bg-yellow-400 animate-pulse" />
         <span>
-          {pendingTxs.length} pending TX{pendingTxs.length !== 1 ? 's' : ''}
+          {pendingTxs.length} pending TX{pendingTxs.length !== 1 ? 's' : '-'}
           {queueSize > 0 && ` (${queueSize} queued)`}
         </span>
       </button>
@@ -80,7 +80,7 @@ export function PendingTransactions() {
             ))}
             {queueSize > 0 && (
               <div className="text-xs text-gray-400">
-                {queueSize} transaction{queueSize !== 1 ? 's' : ''} queued...
+                {queueSize} transaction{queueSize !== 1 ? 's' : '-'} queued...
               </div>
             )}
           </div>

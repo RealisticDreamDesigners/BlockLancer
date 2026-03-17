@@ -5,7 +5,7 @@ interface TierBadgeProps {
   className?: string;
 }
 
-export function TierBadge({ tier, className = '' }: TierBadgeProps) {
+export function TierBadge({ tier, className = '-' }: TierBadgeProps) {
   if (tier >= 1) {
     return (
       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-purple-500 to-indigo-600 text-white ${className}`}>

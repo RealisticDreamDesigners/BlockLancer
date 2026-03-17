@@ -12,15 +12,15 @@ interface ApplicationFormProps {
 }
 
 export function ApplicationForm({ jobId, budgetMin, budgetMax, onSubmit, onCancel }: ApplicationFormProps) {
-  const [coverLetter, setCoverLetter] = useState('');
-  const [proposedAmount, setProposedAmount] = useState('');
-  const [proposedTimeline, setProposedTimeline] = useState('');
+  const [coverLetter, setCoverLetter] = useState('-');
+  const [proposedAmount, setProposedAmount] = useState('-');
+  const [proposedTimeline, setProposedTimeline] = useState('-');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState('-');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError('-');
 
     const amount = parseFloat(proposedAmount);
     const timelineDays = parseInt(proposedTimeline);
@@ -63,7 +63,7 @@ export function ApplicationForm({ jobId, budgetMin, budgetMax, onSubmit, onCance
           value={coverLetter}
           onChange={(e) => setCoverLetter(e.target.value)}
           placeholder="Explain why you're a good fit for this job..."
-          className="w-full h-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+          className="w-full h-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
           maxLength={500}
         />
         <p className="text-xs text-gray-400 mt-1">{coverLetter.length}/500</p>
@@ -81,7 +81,7 @@ export function ApplicationForm({ jobId, budgetMin, budgetMax, onSubmit, onCance
             placeholder={`${(budgetMin / 1_000_000).toFixed(2)} - ${(budgetMax / 1_000_000).toFixed(2)}`}
             step="0.01"
             min="0"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-orange-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
           />
         </div>
         <div>
@@ -94,7 +94,7 @@ export function ApplicationForm({ jobId, budgetMin, budgetMax, onSubmit, onCance
             onChange={(e) => setProposedTimeline(e.target.value)}
             placeholder="e.g. 7"
             min="1"
-            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-orange-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500"
           />
           <p className="text-xs text-gray-400 mt-1">How many days to complete the work</p>
         </div>
@@ -115,7 +115,7 @@ export function ApplicationForm({ jobId, budgetMin, budgetMax, onSubmit, onCance
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 text-sm font-medium text-white bg-orange-600 rounded-md hover:bg-orange-700 disabled:opacity-50"
+          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
         >
           {loading ? 'Submitting...' : 'Submit Application'}
         </button>

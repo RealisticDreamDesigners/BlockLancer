@@ -57,10 +57,10 @@ export default function ProposalDetailPage() {
   // Loading state
   if (proposalLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading proposal...</p>
+          <p className="text-gray-600 dark:text-gray-400">Loading proposal...</p>
         </div>
       </div>
     );
@@ -69,8 +69,8 @@ export default function ProposalDetailPage() {
   // Error state
   if (proposalError) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-lg border border-red-200 p-6">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800/50 rounded-lg border border-red-200 dark:border-red-700/50 p-6">
           <div className="flex items-center gap-3 text-red-800 mb-4">
             <AlertCircle className="h-6 w-6 flex-shrink-0" />
             <div>
@@ -92,13 +92,13 @@ export default function ProposalDetailPage() {
   // Not found state
   if (!proposal) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-lg border border-gray-200 p-6 text-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700/50 p-6 text-center">
           <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
             Proposal Not Found
           </h3>
-          <p className="text-sm text-gray-600 mb-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
             The proposal you're looking for doesn't exist or has been removed.
           </p>
           <button
@@ -117,14 +117,14 @@ export default function ProposalDetailPage() {
   const isActive = proposal.status === ProposalStatus.ACTIVE;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700/50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <button
               onClick={() => router.push('/dao/proposals')}
-              className="text-sm font-medium text-gray-600 hover:text-gray-900"
+              className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
             >
               ← Back to Proposals
             </button>
@@ -155,8 +155,8 @@ export default function ProposalDetailPage() {
           {isActive && (
             <DAOMemberGate
               fallback={
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-                  <div className="flex items-center gap-3 text-yellow-800">
+                <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/40 rounded-lg p-6">
+                  <div className="flex items-center gap-3 text-blue-800 dark:text-blue-300">
                     <AlertCircle className="h-6 w-6 flex-shrink-0" />
                     <div>
                       <p className="font-semibold">DAO Membership Required</p>
@@ -182,9 +182,9 @@ export default function ProposalDetailPage() {
 
           {/* Related Dispute (if dispute resolution proposal) */}
           {proposal.proposalType === 0 && dispute && (
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="bg-white dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700/50 p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-gray-900">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
                   Related Dispute
                 </h2>
                 <button
@@ -205,7 +205,7 @@ export default function ProposalDetailPage() {
               {/* Evidence (if both parties submitted) */}
               {dispute.clientEvidence && dispute.freelancerEvidence && (
                 <div className="mt-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                     Evidence Submitted
                   </h3>
                   <EvidenceComparison
@@ -221,11 +221,11 @@ export default function ProposalDetailPage() {
           )}
 
           {/* Proposal Info */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-blue-900 mb-3">
+          <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/40 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-200 mb-3">
               About This Proposal
             </h3>
-            <div className="space-y-2 text-sm text-blue-800">
+            <div className="space-y-2 text-sm text-blue-800 dark:text-blue-300">
               <p>
                 <strong>Type:</strong>{' '}
                 {proposal.proposalType === 0
@@ -242,18 +242,18 @@ export default function ProposalDetailPage() {
                 <strong>Required Threshold:</strong> 70% Yes votes (supermajority)
               </p>
               {proposal.status === ProposalStatus.PASSED && (
-                <p className="text-green-700 font-semibold mt-2">
-                  ✓ This proposal has passed and is ready for execution
+                <p className="text-blue-800 dark:text-blue-300 font-semibold mt-2">
+                  This proposal has passed and is ready for execution
                 </p>
               )}
               {proposal.status === ProposalStatus.EXECUTED && (
-                <p className="text-green-700 font-semibold mt-2">
-                  ✓ This proposal has been executed successfully
+                <p className="text-blue-800 dark:text-blue-300 font-semibold mt-2">
+                  This proposal has been executed successfully
                 </p>
               )}
               {proposal.status === ProposalStatus.FAILED && (
-                <p className="text-red-700 font-semibold mt-2">
-                  ✗ This proposal did not reach the required threshold
+                <p className="text-gray-600 dark:text-gray-400 font-semibold mt-2">
+                  This proposal did not reach the required threshold
                 </p>
               )}
             </div>
@@ -261,12 +261,12 @@ export default function ProposalDetailPage() {
 
           {/* Connect Wallet Prompt */}
           {!userAddress && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+            <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/40 rounded-lg p-6">
               <div className="flex gap-3">
-                <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-yellow-900">
+                <AlertCircle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-blue-900 dark:text-blue-200">
                   <p className="font-medium">Connect Your Wallet</p>
-                  <p className="text-yellow-800 mt-1">
+                  <p className="text-blue-800 dark:text-blue-300 mt-1">
                     Connect your wallet to vote on this proposal if you're a DAO
                     member.
                   </p>

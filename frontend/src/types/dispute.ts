@@ -370,14 +370,14 @@ export function getResolutionTypeInfo(resolution: ResolutionType): StatusInfo {
       };
     case ResolutionType.CLIENT_WINS:
       return {
-        text: 'Client Wins',
-        color: 'text-orange-600 bg-orange-50 border-orange-200',
+        text: 'Employer Wins',
+        color: 'text-blue-600 bg-blue-50 border-blue-200',
         description: 'DAO ruled in favor of client',
         icon: CheckCircle
       };
     case ResolutionType.FREELANCER_WINS:
       return {
-        text: 'Freelancer Wins',
+        text: 'Worker Wins',
         color: 'text-green-600 bg-green-50 border-green-200',
         description: 'DAO ruled in favor of freelancer',
         icon: CheckCircle

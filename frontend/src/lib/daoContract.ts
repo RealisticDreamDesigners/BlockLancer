@@ -83,24 +83,24 @@ const makeProxyApiCall = async (endpoint: string, body?: any) => {
 
     return await response.json();
   } catch (error) {
-    console.error('❌ Proxy API call failed:', error);
+    console.error('Proxy API call failed:', error);
     throw error;
   }
 };
 
 const makeSmartApiCall = async (apiCall: () => Promise<any>, fallbackEndpoint?: string, fallbackBody?: any) => {
   try {
-    console.log('🎯 Attempting direct Stacks.js API call...');
+    console.log('Attempting direct Stacks.js API call...');
     return await apiCall();
   } catch (error: any) {
-    console.warn('⚠️ Direct call failed:', error.message);
+    console.warn('Direct call failed:', error.message);
 
     if (fallbackEndpoint) {
       try {
-        console.log('🔄 Trying proxy fallback for:', fallbackEndpoint);
+        console.log('Trying proxy fallback for:', fallbackEndpoint);
         return await makeProxyApiCall(fallbackEndpoint, fallbackBody);
       } catch (proxyError: any) {
-        console.error('❌ Both direct and proxy calls failed');
+        console.error('Both direct and proxy calls failed');
         throw proxyError;
       }
     } else {
@@ -125,7 +125,7 @@ function transformProposalData(clarityData: any, proposalId?: number): Proposal 
       data = data.value;
     }
 
-    console.log(`📊 Transforming proposal #${proposalId} data:`, {
+    console.log(`Transforming proposal #${proposalId} data:`, {
       proposer: data.proposer?.value,
       yesVotes: data['yes-votes']?.value,
       noVotes: data['no-votes']?.value,
@@ -134,11 +134,11 @@ function transformProposalData(clarityData: any, proposalId?: number): Proposal 
 
     const proposal: Proposal = {
       id: proposalId || 0,
-      proposer: data.proposer?.value || '',
+      proposer: data.proposer?.value || '-',
       proposalType: parseInt(data['proposal-type']?.value || '0') as ProposalType,
       targetContractId: parseInt(data['target-contract-id']?.value || '0'),
       targetMember: data['target-member']?.value?.value || undefined,
-      description: data.description?.value || '',
+      description: data.description?.value || '-',
       yesVotes: parseInt(data['yes-votes']?.value || '0'),
       noVotes: parseInt(data['no-votes']?.value || '0'),
       abstainVotes: parseInt(data['abstain-votes']?.value || '0'),
@@ -165,7 +165,7 @@ function transformProposalData(clarityData: any, proposalId?: number): Proposal 
     const requiredVotes = Math.ceil((proposal.totalEligibleVoters * DAO_CONSTANTS.SUPERMAJORITY_THRESHOLD) / 100);
     proposal.hasReachedThreshold = proposal.yesVotes >= requiredVotes;
 
-    console.log(`✅ Transformed proposal #${proposalId}:`, {
+    console.log(`Transformed proposal #${proposalId}:`, {
       id: proposal.id,
       yesVotes: proposal.yesVotes,
       noVotes: proposal.noVotes,
@@ -175,7 +175,7 @@ function transformProposalData(clarityData: any, proposalId?: number): Proposal 
 
     return proposal;
   } catch (error) {
-    console.error('❌ Error transforming proposal data:', error);
+    console.error('Error transforming proposal data:', error);
     throw new Error('Failed to parse proposal data');
   }
 }
@@ -198,7 +198,7 @@ function transformVoteData(clarityData: any, proposalId: number, voter: string):
       timestamp: parseInt(data.timestamp?.value || '0'),
     };
   } catch (error) {
-    console.error('❌ Error transforming vote data:', error);
+    console.error('Error transforming vote data:', error);
     throw new Error('Failed to parse vote data');
   }
 }
@@ -231,10 +231,10 @@ function transformDAOMemberStatus(clarityData: any): DAOMemberStatus {
       }
     }
 
-    console.log('✅ Transformed DAO member status:', status);
+    console.log('Transformed DAO member status:', status);
     return status;
   } catch (error) {
-    console.error('❌ Error transforming DAO member status:', error);
+    console.error('Error transforming DAO member status:', error);
     return {
       isMember: false,
       memberCount: 0,
@@ -254,7 +254,7 @@ export async function getProposal(proposalId: number, userAddress?: string): Pro
   try {
     const bp = await getProposalFromBackend(proposalId);
     if (bp) {
-      console.log(`✅ Got proposal #${proposalId} from backend`);
+      console.log(`Got proposal #${proposalId} from backend`);
       return {
         id: bp.id,
         proposer: bp.proposer,
@@ -280,7 +280,7 @@ export async function getProposal(proposalId: number, userAddress?: string): Pro
 
   // Fallback: existing Hiro API code
   try {
-    console.log(`🔍 Fetching proposal #${proposalId} (Hiro fallback)...`);
+    console.log(`Fetching proposal #${proposalId} (Hiro fallback)...`);
 
     const result = await makeSmartApiCall(
       () => fetchCallReadOnlyFunction({
@@ -304,15 +304,15 @@ export async function getProposal(proposalId: number, userAddress?: string): Pro
     const proposalData = cvToJSON(result);
 
     if (proposalData.value === null || !proposalData.value) {
-      console.log(`❌ Proposal #${proposalId} not found`);
+      console.log(`Proposal #${proposalId} not found`);
       return null;
     }
 
     const proposal = transformProposalData(proposalData, proposalId);
-    console.log(`✅ Fetched proposal #${proposalId}:`, proposal);
+    console.log(`Fetched proposal #${proposalId}:`, proposal);
     return proposal;
   } catch (error) {
-    console.error(`❌ Error fetching proposal #${proposalId}:`, error);
+    console.error(`Error fetching proposal #${proposalId}:`, error);
     return null;
   }
 }
@@ -325,7 +325,7 @@ export async function getAllProposals(userAddress?: string): Promise<Proposal[]>
   try {
     const backendProposals = await getAllProposalsFromBackend();
     if (backendProposals && backendProposals.length > 0) {
-      console.log(`✅ Got ${backendProposals.length} proposals from backend /api/proposals/all`);
+      console.log(`Got ${backendProposals.length} proposals from backend /api/proposals/all`);
       return backendProposals.map(bp => ({
         id: bp.id,
         proposer: bp.proposer,
@@ -364,7 +364,7 @@ export async function getAllProposals(userAddress?: string): Promise<Proposal[]>
  */
 export async function getProposalSummary(proposalId: number, userAddress?: string): Promise<Proposal | null> {
   try {
-    console.log(`🔍 Fetching proposal summary #${proposalId}...`);
+    console.log(`Fetching proposal summary #${proposalId}...`);
 
     const result = await makeSmartApiCall(
       () => fetchCallReadOnlyFunction({
@@ -395,7 +395,7 @@ export async function getProposalSummary(proposalId: number, userAddress?: strin
     const proposal = transformProposalData(summaryData, proposalId);
     return proposal;
   } catch (error) {
-    console.error(`❌ Error fetching proposal summary #${proposalId}:`, error);
+    console.error(`Error fetching proposal summary #${proposalId}:`, error);
     return null;
   }
 }
@@ -408,7 +408,7 @@ export async function getDAOMemberStatus(userAddress: string): Promise<DAOMember
   try {
     const backendStatus = await getDAOMemberStatusFromBackend(userAddress);
     if (backendStatus) {
-      console.log(`✅ Got DAO member status from backend for ${userAddress}`);
+      console.log(`Got DAO member status from backend for ${userAddress}`);
       return {
         isMember: backendStatus.isMember,
         memberCount: backendStatus.memberCount,
@@ -420,7 +420,7 @@ export async function getDAOMemberStatus(userAddress: string): Promise<DAOMember
 
   // Fallback: existing Hiro API code
   try {
-    console.log(`🔍 Fetching DAO member status for ${userAddress} (Hiro fallback)...`);
+    console.log(`Fetching DAO member status for ${userAddress} (Hiro fallback)...`);
 
     const result = await makeSmartApiCall(
       () => fetchCallReadOnlyFunction({
@@ -444,10 +444,10 @@ export async function getDAOMemberStatus(userAddress: string): Promise<DAOMember
     const statusData = cvToJSON(result);
     const status = transformDAOMemberStatus(statusData);
 
-    console.log(`✅ DAO member status for ${userAddress}:`, status);
+    console.log(`DAO member status for ${userAddress}:`, status);
     return status;
   } catch (error) {
-    console.error(`❌ Error fetching DAO member status for ${userAddress}:`, error);
+    console.error(`Error fetching DAO member status for ${userAddress}:`, error);
     return {
       isMember: false,
       memberCount: 0,
@@ -463,7 +463,7 @@ export async function checkDAOMembership(userAddress: string): Promise<boolean> 
     const status = await getDAOMemberStatus(userAddress);
     return status.isMember;
   } catch (error) {
-    console.error(`❌ Error checking DAO membership for ${userAddress}:`, error);
+    console.error(`Error checking DAO membership for ${userAddress}:`, error);
     return false;
   }
 }
@@ -476,7 +476,7 @@ export async function getVote(proposalId: number, voterAddress: string): Promise
   try {
     const backendVote = await getVoteFromBackend(proposalId, voterAddress);
     if (backendVote) {
-      console.log(`✅ Got vote from backend for proposal #${proposalId}`);
+      console.log(`Got vote from backend for proposal #${proposalId}`);
       return {
         proposalId: backendVote.proposalId,
         voter: backendVote.voter,
@@ -490,7 +490,7 @@ export async function getVote(proposalId: number, voterAddress: string): Promise
 
   // Fallback: existing Hiro API code
   try {
-    console.log(`🔍 Fetching vote for proposal #${proposalId} by ${voterAddress} (Hiro fallback)...`);
+    console.log(`Fetching vote for proposal #${proposalId} by ${voterAddress} (Hiro fallback)...`);
 
     const result = await makeSmartApiCall(
       () => fetchCallReadOnlyFunction({
@@ -518,10 +518,10 @@ export async function getVote(proposalId: number, voterAddress: string): Promise
     }
 
     const vote = transformVoteData(voteData, proposalId, voterAddress);
-    console.log(`✅ Fetched vote:`, vote);
+    console.log(`Fetched vote:`, vote);
     return vote;
   } catch (error) {
-    console.error(`❌ Error fetching vote:`, error);
+    console.error(`Error fetching vote:`, error);
     return null;
   }
 }
@@ -540,7 +540,7 @@ export async function getDAOStats(userAddress?: string): Promise<{
   try {
     const backendStats = await getDAOStatsFromBackend();
     if (backendStats) {
-      console.log('✅ Got DAO stats from backend');
+      console.log('Got DAO stats from backend');
       return backendStats;
     }
   } catch (e) {
@@ -549,7 +549,7 @@ export async function getDAOStats(userAddress?: string): Promise<{
 
   // Fallback: existing Hiro API code
   try {
-    console.log('🔍 Fetching DAO statistics (Hiro fallback)...');
+    console.log('Fetching DAO statistics (Hiro fallback)...');
 
     const result = await makeSmartApiCall(
       () => fetchCallReadOnlyFunction({
@@ -573,7 +573,7 @@ export async function getDAOStats(userAddress?: string): Promise<{
     const statsData = cvToJSON(result);
 
     if (!statsData.value) {
-      console.log('⚠️ DAO stats returned null');
+      console.log('DAO stats returned null');
       return null;
     }
 
@@ -581,7 +581,7 @@ export async function getDAOStats(userAddress?: string): Promise<{
     // We need to access statsData.value.value to get the actual data
     const data = statsData.value.value || statsData.value;
 
-    console.log('📊 Raw DAO stats data:', data);
+    console.log('Raw DAO stats data:', data);
 
     const stats = {
       totalMembers: parseInt(data['total-members']?.value || '0'),
@@ -591,10 +591,10 @@ export async function getDAOStats(userAddress?: string): Promise<{
       memberCount: parseInt(data['total-members']?.value || '0'), // Alias
     };
 
-    console.log('✅ Parsed DAO stats:', stats);
+    console.log('Parsed DAO stats:', stats);
     return stats;
   } catch (error) {
-    console.error('❌ Error fetching DAO stats:', error);
+    console.error('Error fetching DAO stats:', error);
     return null;
   }
 }
@@ -611,7 +611,7 @@ export async function proposeDisputeResolution(
   description: string
 ): Promise<ProposalResponse> {
   try {
-    console.log('🔧 Creating dispute resolution proposal:', {
+    console.log('Creating dispute resolution proposal:', {
       disputeId,
       description: description.substring(0, 50) + '...'
     });
@@ -638,7 +638,7 @@ export async function proposeDisputeResolution(
       postConditionMode: PostConditionMode.Allow,
     }, 'Propose Dispute Resolution');
   } catch (error) {
-    console.error('❌ Error creating proposal:', error);
+    console.error('Error creating proposal:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return {
       success: false,
@@ -655,7 +655,7 @@ export async function proposeEscrowRelease(
   description: string
 ): Promise<ProposalResponse> {
   try {
-    console.log('🔧 Creating escrow release proposal:', { contractId, description });
+    console.log('Creating escrow release proposal:', { contractId, description });
 
     if (!description || description.length === 0) {
       return { success: false, error: 'Proposal description is required' };
@@ -678,7 +678,7 @@ export async function proposeEscrowRelease(
       postConditionMode: PostConditionMode.Allow,
     }, 'Propose Escrow Release');
   } catch (error) {
-    console.error('❌ Error creating escrow release proposal:', error);
+    console.error('Error creating escrow release proposal:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return {
       success: false,
@@ -695,7 +695,7 @@ export async function voteOnProposal(
   vote: VoteType
 ): Promise<VoteResponse> {
   try {
-    console.log('🔧 Casting vote on proposal #', proposalId, ':', vote);
+    console.log('Casting vote on proposal #', proposalId, ':', vote);
 
     // Validate vote type
     if (![VoteType.YES, VoteType.NO, VoteType.ABSTAIN].includes(vote)) {
@@ -715,7 +715,7 @@ export async function voteOnProposal(
       postConditionMode: PostConditionMode.Allow,
     }, 'Vote on Proposal');
   } catch (error) {
-    console.error('❌ Error casting vote:', error);
+    console.error('Error casting vote:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return {
       success: false,
@@ -729,7 +729,7 @@ export async function voteOnProposal(
  */
 export async function finalizeProposal(proposalId: number): Promise<ProposalResponse> {
   try {
-    console.log('🔧 Finalizing proposal #', proposalId);
+    console.log('Finalizing proposal #', proposalId);
 
     return wrappedContractCall({
       network,
@@ -741,7 +741,7 @@ export async function finalizeProposal(proposalId: number): Promise<ProposalResp
       postConditionMode: PostConditionMode.Allow,
     }, 'Finalize Proposal');
   } catch (error) {
-    console.error('❌ Error finalizing proposal:', error);
+    console.error('Error finalizing proposal:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return {
       success: false,

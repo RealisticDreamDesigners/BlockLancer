@@ -37,15 +37,15 @@ function convertSmartContractTimeToTimestamp(value: number): number {
   }
 
   if (value > 1000000000) {
-    console.log(`🕐 Detected Unix timestamp: ${value} (${new Date(value * 1000).toISOString()})`);
+    console.log(`Detected Unix timestamp: ${value} (${new Date(value * 1000).toISOString()})`);
     return value * 1000;
 
   } else if (value >= 100000 && value <= 300000) {
-    console.log(`🧱 Detected block height: ${value}`);
+    console.log(`Detected block height: ${value}`);
     return convertBlockHeightToTimestamp(value);
 
   } else {
-    console.warn(`⚠️ Unexpected time value: ${value}, using current time`);
+    console.warn(`Unexpected time value: ${value}, using current time`);
     return Date.now();
   }
 }
@@ -59,13 +59,13 @@ function convertBlockHeightToTimestamp(blockHeight: number): number {
   return approximateTimestamp * 1000; // Convert to milliseconds
 }
 
-// ✅ FALLBACK: Proxy-based API calls for CORS issues
+// FALLBACK: Proxy-based API calls for CORS issues
 const makeProxyApiCall = async (endpoint: string, body?: any) => {
   const proxyUrl = `/api/stacks${endpoint}`;
 
   try {
 
-    // ✅ FIX: Handle BigInt serialization
+    // FIX: Handle BigInt serialization
     const serializedBody = body ? JSON.stringify(body, (_key, value) =>
       typeof value === 'bigint' ? value.toString() : value
     ) : undefined;
@@ -85,19 +85,19 @@ const makeProxyApiCall = async (endpoint: string, body?: any) => {
 
     return await response.json();
   } catch (error) {
-    console.error('❌ Proxy API call failed:', error);
+    console.error('Proxy API call failed:', error);
     throw error;
   }
 };
 
-// ✅ SMART API CALL with fallback strategy
+// SMART API CALL with fallback strategy
 const makeSmartApiCall = async (apiCall: () => Promise<any>, fallbackEndpoint?: string, fallbackBody?: any) => {
   try {
     // First try direct Stacks.js call with API key
-    console.log('🎯 Attempting direct Stacks.js API call...');
+    console.log('Attempting direct Stacks.js API call...');
     return await apiCall();
   } catch (error: any) {
-    console.warn('⚠️ Direct call failed:', {
+    console.warn('Direct call failed:', {
       message: error.message,
       status: error.status,
       code: error.code,
@@ -106,10 +106,10 @@ const makeSmartApiCall = async (apiCall: () => Promise<any>, fallbackEndpoint?: 
 
     if (fallbackEndpoint) {
       try {
-        console.log('🔄 Trying proxy fallback for:', fallbackEndpoint);
+        console.log('Trying proxy fallback for:', fallbackEndpoint);
         return await makeProxyApiCall(fallbackEndpoint, fallbackBody);
       } catch (proxyError: any) {
-        console.error('❌ Both direct and proxy calls failed:', {
+        console.error('Both direct and proxy calls failed:', {
           directError: error.message,
           proxyError: proxyError.message,
           fallbackEndpoint
@@ -142,7 +142,7 @@ const parseContractId = (contractId: string) => {
 
 const escrowContract = parseContractId(CONTRACTS.ESCROW);
 
-// ✅ FIXED: CACHING CONFIGURATION - Use Map consistently
+// FIXED: CACHING CONFIGURATION - Use Map consistently
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const contractCache = new Map<string, { data: any; timestamp: number }>();
 
@@ -153,7 +153,7 @@ const isDataFresh = (timestamp: number) => {
 const getCachedData = <T>(key: string): T | null => {
   const cached = contractCache.get(key);
   if (cached && isDataFresh(cached.timestamp)) {
-    console.log(`📋 Using cached data for ${key}`);
+    console.log(`Using cached data for ${key}`);
     return cached.data;
   }
   return null;
@@ -161,7 +161,7 @@ const getCachedData = <T>(key: string): T | null => {
 
 const setCachedData = <T>(key: string, data: T) => {
   contractCache.set(key, { data, timestamp: Date.now() });
-  console.log(`💾 Cached data for ${key}`);
+  console.log(`Cached data for ${key}`);
 };
 
 // React Query Configuration
@@ -186,7 +186,7 @@ export const useStacks = () => {
   const queryClient = useQueryClient();
   const { execute } = useContractCall();
 
-  // ✅ USER SESSION MANAGEMENT
+  // USER SESSION MANAGEMENT
   const [userData, setUserData] = useState<any>(null);
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [userAddress, setUserAddress] = useState<string | undefined>(undefined);
@@ -202,11 +202,11 @@ export const useStacks = () => {
       const address = userData?.profile?.stxAddress?.testnet || userData?.profile?.stxAddress?.mainnet;
       setUserAddress(address);
       
-      console.log('✅ User already signed in:', address);
+      console.log('User already signed in:', address);
     }
   }, []);
 
-  // ✅ CORE FETCH FUNCTIONS with Smart API Calls
+  // CORE FETCH FUNCTIONS with Smart API Calls
 
   const fetchTotalContractsCount = useCallback(async (): Promise<number> => {
     const cacheKey = 'totalContracts';
@@ -217,7 +217,7 @@ export const useStacks = () => {
     try {
       const backendCount = await getEscrowCountFromBackend();
       if (backendCount !== null) {
-        console.log(`✅ Got total contracts from backend: ${backendCount}`);
+        console.log(`Got total contracts from backend: ${backendCount}`);
         setCachedData(cacheKey, backendCount);
         return backendCount;
       }
@@ -252,7 +252,7 @@ export const useStacks = () => {
       setCachedData(cacheKey, totalContracts);
       return totalContracts;
     } catch (error) {
-      console.error('❌ Error fetching total contracts:', error);
+      console.error('Error fetching total contracts:', error);
       return 0;
     }
   }, []);
@@ -278,7 +278,7 @@ export const useStacks = () => {
           contractAddress: escrowContract.address,
           contractName: escrowContract.name,
           functionName: 'get-milestone',
-          functionArgs: [contractId, milestoneId], // ✅ FIX: Use plain numbers instead of uintCV for proxy
+          functionArgs: [contractId, milestoneId], // FIX: Use plain numbers instead of uintCV for proxy
           senderAddress: userAddress || escrowContract.address,
         }
       );
@@ -293,19 +293,19 @@ export const useStacks = () => {
       
       const milestone: Milestone = {
         id: milestoneId,
-        description: data.description?.value || data.description || '',
+        description: data.description?.value || data.description || '-',
         amount: parseInt(data.amount?.value || data.amount || '0'),
         deadline: convertSmartContractTimeToTimestamp(parseInt(data.deadline?.value || data.deadline || '0')),
         status: parseInt(data.status?.value || data.status || '0'),
-        submissionNotes: data['submission-note']?.value || data['submission-note'] || '',
-        rejectionReason: data['rejection-reason']?.value || data['rejection-reason'] || '',
+        submissionNotes: data['submission-note']?.value || data['submission-note'] || '-',
+        rejectionReason: data['rejection-reason']?.value || data['rejection-reason'] || '-',
       };
 
-      console.log(`✅ Fetched milestone ${contractId}-${milestoneId}:`, milestone);
+      console.log(`Fetched milestone ${contractId}-${milestoneId}:`, milestone);
       setCachedData(cacheKey, milestone);
       return milestone;
     } catch (error) {
-      console.error(`❌ Error fetching milestone ${contractId}-${milestoneId}:`, error);
+      console.error(`Error fetching milestone ${contractId}-${milestoneId}:`, error);
       return null;
     }
   }, [userAddress]);
@@ -316,7 +316,7 @@ export const useStacks = () => {
     if (cached !== null) return cached;
 
     try {
-      console.log(`📋 Fetching milestones for contract ${contractId}`);
+      console.log(`Fetching milestones for contract ${contractId}`);
       const milestones: Milestone[] = [];
       
       // Try to fetch up to 50 milestones (reasonable limit)
@@ -326,11 +326,11 @@ export const useStacks = () => {
         milestones.push(milestone);
       }
       
-      console.log(`✅ Found ${milestones.length} milestones for contract ${contractId}`);
+      console.log(`Found ${milestones.length} milestones for contract ${contractId}`);
       setCachedData(cacheKey, milestones);
       return milestones;
     } catch (error) {
-      console.error(`❌ Error fetching milestones for contract ${contractId}:`, error);
+      console.error(`Error fetching milestones for contract ${contractId}:`, error);
       return [];
     }
   }, [fetchMilestoneById]);
@@ -364,7 +364,7 @@ export const useStacks = () => {
             rejectionReason: m.rejectionReason,
           })),
         };
-        console.log(`✅ Got contract ${contractId} from backend`);
+        console.log(`Got contract ${contractId} from backend`);
         setCachedData(cacheKey, contract);
         return contract;
       }
@@ -374,7 +374,7 @@ export const useStacks = () => {
 
     // Fallback: existing Hiro API code
     try {
-      console.log(`🔍 Fetching contract ID: ${contractId} (Hiro fallback)`);
+      console.log(`Fetching contract ID: ${contractId} (Hiro fallback)`);
 
       const result = await makeSmartApiCall(
         () => fetchCallReadOnlyFunction({
@@ -390,7 +390,7 @@ export const useStacks = () => {
           contractAddress: escrowContract.address,
           contractName: escrowContract.name,
           functionName: 'get-contract',
-          functionArgs: [contractId], // ✅ FIX: Use plain number instead of uintCV for proxy
+          functionArgs: [contractId], // FIX: Use plain number instead of uintCV for proxy
           senderAddress: escrowContract.address,
         }
       );
@@ -416,15 +416,15 @@ export const useStacks = () => {
           milestones: milestones
         };
         
-        console.log(`✅ Fetched contract ${contractId}:`, contract);
+        console.log(`Fetched contract ${contractId}:`, contract);
         setCachedData(cacheKey, contract);
         return contract;
       } else {
-        console.log(`❌ No data found for contract ${contractId}`);
+        console.log(`No data found for contract ${contractId}`);
         return null;
       }
     } catch (error) {
-      console.error(`❌ Error fetching contract ${contractId}:`, error);
+      console.error(`Error fetching contract ${contractId}:`, error);
       return null;
     }
   }, [fetchMilestonesByContract]);
@@ -436,7 +436,7 @@ export const useStacks = () => {
     try {
       const backendEscrows = await getUserEscrowsFromBackend(userAddress);
       if (backendEscrows && backendEscrows.length >= 0) {
-        console.log(`✅ Got ${backendEscrows.length} contracts from backend for user`);
+        console.log(`Got ${backendEscrows.length} contracts from backend for user`);
         const contracts: Contract[] = backendEscrows.map(e => ({
           id: e.id,
           client: e.client,
@@ -465,9 +465,9 @@ export const useStacks = () => {
 
     // Fallback: existing Hiro API code
     try {
-      console.log(`🚀 Fetching contracts for user ${userAddress}`);
+      console.log(`Fetching contracts for user ${userAddress}`);
       const totalContracts = await fetchTotalContractsCount();
-      console.log(`📊 Checking ${totalContracts} contracts for user involvement...`);
+      console.log(`Checking ${totalContracts} contracts for user involvement...`);
       
       const contracts: Contract[] = [];
       
@@ -484,7 +484,7 @@ export const useStacks = () => {
         for (const contract of batchResults) {
           if (contract && (contract.client === userAddress || contract.freelancer === userAddress)) {
             contracts.push(contract);
-            console.log(`✅ Added contract ${contract.id} (user is ${contract.client === userAddress ? 'client' : 'freelancer'})`);
+            console.log(`Added contract ${contract.id} (user is ${contract.client === userAddress ? 'client' : 'freelancer'})`);
           }
         }
         
@@ -494,37 +494,37 @@ export const useStacks = () => {
         }
       }
       
-      console.log(`🎯 RESULT: Found ${contracts.length} contracts for user`);
+      console.log(`RESULT: Found ${contracts.length} contracts for user`);
       return contracts;
     } catch (error) {
-      console.error('❌ Error fetching user contracts:', error);
+      console.error('Error fetching user contracts:', error);
       return [];
     }
   }, [fetchTotalContractsCount, fetchContractByIdInternal]);
 
-  // ✅ REACT QUERY HOOKS
+  // REACT QUERY HOOKS
   const {
     data: allContracts = [],
     isLoading: contractsLoading,
     refetch: refetchContracts,
   } = useQuery({
-    queryKey: QUERY_KEYS.contracts(userAddress || ''),
+    queryKey: QUERY_KEYS.contracts(userAddress || '-'),
     queryFn: () => fetchUserContractsInternal(userAddress!),
     enabled: !!userAddress && isSignedIn,
     ...QUERY_CONFIG,
     // refetchInterval: isPollingEnabled ? 30000 : false, // Poll every 30 seconds if enabled
   });
 
-  // ✅ DERIVED STATE
+  // DERIVED STATE
   const clientContracts = allContracts.filter(contract => contract.client === userAddress);
   const freelancerContracts = allContracts.filter(contract => contract.freelancer === userAddress);
 
-  // ✅ REFRESH FUNCTIONS - Declare BEFORE createEscrow
+  // REFRESH FUNCTIONS - Declare BEFORE createEscrow
   const refreshContracts = useCallback(async () => {
     if (!userAddress) return;
     
-    console.log('🔄 Refreshing contracts...');
-    // ✅ FIXED: Use Map methods consistently
+    console.log('Refreshing contracts...');
+    // FIXED: Use Map methods consistently
     contractCache.clear();
     // Invalidate React Query cache
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.contracts(userAddress) });
@@ -533,71 +533,71 @@ export const useStacks = () => {
 
   const debugContractSystem = useCallback(async () => {
     try {
-      console.log('🔍 DEBUG: Contract System Status');
-      console.log('📡 Network:', network);
-      console.log('👤 User Address:', userAddress);
-      console.log('🔐 Is Signed In:', isSignedIn);
-      console.log('📊 Client Contracts:', clientContracts.length);
-      console.log('💼 Freelancer Contracts:', freelancerContracts.length);
-      console.log('⚙️ Contracts Config:', CONTRACTS);
-      console.log('🏗️ Escrow Contract:', escrowContract);
+      console.log('DEBUG: Contract System Status');
+      console.log('Network:', network);
+      console.log('User Address:', userAddress);
+      console.log('Is Signed In:', isSignedIn);
+      console.log('Employer Contracts:', clientContracts.length);
+      console.log('Worker Contracts:', freelancerContracts.length);
+      console.log('Contracts Config:', CONTRACTS);
+      console.log('Escrow Contract:', escrowContract);
 
       // Test if contract exists
       try {
-        console.log('🧪 Testing contract existence...');
+        console.log('Testing contract existence...');
         const contractInfo = await fetch(`https://api.testnet.hiro.so/v1/contracts/${escrowContract.address}/${escrowContract.name}`);
-        console.log('📋 Contract Info Response:', contractInfo.status, contractInfo.statusText);
+        console.log('Contract Info Response:', contractInfo.status, contractInfo.statusText);
 
         if (contractInfo.ok) {
           const contractData = await contractInfo.json();
-          console.log('✅ Contract exists:', contractData);
+          console.log('Contract exists:', contractData);
         } else {
-          console.log('❌ Contract does not exist or is not deployed');
+          console.log('Contract does not exist or is not deployed');
 
           // Try to check if any version of the contract exists
-          console.log('🔍 Checking for other contract versions...');
+          console.log('Checking for other contract versions...');
           const versions = ['blocklancer-escrow', 'blocklancer-escrow-v2', 'blocklancer-escrow-v3', 'blocklancer-escrow-v4'];
           for (const version of versions) {
             try {
               const versionCheck = await fetch(`https://api.testnet.hiro.so/v1/contracts/${escrowContract.address}/${version}`);
-              console.log(`📋 ${version}: ${versionCheck.status} ${versionCheck.statusText}`);
+              console.log(`${version}: ${versionCheck.status} ${versionCheck.statusText}`);
             } catch (e) {
-              console.log(`❌ Error checking ${version}:`, e);
+              console.log(`Error checking ${version}:`, e);
             }
           }
         }
       } catch (contractError) {
-        console.error('❌ Error checking contract existence:', contractError);
+        console.error('Error checking contract existence:', contractError);
       }
 
       if (userAddress) {
-        console.log('🔄 Fetching fresh contract data...');
+        console.log('Fetching fresh contract data...');
         const totalContracts = await fetchTotalContractsCount();
-        console.log('📈 Total Contracts on Blockchain:', totalContracts);
+        console.log('Total Contracts on Blockchain:', totalContracts);
       }
     } catch (error) {
-      console.error('❌ Debug Error:', error);
+      console.error('Debug Error:', error);
     }
   }, [userAddress, isSignedIn, clientContracts, freelancerContracts, fetchTotalContractsCount]);
 
-  // ✅ WALLET CONNECTION
+  // WALLET CONNECTION
   const connectWallet = useCallback(() => {
-    console.log('🔌 Connecting wallet...');
+    console.log('Connecting wallet...');
 
     showConnect({
       appDetails: {
         name: 'BlockLancer',
-        icon: typeof window !== 'undefined' ? `${window.location.origin}/logo.png` : '',
+        icon: typeof window !== 'undefined' ? `${window.location.origin}/logo.png` : '-',
       },
       redirectTo: '/',
       onFinish: () => {
-        console.log('✅ Wallet connected successfully');
+        console.log('Wallet connected successfully');
 
         // Force reload user data
         window.location.reload();
       },
       onCancel: () => {
-        console.log('❌ Wallet connection cancelled');
+        console.log('Wallet connection cancelled');
       },
     });
   }, []);
@@ -608,10 +608,10 @@ export const useStacks = () => {
     setIsSignedIn(false);
     setUserAddress(undefined);
     queryClient.clear();
-    console.log('🔌 Wallet disconnected');
+    console.log('Wallet disconnected');
   }, [queryClient]);
 
-  // ✅ CONTRACT CREATION with proper validation (KEEP THIS!)
+  // CONTRACT CREATION with proper validation (KEEP THIS!)
   const createEscrow = useCallback(async (
     client: string,          
     freelancer: string,     
@@ -624,7 +624,7 @@ export const useStacks = () => {
       return { success: false, error: 'Wallet not connected' };
     }
 
-    // ✅ FIXED: Use correct function name
+    // FIXED: Use correct function name
     if (!isValidStacksAddress(freelancer)) {
       return { success: false, error: 'Invalid freelancer address format' };
     }
@@ -738,40 +738,40 @@ export const useStacks = () => {
     }
   }, [isSignedIn, userData, userAddress, network, queryClient, execute]);
 
-  // ✅ REAL-TIME CONTROLS
+  // REAL-TIME CONTROLS
   const enableRealTimeUpdates = useCallback(() => {
     setIsPollingEnabled(true);
-    console.log('🔄 Real-time updates enabled');
+    console.log('Real-time updates enabled');
   }, []);
 
   const disableRealTimeUpdates = useCallback(() => {
     setIsPollingEnabled(false);
-    console.log('⏸️ Real-time updates disabled');
+    console.log('Real-time updates disabled');
   }, []);
 
   const enableActivePolling = enableRealTimeUpdates;
   const disableActivePolling = disableRealTimeUpdates;
 
-  // ✅ ADDRESS VALIDATION HELPER (KEEP THIS!)
+  // ADDRESS VALIDATION HELPER (KEEP THIS!)
   const validateAddress = useCallback((address: string) => {
     return validateStacksAddress(address);
   }, []);
 
 
 
-  // ✅ FIXED addMilestone function - expects Unix timestamp (not block height)
+  // FIXED addMilestone function - expects Unix timestamp (not block height)
   const addMilestone = useCallback(async (
     contractId: number,
     description: string,
     amount: number,
-    deadline: number  // ✅ Now expects Unix timestamp in SECONDS
+    deadline: number  // Now expects Unix timestamp in SECONDS
   ): Promise<TransactionResponse> => {
     
     if (!isSignedIn || !userData) {
       return { success: false, error: 'Wallet not connected' };
     }
 
-    console.log('🔧 DEBUG: addMilestone called with:', {
+    console.log('DEBUG: addMilestone called with:', {
       contractId,
       description: description.substring(0, 30) + '...',
       amount: `${amount} microSTX (${amount / 1000000} STX)`,
