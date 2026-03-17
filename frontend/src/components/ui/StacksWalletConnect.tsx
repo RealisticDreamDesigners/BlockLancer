@@ -12,7 +12,7 @@ interface StacksWalletConnectProps {
 }
 
 export default function StacksWalletConnect({
-  className = '',
+  className = '-',
   showBalance = true
 }: StacksWalletConnectProps) {
   const { isSignedIn, userAddress, connectWallet, disconnectWallet } = useStacks();
@@ -73,7 +73,7 @@ export default function StacksWalletConnect({
           className="flex items-center gap-3 px-4 py-2.5 bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl hover:bg-white/15 transition-all duration-200 group"
         >
           {/* Wallet Icon */}
-          <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-lg">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
             <Wallet className="h-5 w-5 text-white" />
           </div>
 
@@ -97,7 +97,7 @@ export default function StacksWalletConnect({
           </div>
 
           {/* Chevron */}
-          <ChevronDown className={`h-4 w-4 text-gray-600 dark:text-white/70 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown className={`h-4 w-4 text-gray-600 dark:text-white/70 transition-transform duration-200 ${isOpen ? 'rotate-180' : '-'}`} />
         </button>
 
         {/* Dropdown Menu */}
@@ -150,7 +150,7 @@ export default function StacksWalletConnect({
                   href={`https://explorer.hiro.so/address/${userAddress}?chain=testnet`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 transition-colors"
+                  className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
                 >
                   <ExternalLink className="h-4 w-4" />
                   View on Explorer
@@ -178,7 +178,7 @@ export default function StacksWalletConnect({
     <Button
       onClick={handleConnect}
       disabled={isConnecting}
-      className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white border-none shadow-lg hover:shadow-xl transition-all duration-200"
+      className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-none shadow-lg hover:shadow-xl transition-all duration-200"
     >
       {isConnecting ? (
         <div className="flex items-center gap-2">
@@ -196,7 +196,7 @@ export default function StacksWalletConnect({
 }
 
 // Compact version for navigation bars
-export function CompactStacksWalletConnect({ className = '' }: { className?: string }) {
+export function CompactStacksWalletConnect({ className = '-' }: { className?: string }) {
   const { isSignedIn, userAddress, connectWallet, disconnectWallet } = useStacks();
   const [balance, setBalance] = useState<number | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -239,7 +239,7 @@ export function CompactStacksWalletConnect({ className = '' }: { className?: str
           onClick={() => setIsOpen(!isOpen)}
           className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-white/10 backdrop-blur-lg border border-gray-200 dark:border-white/20 rounded-lg hover:bg-gray-200 dark:hover:bg-white/15 transition-all"
         >
-          <div className="w-6 h-6 bg-gradient-to-br from-orange-500 to-orange-600 rounded-md flex items-center justify-center">
+          <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-md flex items-center justify-center">
             <Wallet className="h-3.5 w-3.5 text-white" />
           </div>
           <span className="text-sm font-medium text-gray-900 dark:text-white">
@@ -273,7 +273,7 @@ export function CompactStacksWalletConnect({ className = '' }: { className?: str
       onClick={handleConnect}
       disabled={isConnecting}
       size="sm"
-      className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white"
+      className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
     >
       {isConnecting ? <LoadingSpinner size="sm" /> : (
         <div className="flex items-center gap-1.5">
