@@ -44,19 +44,19 @@ export function FeaturesIllustration({ className = '-' }: FeaturesIllustrationPr
         <animate attributeName="stroke-dashoffset" from="0" to="24" dur="10s" repeatCount="indefinite" />
       </ellipse>
 
-      {/* Central shield */}
+      {/* Central blockchain block */}
       <g filter="url(#feat-blur)">
-        <path
-          d="M200 120 L250 145 L250 210 C250 245 225 270 200 280 C175 270 150 245 150 210 L150 145 Z"
-          fill="url(#feat-shield)"
-          stroke="#60a5fa"
-          strokeWidth="1"
-          strokeOpacity="0.5"
-        />
-        {/* Lock icon inside shield */}
-        <rect x="188" y="185" width="24" height="20" rx="3" fill="none" stroke="white" strokeWidth="2" strokeOpacity="0.9" />
-        <path d="M193 185 L193 175 C193 170 197 166 200 166 C203 166 207 170 207 175 L207 185" fill="none" stroke="white" strokeWidth="2" strokeOpacity="0.9" />
-        <circle cx="200" cy="197" r="2.5" fill="white" fillOpacity="0.9" />
+        {/* Isometric block - top face */}
+        <path d="M200 120 L255 150 L200 180 L145 150 Z" fill="#60a5fa" />
+        {/* Isometric block - left face */}
+        <path d="M145 150 L200 180 V250 L145 220 Z" fill="#2563eb" />
+        {/* Isometric block - right face */}
+        <path d="M255 150 L200 180 V250 L255 220 Z" fill="#1d4ed8" />
+        {/* Chain detail on right face */}
+        <rect x="218" y="195" width="16" height="10" rx="2" fill="white" fillOpacity="0.15" />
+        <rect x="218" y="212" width="16" height="10" rx="2" fill="white" fillOpacity="0.1" />
+        {/* Top face edge highlight */}
+        <path d="M200 120 L255 150 L200 180 L145 150 Z" fill="none" stroke="#93c5fd" strokeWidth="1" strokeOpacity="0.4" />
       </g>
 
       {/* Orbiting badges */}

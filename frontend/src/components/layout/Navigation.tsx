@@ -8,7 +8,7 @@ import { useStacks } from '@/hooks/useStacks';
 import { CompactStacksWalletConnect } from '@/components/ui/StacksWalletConnect';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import {
-  Shield,
+  Blocks,
   Briefcase,
   Scale,
   Menu,
@@ -17,6 +17,7 @@ import {
   Plus,
   LayoutDashboard,
   Star,
+  Landmark,
 } from 'lucide-react';
 
 /**
@@ -55,7 +56,7 @@ export function Navigation() {
     {
       name: 'DAO',
       href: '/dao',
-      icon: Shield,
+      icon: Landmark,
     },
     {
       name: 'Reputation',
@@ -80,7 +81,7 @@ export function Navigation() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <div className="p-1.5 bg-blue-600 rounded-lg group-hover:bg-blue-700 transition-colors">
-              <Shield className="h-6 w-6 text-white" />
+              <Blocks className="h-6 w-6 text-white" />
             </div>
             <span className="text-xl font-bold text-gray-900 dark:text-white">BlockLancer</span>
           </Link>

@@ -49,7 +49,7 @@ export default async function Image() {
           }}
         />
 
-        {/* Shield icon */}
+        {/* Blockchain block icon */}
         <div
           style={{
             display: 'flex',
@@ -64,19 +64,11 @@ export default async function Image() {
             viewBox="0 0 32 32"
             fill="none"
           >
-            <path
-              d="M16 2L4 7v9c0 7.73 5.12 14.96 12 17 6.88-2.04 12-9.27 12-17V7L16 2z"
-              fill="#2563eb"
-            />
-            <path
-              d="M16 4.5L6 8.75v7.25c0 6.62 4.38 12.81 10 14.56 5.62-1.75 10-7.94 10-14.56V8.75L16 4.5z"
-              fill="white"
-              fillOpacity="0.15"
-            />
-            <path
-              d="M14.5 19.5l-3.5-3.5 1.4-1.4 2.1 2.1 5.1-5.1 1.4 1.4-6.5 6.5z"
-              fill="white"
-            />
+            <path d="M16 3L28 9.5L16 16L4 9.5L16 3Z" fill="#60a5fa" />
+            <path d="M4 9.5L16 16V28.5L4 22V9.5Z" fill="#2563eb" />
+            <path d="M28 9.5L16 16V28.5L28 22V9.5Z" fill="#1d4ed8" />
+            <rect x="20" y="17" width="3.5" height="2.5" rx="0.5" fill="white" fillOpacity="0.2" />
+            <rect x="20" y="21" width="3.5" height="2.5" rx="0.5" fill="white" fillOpacity="0.15" />
           </svg>
         </div>
 

@@ -183,7 +183,7 @@ export function HeroIllustration({ className = '-' }: HeroIllustrationProps) {
         ))}
       </motion.div>
 
-      {/* === SHIELD LAYER (main, 3D tilt) === */}
+      {/* === BLOCKCHAIN BLOCK LAYER (main, 3D tilt) === */}
       <motion.div
         className="absolute inset-0 flex items-center justify-center"
         style={{
@@ -195,7 +195,7 @@ export function HeroIllustration({ className = '-' }: HeroIllustrationProps) {
           transformStyle: 'preserve-3d',
         }}
       >
-        {/* Shield glow pulse */}
+        {/* Block glow pulse */}
         <motion.div
           className="absolute w-56 h-56 rounded-full bg-blue-500/20 dark:bg-blue-500/15 blur-3xl"
           animate={{
@@ -209,7 +209,7 @@ export function HeroIllustration({ className = '-' }: HeroIllustrationProps) {
           }}
         />
 
-        {/* Shield SVG */}
+        {/* Blockchain Block SVG */}
         <motion.svg
           viewBox="0 0 200 240"
           fill="none"
@@ -225,15 +225,7 @@ export function HeroIllustration({ className = '-' }: HeroIllustrationProps) {
           }}
         >
           <defs>
-            <linearGradient id="heroShieldFill" x1="100" y1="10" x2="100" y2="220" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#3b82f6" />
-              <stop offset="100%" stopColor="#2563eb" />
-            </linearGradient>
-            <linearGradient id="heroShieldInner" x1="100" y1="30" x2="100" y2="200" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#93c5fd" stopOpacity="0.3" />
-              <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.05" />
-            </linearGradient>
-            <filter id="heroShieldGlow" x="-40%" y="-40%" width="180%" height="180%">
+            <filter id="heroBlockGlow" x="-40%" y="-40%" width="180%" height="180%">
               <feGaussianBlur stdDeviation="8" result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
@@ -242,35 +234,30 @@ export function HeroIllustration({ className = '-' }: HeroIllustrationProps) {
             </filter>
           </defs>
 
-          {/* Shield outer */}
-          <g filter="url(#heroShieldGlow)">
-            <path
-              d="M100 15 L175 55 L175 140 C175 185 140 215 100 230 C60 215 25 185 25 140 L25 55 Z"
-              fill="url(#heroShieldFill)"
-              stroke="#93c5fd"
-              strokeWidth="1.5"
-              strokeOpacity="0.6"
-            />
-            {/* Shield inner highlight */}
-            <path
-              d="M100 32 L162 65 L162 138 C162 175 135 200 100 213 C65 200 38 175 38 138 L38 65 Z"
-              fill="url(#heroShieldInner)"
-              stroke="#93c5fd"
-              strokeWidth="0.5"
-              strokeOpacity="0.2"
-            />
+          <g filter="url(#heroBlockGlow)">
+            {/* Isometric block - top face */}
+            <path d="M100 30 L175 70 L100 110 L25 70 Z" fill="#60a5fa" />
+            {/* Isometric block - left face */}
+            <path d="M25 70 L100 110 V195 L25 155 Z" fill="#2563eb" />
+            {/* Isometric block - right face */}
+            <path d="M175 70 L100 110 V195 L175 155 Z" fill="#1d4ed8" />
+            {/* Chain detail on right face */}
+            <rect x="125" y="125" width="22" height="15" rx="3" fill="white" fillOpacity="0.15" />
+            <rect x="125" y="148" width="22" height="15" rx="3" fill="white" fillOpacity="0.1" />
+            {/* Top face highlight edge */}
+            <path d="M100 30 L175 70 L100 110 L25 70 Z" fill="none" stroke="#93c5fd" strokeWidth="1" strokeOpacity="0.4" />
           </g>
 
-          {/* Checkmark with draw-on animation */}
+          {/* Chain link animation */}
           <motion.path
-            d="M72 125 L92 148 L132 100"
+            d="M100 195 V215 M90 210 L100 220 L110 210"
             fill="none"
-            stroke="#ffffff"
-            strokeWidth="6"
+            stroke="#60a5fa"
+            strokeWidth="3"
             strokeLinecap="round"
             strokeLinejoin="round"
             initial={{ pathLength: 0, opacity: 0 }}
-            animate={{ pathLength: 1, opacity: 0.95 }}
+            animate={{ pathLength: 1, opacity: 0.7 }}
             transition={{
               pathLength: { duration: 1.2, delay: 0.5, ease: 'easeInOut' },
               opacity: { duration: 0.3, delay: 0.5 },

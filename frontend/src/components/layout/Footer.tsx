@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Shield, Github, Twitter, FileText } from 'lucide-react';
+import { Blocks, Github, Twitter, FileText } from 'lucide-react';
 
 /**
  * Footer Component
@@ -40,7 +40,7 @@ export function Footer() {
           <div className="col-span-1">
             <div className="flex items-center gap-2 mb-4">
               <div className="p-1.5 bg-blue-600 rounded-lg">
-                <Shield className="h-5 w-5 text-white" />
+                <Blocks className="h-5 w-5 text-white" />
               </div>
               <span className="text-lg font-bold text-gray-900 dark:text-white">BlockLancer</span>
             </div>
