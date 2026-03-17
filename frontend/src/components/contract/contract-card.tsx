@@ -49,14 +49,14 @@ export const ContractCard: React.FC<ContractCardProps> = ({
 
   // Get other party info
   const otherParty = userRole === UserRole.CLIENT ? contract.freelancer : contract.client;
-  const otherPartyLabel = userRole === UserRole.CLIENT ? 'Freelancer' : 'Client';
+  const otherPartyLabel = userRole === UserRole.CLIENT ? 'Worker' : 'Employer';
 
   return (
     <motion.div
       whileHover={{ y: -2 }}
       transition={{ duration: 0.2 }}
-      className={`border rounded-lg p-6 bg-white shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${
-        isOverdue ? 'border-red-300 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+      className={`border rounded-lg p-6 bg-white dark:bg-gray-900/50 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer ${
+        isOverdue ? 'border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-900/20' : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700'
       }`}
       onClick={() => onViewDetails(contract.id)}
     >
@@ -64,19 +64,19 @@ export const ContractCard: React.FC<ContractCardProps> = ({
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               Contract #{contract.id}
             </h3>
             <span className={`px-2 py-1 text-xs font-medium rounded-full ${statusInfo.color}`}>
               {statusInfo.text}
             </span>
             {isOverdue && (
-              <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 border border-red-200">
+              <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400 border border-red-200 dark:border-red-800">
                 Overdue
               </span>
             )}
           </div>
-          <p className="text-gray-600 text-sm line-clamp-2 mb-3">
+          <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-2 mb-3">
             {contract.description}
           </p>
         </div>
@@ -86,7 +86,7 @@ export const ContractCard: React.FC<ContractCardProps> = ({
             e.stopPropagation();
             onViewDetails(contract.id);
           }}
-          className="ml-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+          className="ml-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
         >
           <Eye className="w-4 h-4" />
         </button>
@@ -96,16 +96,16 @@ export const ContractCard: React.FC<ContractCardProps> = ({
       {totalMilestones > 0 && (
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700">Progress</span>
-            <span className="text-sm text-gray-600">{progress.percentage}%</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Progress</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400">{progress.percentage}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <motion.div
               className={`h-2 rounded-full ${
                 progress.percentage === 100 
                   ? 'bg-green-500' 
                   : progress.percentage > 0 
-                    ? 'bg-gradient-to-r from-orange-500 to-orange-600'
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-600'
                     : 'bg-gray-300'
               }`}
               style={{ width: `${progress}%` }}
@@ -123,8 +123,8 @@ export const ContractCard: React.FC<ContractCardProps> = ({
         <div className="flex items-center gap-2">
           <DollarSign className="w-4 h-4 text-gray-400" />
           <div>
-            <p className="text-xs text-gray-600">Total Value</p>
-            <p className="font-semibold text-gray-900 text-sm">{formatSTX(contract.totalAmount)}</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400">Total Value</p>
+            <p className="font-semibold text-gray-900 dark:text-white text-sm">{formatSTX(contract.totalAmount)}</p>
           </div>
         </div>
 
@@ -132,8 +132,8 @@ export const ContractCard: React.FC<ContractCardProps> = ({
         <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4 text-gray-400" />
           <div>
-            <p className="text-xs text-gray-600">End Date</p>
-            <p className="font-semibold text-gray-900 text-sm">{formatDate(contract.endDate)}</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400">End Date</p>
+            <p className="font-semibold text-gray-900 dark:text-white text-sm">{formatDate(contract.endDate)}</p>
           </div>
         </div>
 
@@ -141,8 +141,8 @@ export const ContractCard: React.FC<ContractCardProps> = ({
         <div className="flex items-center gap-2">
           <Target className="w-4 h-4 text-gray-400" />
           <div>
-            <p className="text-xs text-gray-600">Milestones</p>
-            <p className="font-semibold text-gray-900 text-sm">
+            <p className="text-xs text-gray-600 dark:text-gray-400">Milestones</p>
+            <p className="font-semibold text-gray-900 dark:text-white text-sm">
               {completedMilestones}/{totalMilestones}
             </p>
           </div>
@@ -152,8 +152,8 @@ export const ContractCard: React.FC<ContractCardProps> = ({
         <div className="flex items-center gap-2">
           <User className="w-4 h-4 text-gray-400" />
           <div>
-            <p className="text-xs text-gray-600">{otherPartyLabel}</p>
-            <p className="font-semibold text-gray-900 text-sm font-mono">
+            <p className="text-xs text-gray-600 dark:text-gray-400">{otherPartyLabel}</p>
+            <p className="font-semibold text-gray-900 dark:text-white text-sm font-mono">
               {formatAddress(otherParty, 4, 4)}
             </p>
           </div>
@@ -161,13 +161,13 @@ export const ContractCard: React.FC<ContractCardProps> = ({
       </div>
 
       {/* Stats Row */}
-      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+      <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800">
         <div className="flex items-center gap-4">
           {/* Earnings/Payments */}
           {totalEarned > 0 && (
             <div className="flex items-center gap-1 text-sm">
               <TrendingUp className="w-3 h-3 text-green-500" />
-              <span className="text-gray-600">
+              <span className="text-gray-600 dark:text-gray-400">
                 {userRole === UserRole.FREELANCER ? 'Earned: ' : 'Paid: '}
               </span>
               <span className="font-semibold text-green-600">
@@ -180,15 +180,15 @@ export const ContractCard: React.FC<ContractCardProps> = ({
           {pendingMilestones > 0 && (
             <div className="flex items-center gap-1 text-sm">
               <Clock className="w-3 h-3 text-blue-500" />
-              <span className="text-gray-600">
-                {pendingMilestones} pending review{pendingMilestones !== 1 ? 's' : ''}
+              <span className="text-gray-600 dark:text-gray-400">
+                {pendingMilestones} pending review{pendingMilestones !== 1 ? 's' : '-'}
               </span>
             </div>
           )}
 
           {/* No milestones indicator */}
           {totalMilestones === 0 && (
-            <div className="flex items-center gap-1 text-sm text-gray-500">
+            <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
               <AlertTriangle className="w-3 h-3" />
               <span>No milestones set</span>
             </div>
@@ -196,7 +196,7 @@ export const ContractCard: React.FC<ContractCardProps> = ({
         </div>
 
         {/* Action indicator */}
-        <div className="text-xs text-gray-500">
+        <div className="text-xs text-gray-500 dark:text-gray-400">
           Click to view details
         </div>
       </div>
@@ -210,20 +210,20 @@ export const ContractCard: React.FC<ContractCardProps> = ({
             actionItems.push("Add milestones to start the project");
           }
           if (pendingMilestones > 0) {
-            actionItems.push(`Review ${pendingMilestones} submitted milestone${pendingMilestones !== 1 ? 's' : ''}`);
+            actionItems.push(`Review ${pendingMilestones} submitted milestone${pendingMilestones !== 1 ? 's' : '-'}`);
           }
         } else {
           const pendingWork = contract.milestones.filter(m => m.status === MilestoneStatus.PENDING).length;
           if (pendingWork > 0) {
-            actionItems.push(`${pendingWork} milestone${pendingWork !== 1 ? 's' : ''} ready to work on`);
+            actionItems.push(`${pendingWork} milestone${pendingWork !== 1 ? 's' : '-'} ready to work on`);
           }
         }
 
         if (actionItems.length > 0) {
           return (
-            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm font-medium text-blue-900 mb-1">Action Required:</p>
-              <ul className="text-sm text-blue-800 space-y-1">
+            <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/40 rounded-lg">
+              <p className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-1">Action Required:</p>
+              <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-1">
                 {actionItems.map((item, index) => (
                   <li key={index}>• {item}</li>
                 ))}

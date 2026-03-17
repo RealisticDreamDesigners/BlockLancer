@@ -47,7 +47,7 @@ export function LiveDisputeStatus({
 
       {showLiveIndicator && (
         <motion.div
-          className="flex items-center gap-1.5 text-xs text-gray-600"
+          className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >

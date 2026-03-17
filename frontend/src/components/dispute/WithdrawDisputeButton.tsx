@@ -67,8 +67,8 @@ export interface WithdrawDisputeButtonProps {
 const buttonVariants = {
   default: 'bg-gray-600 text-white hover:bg-gray-700 active:bg-gray-800',
   outline:
-    'border-2 border-gray-600 text-gray-600 hover:bg-gray-50 active:bg-gray-100',
-  ghost: 'text-gray-600 hover:bg-gray-50 active:bg-gray-100',
+    'border-2 border-gray-600 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100',
+  ghost: 'text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100',
 };
 
 const sizeVariants = {
@@ -103,14 +103,14 @@ function ConfirmationModal({
         if (e.target === e.currentTarget && !isPending) onCancel();
       }}
     >
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md animate-in zoom-in-95 slide-in-from-bottom-4 duration-200">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md animate-in zoom-in-95 slide-in-from-bottom-4 duration-200">
         {/* Header */}
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700/50">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-orange-100 rounded-lg">
-              <AlertTriangle className="h-6 w-6 text-orange-600" />
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <AlertTriangle className="h-6 w-6 text-blue-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
               Withdraw Dispute?
             </h3>
           </div>
@@ -118,7 +118,7 @@ function ConfirmationModal({
 
         {/* Body */}
         <div className="p-6 space-y-4">
-          <p className="text-gray-700">
+          <p className="text-gray-700 dark:text-gray-300">
             Are you sure you want to withdraw this dispute? This action cannot be
             undone.
           </p>
@@ -136,11 +136,11 @@ function ConfirmationModal({
         </div>
 
         {/* Actions */}
-        <div className="p-6 border-t border-gray-200 flex gap-3">
+        <div className="p-6 border-t border-gray-200 dark:border-gray-700/50 flex gap-3">
           <button
             onClick={onCancel}
             disabled={isPending}
-            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
@@ -208,7 +208,7 @@ export function WithdrawDisputeButton({
 
   // Determine disabled state and reason
   let disabled = false;
-  let reason = '';
+  let reason = '-';
 
   if (!currentUserAddress) {
     disabled = true;
@@ -396,7 +396,7 @@ export function WithdrawDisputeButtonIcon({
       disabled={disabled || isPending}
       className={cn(
         'p-2 rounded-lg',
-        'text-gray-600 hover:bg-gray-50 active:bg-gray-100',
+        'text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100',
         'transition-all duration-200',
         'focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2',
         (disabled || isPending) && 'opacity-50 cursor-not-allowed',

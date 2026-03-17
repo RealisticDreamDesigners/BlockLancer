@@ -143,7 +143,7 @@ export function ProposalList({
 }: ProposalListProps) {
   // State
   const [filterStatus, setFilterStatus] = useState<ProposalStatus | 'all'>(defaultFilter);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState('-');
   const [sortBy, setSortBy] = useState<ProposalSortOption>(defaultSort);
   const [sortOrder, setSortOrder] = useState<SortOrder>(defaultSortOrder);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
@@ -196,8 +196,8 @@ export function ProposalList({
   // Render error state
   if (error) {
     return (
-      <div className={cn('rounded-lg border border-red-200 bg-red-50 p-6', className)}>
-        <div className="flex items-center gap-3 text-red-800">
+      <div className={cn('rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 p-6', className)}>
+        <div className="flex items-center gap-3 text-red-800 dark:text-red-300">
           <AlertCircle className="h-5 w-5 flex-shrink-0" />
           <div>
             <h3 className="font-semibold">Failed to load proposals</h3>
@@ -235,7 +235,7 @@ export function ProposalList({
                   placeholder="Search proposals by ID, description, or proposer..."
                   value={searchTerm}
                   onChange={handleSearchChange}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             )}
@@ -248,8 +248,8 @@ export function ProposalList({
                   'px-4 py-2 border rounded-lg font-medium transition-colors',
                   'flex items-center gap-2',
                   showFilterPanel
-                    ? 'bg-blue-50 border-blue-300 text-blue-700'
-                    : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                    ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400'
+                    : 'bg-white dark:bg-gray-800/50 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                 )}
               >
                 <SlidersHorizontal className="h-4 w-4" />
@@ -260,11 +260,11 @@ export function ProposalList({
 
           {/* Filter Panel */}
           {showFilters && showFilterPanel && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <div className="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700/50 rounded-lg p-4">
               <div className="space-y-3">
                 {/* Status Filter */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Status
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -274,7 +274,7 @@ export function ProposalList({
                         'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
                         filterStatus === 'all'
                           ? 'bg-blue-600 text-white'
-                          : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                          : 'bg-white dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
                       )}
                     >
                       All Proposals
@@ -285,7 +285,7 @@ export function ProposalList({
                         'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
                         filterStatus === ProposalStatus.ACTIVE
                           ? 'bg-blue-600 text-white'
-                          : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                          : 'bg-white dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
                       )}
                     >
                       Active
@@ -296,7 +296,7 @@ export function ProposalList({
                         'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
                         filterStatus === ProposalStatus.PASSED
                           ? 'bg-blue-600 text-white'
-                          : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                          : 'bg-white dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
                       )}
                     >
                       Passed
@@ -307,7 +307,7 @@ export function ProposalList({
                         'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
                         filterStatus === ProposalStatus.FAILED
                           ? 'bg-blue-600 text-white'
-                          : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                          : 'bg-white dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
                       )}
                     >
                       Failed
@@ -318,7 +318,7 @@ export function ProposalList({
                         'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
                         filterStatus === ProposalStatus.EXECUTED
                           ? 'bg-blue-600 text-white'
-                          : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                          : 'bg-white dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
                       )}
                     >
                       Executed
@@ -329,7 +329,7 @@ export function ProposalList({
                 {/* Sort Options */}
                 {showSort && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Sort By
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -340,7 +340,7 @@ export function ProposalList({
                           'flex items-center gap-1',
                           sortBy === 'date'
                             ? 'bg-blue-600 text-white'
-                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                            : 'bg-white dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
                         )}
                       >
                         Date
@@ -355,7 +355,7 @@ export function ProposalList({
                           'flex items-center gap-1',
                           sortBy === 'status'
                             ? 'bg-blue-600 text-white'
-                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                            : 'bg-white dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
                         )}
                       >
                         Status
@@ -370,7 +370,7 @@ export function ProposalList({
                           'flex items-center gap-1',
                           sortBy === 'votes'
                             ? 'bg-blue-600 text-white'
-                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                            : 'bg-white dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
                         )}
                       >
                         Votes
@@ -385,7 +385,7 @@ export function ProposalList({
                           'flex items-center gap-1',
                           sortBy === 'id'
                             ? 'bg-blue-600 text-white'
-                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                            : 'bg-white dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
                         )}
                       >
                         ID
@@ -401,7 +401,7 @@ export function ProposalList({
           )}
 
           {/* Results Count */}
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
             Showing {processedProposals.length} {processedProposals.length === 1 ? 'proposal' : 'proposals'}
             {filterStatus !== 'all' && ' (filtered)'}
             {searchTerm && ' (searched)'}
@@ -423,12 +423,12 @@ export function ProposalList({
         </div>
       ) : (
         /* Empty State */
-        <div className="text-center py-12 px-4 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="text-center py-12 px-4 bg-gray-50 dark:bg-gray-950 rounded-lg border border-gray-200 dark:border-gray-700/50">
           <FileX className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
             No proposals found
           </h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             {emptyMessage ||
               (searchTerm
                 ? 'Try adjusting your search or filters'

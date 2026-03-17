@@ -26,11 +26,11 @@ export function FeeBreakdown({ grossAmount, feeRate, isPro }: FeeBreakdownProps)
           Platform Fee {isPro ? `(${(feeRate / 100).toFixed(1)}%)` : '(Free tier - no fee)'}
         </span>
         <span className={feeAmount > 0 ? 'text-red-500' : 'text-green-500'}>
-          {feeAmount > 0 ? '-' : ''}{formatSTX(feeAmount)} STX
+          {feeAmount > 0 ? '-' : '-'}{formatSTX(feeAmount)} STX
         </span>
       </div>
       <div className="border-t border-gray-200 dark:border-gray-700 pt-2 flex justify-between text-sm font-medium">
-        <span className="text-gray-700 dark:text-gray-300">Net to Freelancer</span>
+        <span className="text-gray-700 dark:text-gray-300">Net to Worker</span>
         <span className="text-green-600 dark:text-green-400">{formatSTX(netAmount)} STX</span>
       </div>
     </div>

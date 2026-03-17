@@ -40,7 +40,7 @@ export function JobCard({ job }: JobCardProps) {
 
   return (
     <Link href={`/jobs/${job.on_chain_id}`}>
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-orange-300 dark:hover:border-orange-600 transition-colors cursor-pointer">
+      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-blue-300 dark:hover:border-blue-600 transition-colors cursor-pointer">
         <div className="flex items-start justify-between mb-2">
           <h3 className="text-base font-semibold text-gray-900 dark:text-white line-clamp-1">
             {job.title || 'Untitled Job'}
@@ -56,7 +56,7 @@ export function JobCard({ job }: JobCardProps) {
 
         <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-3">
           <span>Budget: {formatSTX(job.budget_min)} - {formatSTX(job.budget_max)} STX</span>
-          <span>{job.application_count} application{job.application_count !== 1 ? 's' : ''}</span>
+          <span>{job.application_count} application{job.application_count !== 1 ? 's' : '-'}</span>
         </div>
 
         {skills.length > 0 && (

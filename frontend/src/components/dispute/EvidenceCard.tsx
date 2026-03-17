@@ -156,7 +156,7 @@ export function EvidenceCard({
                 </span>
               )}
             </div>
-            <code className={cn('block font-mono text-gray-600 truncate', isCompact ? 'text-xs' : 'text-sm')}>
+            <code className={cn('block font-mono text-gray-600 dark:text-gray-400 truncate', isCompact ? 'text-xs' : 'text-sm')}>
               {truncateAddress(submittedBy)}
             </code>
           </div>
@@ -173,7 +173,7 @@ export function EvidenceCard({
 
       {/* Timestamp */}
       {submittedAt && !isCompact && !isTimeline && (
-        <div className="flex items-center gap-1.5 text-xs text-gray-600 mb-3">
+        <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400 mb-3">
           <Calendar className="h-3.5 w-3.5" />
           <span>{formatBlockTime(submittedAt)}</span>
         </div>
@@ -182,7 +182,7 @@ export function EvidenceCard({
       {/* Evidence Text */}
       <div className={cn('mt-3', isCompact && 'mt-2')}>
         <div className={cn(
-          'text-gray-800 whitespace-pre-wrap break-words',
+          'text-gray-800 dark:text-gray-100 whitespace-pre-wrap break-words',
           isCompact ? 'text-sm' : 'text-base',
           'leading-relaxed'
         )}>
@@ -216,8 +216,8 @@ export function EvidenceCard({
 
       {/* Footer Info */}
       {!isCompact && (
-        <div className="mt-3 pt-3 border-t border-gray-200/50">
-          <div className="flex items-center gap-2 text-xs text-gray-600">
+        <div className="mt-3 pt-3 border-t border-gray-200/50 dark:border-gray-700/50">
+          <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
             <FileText className="h-3.5 w-3.5" />
             <span>{evidence.length} characters</span>
           </div>
@@ -287,7 +287,7 @@ export function EvidenceEmptyState({
     >
       <FileText className={cn('h-10 w-10 mx-auto mb-3', colors.icon, 'opacity-50')} />
       <p className={cn('text-sm font-medium', colors.text)}>
-        {message || `${role === 'client' ? 'Client' : 'Freelancer'} hasn't submitted evidence yet`}
+        {message || `${role === 'client' ? 'Employer' : 'Worker'} hasn't submitted evidence yet`}
       </p>
     </div>
   );
@@ -321,25 +321,25 @@ export function EvidenceCardSkeleton({
           <div className={cn('h-4 w-4 rounded', colors.badge)} />
           <div className="flex-1">
             <div className={cn('h-4 rounded w-24 mb-2', colors.badge)} />
-            <div className="h-3 bg-gray-200 rounded w-32" />
+            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-32" />
           </div>
         </div>
         <div className={cn('h-6 w-20 rounded-full', colors.badge)} />
       </div>
 
       {/* Timestamp skeleton */}
-      <div className="h-3 bg-gray-200 rounded w-28 mb-3" />
+      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-28 mb-3" />
 
       {/* Content skeleton */}
       <div className="space-y-2">
-        <div className="h-4 bg-gray-200 rounded w-full" />
-        <div className="h-4 bg-gray-200 rounded w-5/6" />
-        <div className="h-4 bg-gray-200 rounded w-4/6" />
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full" />
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6" />
+        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/6" />
       </div>
 
       {/* Footer skeleton */}
-      <div className="mt-3 pt-3 border-t border-gray-200/50">
-        <div className="h-3 bg-gray-200 rounded w-24" />
+      <div className="mt-3 pt-3 border-t border-gray-200/50 dark:border-gray-700/50">
+        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-24" />
       </div>
     </div>
   );
@@ -351,22 +351,22 @@ export function EvidenceCardSkeleton({
 
 export interface EvidenceComparisonProps {
   /**
-   * Client's evidence
+   * Employer's evidence
    */
   clientEvidence?: string;
 
   /**
-   * Freelancer's evidence
+   * Worker's evidence
    */
   freelancerEvidence?: string;
 
   /**
-   * Client address
+   * Employer address
    */
   clientAddress: string;
 
   /**
-   * Freelancer address
+   * Worker address
    */
   freelancerAddress: string;
 
@@ -403,9 +403,9 @@ export function EvidenceComparison({
 }: EvidenceComparisonProps) {
   return (
     <div className={cn('grid grid-cols-1 lg:grid-cols-2 gap-4', className)}>
-      {/* Client Evidence */}
+      {/* Employer Evidence */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-2">Client Evidence</h3>
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Employer Evidence</h3>
         {clientEvidence ? (
           <EvidenceCard
             evidence={clientEvidence}
@@ -419,9 +419,9 @@ export function EvidenceComparison({
         )}
       </div>
 
-      {/* Freelancer Evidence */}
+      {/* Worker Evidence */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-2">Freelancer Evidence</h3>
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Worker Evidence</h3>
         {freelancerEvidence ? (
           <EvidenceCard
             evidence={freelancerEvidence}

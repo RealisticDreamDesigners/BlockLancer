@@ -34,7 +34,7 @@ export default function MilestoneManager({
   const [loading, setLoading] = useState(false);
   
   const [milestoneData, setMilestoneData] = useState<MilestoneFormData>({
-    description: '',
+    description: '-',
     amount: 0,
     deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // Default: 1 week from now
   });
@@ -48,11 +48,11 @@ export default function MilestoneManager({
     try {
       setLoading(true);
       
-      // ✅ CONVERT TO UNIX TIMESTAMP IN SECONDS (not milliseconds!)
+      // CONVERT TO UNIX TIMESTAMP IN SECONDS (not milliseconds!)
       const deadlineTimestamp = Math.floor(milestoneData.deadline.getTime() / 1000); // Convert to seconds
       const amountInMicroStx = stxToMicroStx(milestoneData.amount);
 
-      // ✅ Validation: Check remaining balance
+      // Validation: Check remaining balance
       if (amountInMicroStx > contract.remainingBalance) {
         alert(`Error: Milestone amount (${milestoneData.amount} STX) exceeds remaining contract balance (${contract.remainingBalance / 1000000} STX)`);
         return;
@@ -62,7 +62,7 @@ export default function MilestoneManager({
         contract.id,
         milestoneData.description,
         amountInMicroStx,
-        deadlineTimestamp  // ✅ FIXED: Now using Unix timestamp (seconds since epoch)
+        deadlineTimestamp  // FIXED: Now using Unix timestamp (seconds since epoch)
       );
       
       if (result.success) {
@@ -136,9 +136,9 @@ export default function MilestoneManager({
   return (
     <div className="space-y-6">
       {/* Add Milestone Section */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
+      <div className="bg-white dark:bg-gray-800/50 rounded-xl shadow-lg p-6">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-semibold text-gray-900">Milestones</h3>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Milestones</h3>
           <button
             onClick={() => setShowAddMilestone(!showAddMilestone)}
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -153,16 +153,16 @@ export default function MilestoneManager({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="border-t pt-4 space-y-4"
+            className="border-t dark:border-gray-700 pt-4 space-y-4"
           >
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Description
               </label>
               <textarea
                 value={milestoneData.description}
                 onChange={(e) => setMilestoneData(prev => ({ ...prev, description: e.target.value }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 rows={3}
                 placeholder="Describe the milestone deliverables..."
               />
@@ -170,14 +170,14 @@ export default function MilestoneManager({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Amount (STX)
                 </label>
                 <input
                   type="number"
                   value={milestoneData.amount}
                   onChange={(e) => setMilestoneData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="0.0"
                   step="0.000001"
                   min="0"
@@ -185,14 +185,14 @@ export default function MilestoneManager({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Deadline
                 </label>
                 <input
                   type="datetime-local"
                   value={milestoneData.deadline.toISOString().slice(0, 16)}
                   onChange={(e) => setMilestoneData(prev => ({ ...prev, deadline: new Date(e.target.value) }))}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -200,7 +200,7 @@ export default function MilestoneManager({
             <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setShowAddMilestone(false)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
                 disabled={loading}
               >
                 Cancel
@@ -220,13 +220,13 @@ export default function MilestoneManager({
       {/* Existing Milestones */}
       <div className="space-y-4">
         {milestones.map((milestone, index) => (
-          <div key={index} className="bg-white rounded-xl shadow-lg p-6">
+          <div key={index} className="bg-white dark:bg-gray-800/50 rounded-xl shadow-lg p-6">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                   {milestone.description}
                 </h4>
-                <div className="flex items-center space-x-4 text-sm text-gray-600">
+                <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400">
                   <div className="flex items-center">
                     <DollarSign className="w-4 h-4 mr-1" />
                     {(milestone.amount / 1000000).toFixed(6)} STX
@@ -240,25 +240,25 @@ export default function MilestoneManager({
 
               <div className="flex items-center space-x-2">
                 {milestone.status === MilestoneStatus.PENDING && (
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400">
                     <Clock className="w-3 h-3 mr-1" />
                     Pending
                   </span>
                 )}
                 {milestone.status === MilestoneStatus.SUBMITTED && (
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400">
                     <AlertTriangle className="w-3 h-3 mr-1" />
                     Submitted
                   </span>
                 )}
                 {milestone.status === MilestoneStatus.APPROVED && (
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">
                     <CheckCircle className="w-3 h-3 mr-1" />
                     Approved
                   </span>
                 )}
                 {milestone.status === MilestoneStatus.REJECTED && (
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400">
                     <XCircle className="w-3 h-3 mr-1" />
                     Rejected
                   </span>
@@ -268,7 +268,7 @@ export default function MilestoneManager({
 
             {/* Milestone Actions */}
             {milestone.status === MilestoneStatus.PENDING && (
-              <div className="border-t pt-4">
+              <div className="border-t dark:border-gray-700 pt-4">
                 <button
                   onClick={() => {
                     const submissionNote = prompt('Enter submission note:');
@@ -282,7 +282,7 @@ export default function MilestoneManager({
             )}
 
             {milestone.status === MilestoneStatus.SUBMITTED && (
-              <div className="border-t pt-4 flex space-x-3">
+              <div className="border-t dark:border-gray-700 pt-4 flex space-x-3">
                 <button
                   onClick={() => handleApproveMilestone(index)}
                   className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"

@@ -59,9 +59,9 @@ export function Leaderboard() {
               const rank = page * pageSize + index + 1;
               const isExpanded = expandedAddress === user.address;
               const rankClass = rank === 1
-                ? 'text-orange-600 dark:text-orange-400 font-bold'
+                ? 'text-blue-600 dark:text-blue-400 font-bold'
                 : rank <= 3
-                  ? 'text-orange-500 dark:text-orange-400 font-semibold'
+                  ? 'text-blue-500 dark:text-blue-400 font-semibold'
                   : 'text-gray-900 dark:text-white font-medium';
               return (
                 <tr key={user.address} className="group">

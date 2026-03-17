@@ -84,17 +84,17 @@ function VoteButton({
         'hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed',
         isSelected
           ? `${color} border-current`
-          : 'bg-white border-gray-300 hover:border-gray-400'
+          : 'bg-white dark:bg-gray-800/50 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
       )}
     >
       <div className="flex flex-col items-center gap-2">
-        <div className={cn('text-2xl', isSelected ? 'text-white' : 'text-gray-600')}>
+        <div className={cn('text-2xl', isSelected ? 'text-white' : 'text-gray-600 dark:text-gray-400')}>
           {icon}
         </div>
-        <div className={cn('font-semibold', isSelected ? 'text-white' : 'text-gray-900')}>
+        <div className={cn('font-semibold', isSelected ? 'text-white' : 'text-gray-900 dark:text-white')}>
           {label}
         </div>
-        <div className={cn('text-xs', isSelected ? 'text-white/90' : 'text-gray-600')}>
+        <div className={cn('text-xs', isSelected ? 'text-white/90' : 'text-gray-600 dark:text-gray-400')}>
           {description}
         </div>
       </div>
@@ -178,8 +178,8 @@ export function VotingInterface({
   // If user already voted
   if (hasVoted && userVote) {
     return (
-      <div className={cn('bg-white rounded-lg border p-6', className)}>
-        <div className="flex items-center gap-3 text-green-800">
+      <div className={cn('bg-white dark:bg-gray-800/50 rounded-lg border dark:border-gray-700/50 p-6', className)}>
+        <div className="flex items-center gap-3 text-blue-800 dark:text-blue-300">
           <CheckCircle className="h-6 w-6 flex-shrink-0" />
           <div>
             <p className="font-semibold">You've already voted</p>
@@ -197,8 +197,8 @@ export function VotingInterface({
   // If not a DAO member
   if (!isDAOMember) {
     return (
-      <div className={cn('bg-yellow-50 rounded-lg border border-yellow-200 p-6', className)}>
-        <div className="flex items-center gap-3 text-yellow-800">
+      <div className={cn('bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800 p-6', className)}>
+        <div className="flex items-center gap-3 text-yellow-800 dark:text-yellow-300">
           <AlertTriangle className="h-6 w-6 flex-shrink-0" />
           <div>
             <p className="font-semibold">DAO Membership Required</p>
@@ -214,8 +214,8 @@ export function VotingInterface({
   // If proposal is not active
   if (!isActive) {
     return (
-      <div className={cn('bg-gray-50 rounded-lg border border-gray-200 p-6', className)}>
-        <div className="flex items-center gap-3 text-gray-700">
+      <div className={cn('bg-gray-50 dark:bg-gray-950 rounded-lg border border-gray-200 dark:border-gray-700/50 p-6', className)}>
+        <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
           <Info className="h-6 w-6 flex-shrink-0" />
           <div>
             <p className="font-semibold">Voting Closed</p>
@@ -230,11 +230,11 @@ export function VotingInterface({
 
   // Voting interface
   return (
-    <div className={cn('bg-white rounded-lg border p-6 space-y-6', className)}>
+    <div className={cn('bg-white dark:bg-gray-800/50 rounded-lg border dark:border-gray-700/50 p-6 space-y-6', className)}>
       {/* Header */}
       <div>
-        <h3 className="text-lg font-bold text-gray-900 mb-2">Cast Your Vote</h3>
-        <p className="text-sm text-gray-600">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Cast Your Vote</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           As a DAO member, your vote helps determine the outcome of this proposal.
           Choose your position carefully.
         </p>
@@ -279,23 +279,23 @@ export function VotingInterface({
       ) : (
         /* Confirmation */
         <div className="space-y-4">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-sm font-medium text-blue-900 mb-2">
+          <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/40 rounded-lg p-4">
+            <p className="text-sm font-medium text-blue-900 dark:text-blue-300 mb-2">
               Confirm your vote:
             </p>
-            <p className="text-lg font-bold text-blue-900">
-              {selectedVote === VoteType.YES && '✓ Yes - I support this proposal'}
-              {selectedVote === VoteType.NO && '✗ No - I oppose this proposal'}
+            <p className="text-lg font-bold text-blue-900 dark:text-blue-200">
+              {selectedVote === VoteType.YES && 'Yes - I support this proposal'}
+              {selectedVote === VoteType.NO && 'No - I oppose this proposal'}
               {selectedVote === VoteType.ABSTAIN && '− Abstain - No strong opinion'}
             </p>
           </div>
 
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/40 rounded-lg p-4">
             <div className="flex gap-2">
-              <AlertTriangle className="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-orange-900">
+              <AlertTriangle className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-blue-900 dark:text-blue-200">
                 <p className="font-medium">Important:</p>
-                <p className="text-orange-800 mt-1">
+                <p className="text-blue-800 dark:text-blue-300 mt-1">
                   Once cast, your vote cannot be changed. Make sure you've reviewed
                   all evidence before voting.
                 </p>
@@ -307,7 +307,7 @@ export function VotingInterface({
             <button
               onClick={handleCancel}
               disabled={isPending || isSuccess}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
             </button>
@@ -342,10 +342,10 @@ export function VotingInterface({
       )}
 
       {/* Info Banner */}
-      <div className="bg-gray-50 rounded-lg p-4">
+      <div className="bg-gray-50 dark:bg-gray-950 rounded-lg p-4">
         <div className="flex gap-2">
-          <Info className="h-4 w-4 text-gray-600 flex-shrink-0 mt-0.5" />
-          <div className="text-xs text-gray-700">
+          <Info className="h-4 w-4 text-gray-600 dark:text-gray-400 flex-shrink-0 mt-0.5" />
+          <div className="text-xs text-gray-700 dark:text-gray-300">
             <p className="font-medium mb-1">Voting Rules:</p>
             <ul className="list-disc list-inside space-y-0.5">
               <li>Each DAO member gets one vote per proposal</li>

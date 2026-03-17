@@ -67,14 +67,14 @@ function VoteBar({ label, count, percentage, color, icon }: VoteBarProps) {
       <div className="flex items-center justify-between text-sm">
         <div className="flex items-center gap-2">
           {icon}
-          <span className="font-medium text-gray-700">{label}</span>
+          <span className="font-medium text-gray-700 dark:text-gray-300">{label}</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="font-bold text-gray-900">{count}</span>
-          <span className="text-gray-600">({percentage}%)</span>
+          <span className="font-bold text-gray-900 dark:text-white">{count}</span>
+          <span className="text-gray-600 dark:text-gray-400">({percentage}%)</span>
         </div>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-3">
+      <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-3">
         <div
           className={cn('h-3 rounded-full transition-all duration-500', color)}
           style={{ width: `${percentage}%` }}
@@ -123,10 +123,10 @@ export function VotingResults({
   const isDetailed = variant === 'detailed';
 
   return (
-    <div className={cn('bg-white rounded-lg border p-6 space-y-6', className)}>
+    <div className={cn('bg-white dark:bg-gray-800/50 rounded-lg border dark:border-gray-700/50 p-6 space-y-6', className)}>
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-bold text-gray-900">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white">
           {isActive ? 'Current Results' : 'Final Results'}
         </h3>
         {thresholdReached && (
@@ -166,17 +166,17 @@ export function VotingResults({
 
       {/* Threshold Indicator */}
       {showThreshold && !isCompact && (
-        <div className="bg-gray-50 rounded-lg p-4">
+        <div className="bg-gray-50 dark:bg-gray-950 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <Target className="h-5 w-5 text-gray-600 flex-shrink-0 mt-0.5" />
+            <Target className="h-5 w-5 text-gray-600 dark:text-gray-400 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-medium text-gray-700">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Supermajority Threshold (70%)
                 </p>
-                <p className="text-sm font-bold text-gray-900">{yesPercent}%</p>
+                <p className="text-sm font-bold text-gray-900 dark:text-white">{yesPercent}%</p>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2 relative">
+              <div className="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-2 relative">
                 <div
                   className={cn(
                     'h-2 rounded-full transition-all duration-500',
@@ -186,17 +186,17 @@ export function VotingResults({
                 />
                 {/* 70% marker */}
                 <div
-                  className="absolute top-0 bottom-0 w-0.5 bg-gray-900"
+                  className="absolute top-0 bottom-0 w-0.5 bg-gray-900 dark:bg-gray-100"
                   style={{ left: '70%' }}
                 >
-                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 text-xs font-medium text-gray-900 whitespace-nowrap">
+                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 text-xs font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
                     70%
                   </div>
                 </div>
               </div>
-              <p className="text-xs text-gray-600 mt-2">
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
                 {thresholdReached
-                  ? '✓ Proposal has reached the required 70% Yes votes'
+                  ? 'Proposal has reached the required 70% Yes votes'
                   : `${(70 - yesPercent).toFixed(1)}% more Yes votes needed to pass`}
               </p>
             </div>
@@ -208,25 +208,25 @@ export function VotingResults({
       {showDetailed && !isCompact && (
         <div className="grid grid-cols-2 gap-4">
           {/* Total Votes */}
-          <div className="bg-blue-50 rounded-lg p-4">
-            <div className="flex items-center gap-2 text-blue-700 mb-2">
+          <div className="bg-blue-50 dark:bg-blue-900/10 rounded-lg p-4">
+            <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400 mb-2">
               <Users className="h-4 w-4" />
               <span className="text-sm font-medium">Total Votes</span>
             </div>
-            <p className="text-2xl font-bold text-blue-900">{totalVotes}</p>
-            <p className="text-xs text-blue-700 mt-1">
+            <p className="text-2xl font-bold text-blue-900 dark:text-blue-200">{totalVotes}</p>
+            <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">
               of {proposal.totalEligibleVoters} members
             </p>
           </div>
 
           {/* Turnout */}
-          <div className="bg-purple-50 rounded-lg p-4">
-            <div className="flex items-center gap-2 text-purple-700 mb-2">
+          <div className="bg-purple-50 dark:bg-purple-900/10 rounded-lg p-4">
+            <div className="flex items-center gap-2 text-purple-700 dark:text-purple-400 mb-2">
               <TrendingUp className="h-4 w-4" />
               <span className="text-sm font-medium">Turnout</span>
             </div>
-            <p className="text-2xl font-bold text-purple-900">{turnoutPercentage}%</p>
-            <p className="text-xs text-purple-700 mt-1">
+            <p className="text-2xl font-bold text-purple-900 dark:text-purple-200">{turnoutPercentage}%</p>
+            <p className="text-xs text-purple-700 dark:text-purple-400 mt-1">
               {proposal.totalEligibleVoters - totalVotes} members haven't voted
             </p>
           </div>
@@ -239,10 +239,10 @@ export function VotingResults({
           className={cn(
             'rounded-lg p-4 border-2',
             thresholdReached
-              ? 'bg-green-50 border-green-200'
+              ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/40'
               : yesPercent > noPercent
-              ? 'bg-blue-50 border-blue-200'
-              : 'bg-red-50 border-red-200'
+              ? 'bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800/40'
+              : 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/40'
           )}
         >
           <div className="flex items-start gap-3">
@@ -252,14 +252,14 @@ export function VotingResults({
               <XCircle className="h-5 w-5 text-gray-600 flex-shrink-0 mt-0.5" />
             )}
             <div>
-              <p className="text-sm font-semibold text-gray-900 mb-1">
+              <p className="text-sm font-semibold text-gray-900 dark:text-white mb-1">
                 {thresholdReached
                   ? 'Proposal is on track to pass'
                   : yesPercent > noPercent
                   ? 'More Yes votes than No, but threshold not reached'
                   : 'Proposal is currently failing'}
               </p>
-              <p className="text-xs text-gray-700">
+              <p className="text-xs text-gray-700 dark:text-gray-300">
                 {thresholdReached
                   ? 'If voting ended now, this proposal would pass with a supermajority.'
                   : yesPercent > noPercent
@@ -277,10 +277,10 @@ export function VotingResults({
           className={cn(
             'rounded-lg p-4 border-2',
             proposal.status === ProposalStatus.PASSED
-              ? 'bg-green-50 border-green-200'
+              ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/40'
               : proposal.status === ProposalStatus.EXECUTED
-              ? 'bg-blue-50 border-blue-200'
-              : 'bg-red-50 border-red-200'
+              ? 'bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800/40'
+              : 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800/40'
           )}
         >
           <div className="flex items-center gap-3">
@@ -291,12 +291,12 @@ export function VotingResults({
               <XCircle className="h-6 w-6 text-red-600" />
             )}
             <div>
-              <p className="text-base font-bold text-gray-900">
+              <p className="text-base font-bold text-gray-900 dark:text-white">
                 {proposal.status === ProposalStatus.PASSED && 'Proposal Passed'}
                 {proposal.status === ProposalStatus.EXECUTED && 'Proposal Executed'}
                 {proposal.status === ProposalStatus.FAILED && 'Proposal Failed'}
               </p>
-              <p className="text-sm text-gray-700 mt-1">
+              <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">
                 {proposal.status === ProposalStatus.PASSED &&
                   'The proposal reached the 70% supermajority and is ready to be executed.'}
                 {proposal.status === ProposalStatus.EXECUTED &&
@@ -349,15 +349,15 @@ export function VotingResultsSimple({ proposal, className }: VotingResultsSimple
     <div className={cn('inline-flex items-center gap-4 text-sm', className)}>
       <div className="flex items-center gap-1.5">
         <ThumbsUp className="h-3.5 w-3.5 text-green-600" />
-        <span className="font-medium text-green-900">{yesPercent}%</span>
+        <span className="font-medium text-green-900 dark:text-green-200">{yesPercent}%</span>
       </div>
       <div className="flex items-center gap-1.5">
         <ThumbsDown className="h-3.5 w-3.5 text-red-600" />
-        <span className="font-medium text-red-900">{noPercent}%</span>
+        <span className="font-medium text-gray-700 dark:text-gray-300">{noPercent}%</span>
       </div>
       <div className="flex items-center gap-1.5">
         <Minus className="h-3.5 w-3.5 text-gray-600" />
-        <span className="font-medium text-gray-900">{abstainPercent}%</span>
+        <span className="font-medium text-gray-900 dark:text-white">{abstainPercent}%</span>
       </div>
     </div>
   );

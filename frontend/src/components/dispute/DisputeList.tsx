@@ -150,7 +150,7 @@ export function DisputeList({
 }: DisputeListProps) {
   // State
   const [filterStatus, setFilterStatus] = useState<DisputeStatus | 'all'>(defaultFilter);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState('-');
   const [sortBy, setSortBy] = useState<SortOption>(defaultSort);
   const [sortOrder, setSortOrder] = useState<SortOrder>(defaultSortOrder);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
@@ -242,7 +242,7 @@ export function DisputeList({
                   placeholder="Search disputes by ID, address, or reason..."
                   value={searchTerm}
                   onChange={handleSearchChange}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-900 dark:border-gray-600 dark:text-white"
                 />
               </div>
             )}
@@ -255,8 +255,8 @@ export function DisputeList({
                   'px-4 py-2 border rounded-lg font-medium transition-colors',
                   'flex items-center gap-2',
                   showFilterPanel
-                    ? 'bg-blue-50 border-blue-300 text-blue-700'
-                    : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                    ? 'bg-blue-50 border-blue-300 text-blue-700 dark:bg-blue-900/20 dark:border-blue-600 dark:text-blue-400'
+                    : 'bg-white dark:bg-gray-800/50 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                 )}
               >
                 <SlidersHorizontal className="h-4 w-4" />
@@ -267,11 +267,11 @@ export function DisputeList({
 
           {/* Filter Panel */}
           {showFilters && showFilterPanel && (
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <div className="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700/50 rounded-lg p-4">
               <div className="space-y-3">
                 {/* Status Filter */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Status
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -281,7 +281,7 @@ export function DisputeList({
                         'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
                         filterStatus === 'all'
                           ? 'bg-blue-600 text-white'
-                          : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                          : 'bg-white dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
                       )}
                     >
                       All Disputes
@@ -292,7 +292,7 @@ export function DisputeList({
                         'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
                         filterStatus === DisputeStatus.OPEN
                           ? 'bg-blue-600 text-white'
-                          : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                          : 'bg-white dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
                       )}
                     >
                       Open
@@ -303,7 +303,7 @@ export function DisputeList({
                         'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
                         filterStatus === DisputeStatus.RESOLVED
                           ? 'bg-blue-600 text-white'
-                          : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                          : 'bg-white dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
                       )}
                     >
                       Resolved
@@ -314,7 +314,7 @@ export function DisputeList({
                         'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
                         filterStatus === DisputeStatus.WITHDRAWN
                           ? 'bg-blue-600 text-white'
-                          : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                          : 'bg-white dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
                       )}
                     >
                       Withdrawn
@@ -325,7 +325,7 @@ export function DisputeList({
                 {/* Sort Options */}
                 {showSort && (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Sort By
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -336,7 +336,7 @@ export function DisputeList({
                           'flex items-center gap-1',
                           sortBy === 'date'
                             ? 'bg-blue-600 text-white'
-                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                            : 'bg-white dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
                         )}
                       >
                         Date
@@ -351,7 +351,7 @@ export function DisputeList({
                           'flex items-center gap-1',
                           sortBy === 'status'
                             ? 'bg-blue-600 text-white'
-                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                            : 'bg-white dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
                         )}
                       >
                         Status
@@ -366,7 +366,7 @@ export function DisputeList({
                           'flex items-center gap-1',
                           sortBy === 'id'
                             ? 'bg-blue-600 text-white'
-                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                            : 'bg-white dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800'
                         )}
                       >
                         ID
@@ -382,7 +382,7 @@ export function DisputeList({
           )}
 
           {/* Results Count */}
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
             Showing {processedDisputes.length} {processedDisputes.length === 1 ? 'dispute' : 'disputes'}
             {filterStatus !== 'all' && ' (filtered)'}
             {searchTerm && ' (searched)'}
@@ -405,12 +405,12 @@ export function DisputeList({
         </div>
       ) : (
         /* Empty State */
-        <div className="text-center py-12 px-4 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="text-center py-12 px-4 bg-gray-50 dark:bg-gray-950 rounded-lg border border-gray-200 dark:border-gray-700/50">
           <FileX className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
             No disputes found
           </h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
             {emptyMessage ||
               (searchTerm
                 ? 'Try adjusting your search or filters'

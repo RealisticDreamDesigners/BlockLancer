@@ -84,7 +84,7 @@ export function EvidenceSubmission({
   inline = false,
 }: EvidenceSubmissionProps) {
   // State
-  const [evidence, setEvidence] = useState('');
+  const [evidence, setEvidence] = useState('-');
   const [showValidation, setShowValidation] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
 
@@ -119,7 +119,7 @@ export function EvidenceSubmission({
       : charCount > MAX_EVIDENCE_LENGTH * 0.9
       ? 'text-red-600 font-semibold'
       : charCount > MAX_EVIDENCE_LENGTH * 0.7
-      ? 'text-orange-600'
+      ? 'text-blue-600'
       : 'text-green-600';
 
   // Handle submit
@@ -139,7 +139,7 @@ export function EvidenceSubmission({
           onSuccess?.();
           // Reset form
           setTimeout(() => {
-            setEvidence('');
+            setEvidence('-');
             setShowValidation(false);
             setIsPreviewMode(false);
           }, 2000);
@@ -151,7 +151,7 @@ export function EvidenceSubmission({
   // Handle cancel
   const handleCancel = () => {
     if (!isPending) {
-      setEvidence('');
+      setEvidence('-');
       setShowValidation(false);
       setIsPreviewMode(false);
     }
@@ -188,10 +188,10 @@ export function EvidenceSubmission({
   if (!userRole) {
     return (
       <div className={cn(
-        'rounded-lg border border-gray-200 bg-gray-50 p-4',
+        'rounded-lg border border-gray-200 dark:border-gray-700/50 bg-gray-50 dark:bg-gray-950 p-4',
         className
       )}>
-        <div className="flex items-center gap-3 text-gray-700">
+        <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
           <Info className="h-5 w-5 flex-shrink-0" />
           <p className="text-sm">
             Only the client and freelancer can submit evidence for this dispute.
@@ -207,26 +207,26 @@ export function EvidenceSubmission({
     <form
       onSubmit={handleSubmit}
       className={cn(
-        !inline && 'bg-white rounded-lg border border-gray-200 p-6',
+        !inline && 'bg-white dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700/50 p-6',
         'space-y-4',
         className
       )}
     >
       {/* Header */}
       {!inline && (
-        <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
+        <div className="flex items-center gap-3 pb-4 border-b border-gray-200 dark:border-gray-700/50">
           <div className={cn(
             'p-2 rounded-lg',
-            userRole === 'client' ? 'bg-blue-100' : 'bg-purple-100'
+            userRole === 'client' ? 'bg-blue-100 dark:bg-blue-900/20' : 'bg-purple-100 dark:bg-purple-900/20'
           )}>
             <FileText className={cn(
               'h-5 w-5',
-              userRole === 'client' ? 'text-blue-600' : 'text-purple-600'
+              userRole === 'client' ? 'text-blue-600 dark:text-blue-400' : 'text-purple-600 dark:text-purple-400'
             )} />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">Submit Your Evidence</h3>
-            <p className="text-sm text-gray-600">
+            <h3 className="font-semibold text-gray-900 dark:text-white">Submit Your Evidence</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               As the {userRole}, provide evidence to support your case
             </p>
           </div>
@@ -234,12 +234,12 @@ export function EvidenceSubmission({
       )}
 
       {/* Info Banner */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+      <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/40 rounded-lg p-3">
         <div className="flex gap-2">
-          <Info className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-blue-900">
+          <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-blue-900 dark:text-blue-300">
             <p className="font-medium mb-1">Tips for strong evidence:</p>
-            <ul className="list-disc list-inside space-y-0.5 text-blue-800 text-xs">
+            <ul className="list-disc list-inside space-y-0.5 text-blue-800 dark:text-blue-400 text-xs">
               <li>Be factual and specific</li>
               <li>Include relevant dates and details</li>
               <li>Reference contract terms if applicable</li>
@@ -250,7 +250,7 @@ export function EvidenceSubmission({
       </div>
 
       {/* Mode Tabs */}
-      <div className="flex gap-2 border-b border-gray-200">
+      <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700/50">
         <button
           type="button"
           onClick={() => setIsPreviewMode(false)}
@@ -259,7 +259,7 @@ export function EvidenceSubmission({
             'flex items-center gap-2',
             !isPreviewMode
               ? `border-b-2 border-${roleColor}-600 text-${roleColor}-600`
-              : 'text-gray-600 hover:text-gray-900'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
           )}
         >
           <Edit className="h-4 w-4" />
@@ -275,7 +275,7 @@ export function EvidenceSubmission({
             'disabled:opacity-50 disabled:cursor-not-allowed',
             isPreviewMode
               ? `border-b-2 border-${roleColor}-600 text-${roleColor}-600`
-              : 'text-gray-600 hover:text-gray-900'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
           )}
         >
           <Eye className="h-4 w-4" />
@@ -298,6 +298,7 @@ export function EvidenceSubmission({
               'focus:ring-2 focus:border-transparent',
               'transition-all duration-200',
               'disabled:bg-gray-100 disabled:cursor-not-allowed',
+              'dark:bg-gray-900 dark:border-gray-600 dark:text-white',
               userRole === 'client'
                 ? 'focus:ring-blue-500'
                 : 'focus:ring-purple-500',
@@ -326,7 +327,7 @@ export function EvidenceSubmission({
 
           {/* Hint */}
           {!showError && (
-            <p id="evidence-hint" className="text-xs text-gray-500">
+            <p id="evidence-hint" className="text-xs text-gray-500 dark:text-gray-400">
               Provide detailed evidence ({MIN_EVIDENCE_LENGTH}-{MAX_EVIDENCE_LENGTH} characters)
             </p>
           )}
@@ -337,26 +338,26 @@ export function EvidenceSubmission({
           <div className={cn(
             'min-h-[200px] p-4 rounded-lg border-2',
             userRole === 'client'
-              ? 'bg-blue-50 border-blue-200'
-              : 'bg-purple-50 border-purple-200'
+              ? 'bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800/40'
+              : 'bg-purple-50 dark:bg-purple-900/10 border-purple-200 dark:border-purple-800/40'
           )}>
-            <p className="text-sm text-gray-700 whitespace-pre-wrap break-words leading-relaxed">
+            <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words leading-relaxed">
               {evidence || 'Your evidence will appear here...'}
             </p>
           </div>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-500 dark:text-gray-400">
             This is how your evidence will appear to DAO members
           </p>
         </div>
       )}
 
       {/* Warning */}
-      <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
         <div className="flex gap-2">
-          <AlertTriangle className="h-4 w-4 text-orange-600 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-orange-900">
+          <AlertTriangle className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-blue-900">
             <p className="font-medium">Important:</p>
-            <p className="text-orange-800 text-xs mt-1">
+            <p className="text-blue-800 text-xs mt-1">
               Once submitted, evidence cannot be edited or deleted. DAO members will
               review all evidence when voting on the resolution.
             </p>
@@ -365,13 +366,13 @@ export function EvidenceSubmission({
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3 pt-4 border-t border-gray-200">
+      <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700/50">
         {evidence && (
           <button
             type="button"
             onClick={handleCancel}
             disabled={isPending || isSuccess}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Clear
           </button>

@@ -125,8 +125,8 @@ export function DisputeBadge({
             'flex-shrink-0 rounded-full',
             variant.dot,
             // Extract background color from statusInfo.color
-            statusInfo.color.includes('orange')
-              ? 'bg-orange-600'
+            statusInfo.color.includes('blue')
+              ? 'bg-blue-600'
               : statusInfo.color.includes('green')
               ? 'bg-green-600'
               : 'bg-gray-600'

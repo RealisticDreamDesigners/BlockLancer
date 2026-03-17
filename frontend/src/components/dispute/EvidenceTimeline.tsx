@@ -84,7 +84,7 @@ function TimelineEvent({
         <div
           className={cn(
             'absolute left-6 top-12 bottom-0 w-0.5',
-            side === 'center' ? 'bg-gray-300' : color
+            side === 'center' ? 'bg-gray-300 dark:bg-gray-600' : color
           )}
         />
       )}
@@ -105,12 +105,12 @@ function TimelineEvent({
         {/* Content */}
         <div className="flex-1 pb-8">
           <div className="space-y-1 mb-2">
-            <h4 className="font-semibold text-gray-900">{title}</h4>
+            <h4 className="font-semibold text-gray-900 dark:text-white">{title}</h4>
             {description && (
-              <p className="text-sm text-gray-600">{description}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{description}</p>
             )}
             {timestamp && (
-              <div className="flex items-center gap-1.5 text-xs text-gray-500">
+              <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
                 <Calendar className="h-3 w-3" />
                 <span>{formatBlockTime(timestamp)}</span>
               </div>
@@ -174,27 +174,27 @@ export function EvidenceTimeline({
           icon={<AlertCircle className="h-6 w-6 text-white" />}
           title="Dispute Opened"
           description={`Opened by ${
-            dispute.openedBy === dispute.client ? 'Client' : 'Freelancer'
+            dispute.openedBy === dispute.client ? 'Employer' : 'Worker'
           }`}
           timestamp={dispute.createdAt}
-          color="bg-orange-500"
+          color="bg-blue-500"
           isLast={++currentEvent === eventCount}
           side="center"
         >
-          <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
-            <p className="text-sm font-medium text-orange-900 mb-1">Reason:</p>
-            <p className="text-sm text-orange-800 whitespace-pre-wrap">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p className="text-sm font-medium text-blue-900 mb-1">Reason:</p>
+            <p className="text-sm text-blue-800 whitespace-pre-wrap">
               {dispute.reason}
             </p>
           </div>
         </TimelineEvent>
       )}
 
-      {/* Client Evidence */}
+      {/* Employer Evidence */}
       {hasClientEvidence && (
         <TimelineEvent
           icon={<FileText className="h-6 w-6 text-white" />}
-          title="Client Submitted Evidence"
+          title="Employer Submitted Evidence"
           description="Evidence supporting client's position"
           timestamp={dispute.createdAt} // In real app, you'd have separate timestamp
           color="bg-blue-500"
@@ -211,11 +211,11 @@ export function EvidenceTimeline({
         </TimelineEvent>
       )}
 
-      {/* Freelancer Evidence */}
+      {/* Worker Evidence */}
       {hasFreelancerEvidence && (
         <TimelineEvent
           icon={<FileText className="h-6 w-6 text-white" />}
-          title="Freelancer Submitted Evidence"
+          title="Worker Submitted Evidence"
           description="Evidence supporting freelancer's position"
           timestamp={dispute.createdAt} // In real app, you'd have separate timestamp
           color="bg-purple-500"
@@ -249,11 +249,11 @@ export function EvidenceTimeline({
         </TimelineEvent>
       )}
 
-      {/* Client Evidence Missing */}
+      {/* Employer Evidence Missing */}
       {!hasClientEvidence && hasFreelancerEvidence && (
         <TimelineEvent
           icon={<FileText className="h-6 w-6 text-gray-400" />}
-          title="Client Evidence Pending"
+          title="Employer Evidence Pending"
           description="Waiting for client to submit evidence"
           color="bg-gray-300"
           isLast={++currentEvent === eventCount}
@@ -263,11 +263,11 @@ export function EvidenceTimeline({
         </TimelineEvent>
       )}
 
-      {/* Freelancer Evidence Missing */}
+      {/* Worker Evidence Missing */}
       {hasClientEvidence && !hasFreelancerEvidence && (
         <TimelineEvent
           icon={<FileText className="h-6 w-6 text-gray-400" />}
-          title="Freelancer Evidence Pending"
+          title="Worker Evidence Pending"
           description="Waiting for freelancer to submit evidence"
           color="bg-gray-300"
           isLast={++currentEvent === eventCount}
@@ -291,9 +291,9 @@ export function EvidenceTimeline({
           <div className="bg-green-50 border border-green-200 rounded-lg p-3">
             <p className="text-sm font-medium text-green-900">
               Resolution: {dispute.resolution === 1
-                ? 'Client Wins'
+                ? 'Employer Wins'
                 : dispute.resolution === 2
-                ? 'Freelancer Wins'
+                ? 'Worker Wins'
                 : dispute.resolution === 3
                 ? 'Split Decision'
                 : 'Pending'}
@@ -320,8 +320,8 @@ export function EvidenceTimeline({
           isLast={++currentEvent === eventCount}
           side="center"
         >
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-            <p className="text-sm text-gray-700">
+          <div className="bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-700/50 rounded-lg p-3">
+            <p className="text-sm text-gray-700 dark:text-gray-300">
               The dispute was withdrawn and the contract can proceed normally.
             </p>
           </div>
@@ -353,26 +353,26 @@ export function EvidenceTimelineSkeleton({ className }: { className?: string }) 
     <div className={cn('space-y-0', className)}>
       {/* Event 1 */}
       <div className="relative">
-        <div className="absolute left-6 top-12 bottom-0 w-0.5 bg-gray-300" />
+        <div className="absolute left-6 top-12 bottom-0 w-0.5 bg-gray-300 dark:bg-gray-600" />
         <div className="flex gap-4">
-          <div className="w-12 h-12 rounded-full bg-gray-300 animate-pulse" />
+          <div className="w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-600 animate-pulse" />
           <div className="flex-1 pb-8">
-            <div className="h-5 bg-gray-200 rounded w-32 mb-2 animate-pulse" />
-            <div className="h-4 bg-gray-200 rounded w-48 mb-2 animate-pulse" />
-            <div className="h-24 bg-gray-100 rounded animate-pulse" />
+            <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-2 animate-pulse" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-48 mb-2 animate-pulse" />
+            <div className="h-24 bg-gray-100 dark:bg-gray-700 rounded animate-pulse" />
           </div>
         </div>
       </div>
 
       {/* Event 2 */}
       <div className="relative">
-        <div className="absolute left-6 top-12 bottom-0 w-0.5 bg-gray-300" />
+        <div className="absolute left-6 top-12 bottom-0 w-0.5 bg-gray-300 dark:bg-gray-600" />
         <div className="flex gap-4">
-          <div className="w-12 h-12 rounded-full bg-gray-300 animate-pulse" />
+          <div className="w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-600 animate-pulse" />
           <div className="flex-1 pb-8">
-            <div className="h-5 bg-gray-200 rounded w-40 mb-2 animate-pulse" />
-            <div className="h-4 bg-gray-200 rounded w-56 mb-2 animate-pulse" />
-            <div className="h-32 bg-gray-100 rounded animate-pulse" />
+            <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-40 mb-2 animate-pulse" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-56 mb-2 animate-pulse" />
+            <div className="h-32 bg-gray-100 dark:bg-gray-700 rounded animate-pulse" />
           </div>
         </div>
       </div>
@@ -380,11 +380,11 @@ export function EvidenceTimelineSkeleton({ className }: { className?: string }) 
       {/* Event 3 */}
       <div className="relative">
         <div className="flex gap-4">
-          <div className="w-12 h-12 rounded-full bg-gray-300 animate-pulse" />
+          <div className="w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-600 animate-pulse" />
           <div className="flex-1 pb-8">
-            <div className="h-5 bg-gray-200 rounded w-36 mb-2 animate-pulse" />
-            <div className="h-4 bg-gray-200 rounded w-52 mb-2 animate-pulse" />
-            <div className="h-32 bg-gray-100 rounded animate-pulse" />
+            <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-36 mb-2 animate-pulse" />
+            <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-52 mb-2 animate-pulse" />
+            <div className="h-32 bg-gray-100 dark:bg-gray-700 rounded animate-pulse" />
           </div>
         </div>
       </div>

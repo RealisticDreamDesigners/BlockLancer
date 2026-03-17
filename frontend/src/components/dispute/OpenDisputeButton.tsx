@@ -15,12 +15,12 @@ export interface OpenDisputeButtonProps {
   contractId: number;
 
   /**
-   * Client address
+   * Employer address
    */
   clientAddress: string;
 
   /**
-   * Freelancer address
+   * Worker address
    */
   freelancerAddress: string;
 
@@ -84,8 +84,8 @@ export interface OpenDisputeButtonProps {
 const buttonVariants = {
   default: 'bg-red-600 text-white hover:bg-red-700 active:bg-red-800',
   outline:
-    'border-2 border-red-600 text-red-600 hover:bg-red-50 active:bg-red-100',
-  ghost: 'text-red-600 hover:bg-red-50 active:bg-red-100',
+    'border-2 border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-950 active:bg-red-100',
+  ghost: 'text-red-600 hover:bg-red-50 dark:hover:bg-red-950 active:bg-red-100',
   destructive: 'bg-red-600 text-white hover:bg-red-700 active:bg-red-800',
 };
 
@@ -151,7 +151,7 @@ export function OpenDisputeButton({
       reason = 'This contract already has an active dispute';
     } else if (!isParticipant) {
       disabled = true;
-      reason = 'Only the client or freelancer can open a dispute';
+      reason = 'Only the client or worker can open a dispute';
     }
   } else {
     disabled = true;

@@ -58,18 +58,18 @@ export function LiveVoteCounter({
     return (
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-700">Votes:</span>
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Votes:</span>
           <div className="flex items-center gap-1">
             <span className="text-sm text-green-600 font-semibold">{proposal.yesVotes} Yes</span>
             <span className="text-xs text-gray-400">•</span>
-            <span className="text-sm text-red-600 font-semibold">{proposal.noVotes} No</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400 font-semibold">{proposal.noVotes} No</span>
             <span className="text-xs text-gray-400">•</span>
-            <span className="text-sm text-gray-600">{proposal.abstainVotes} Abstain</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400">{proposal.abstainVotes} Abstain</span>
           </div>
         </div>
 
         {showLiveIndicator && (
-          <div className="flex items-center gap-1.5 text-xs text-gray-600">
+          <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
             <motion.div
               animate={{ rotate: [0, 360] }}
               transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
@@ -87,9 +87,9 @@ export function LiveVoteCounter({
     <div className="space-y-4">
       {/* Header with Live Indicator */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-900">Vote Progress</h3>
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Vote Progress</h3>
         {showLiveIndicator && (
-          <div className="flex items-center gap-1.5 text-xs text-gray-600">
+          <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
             <motion.div
               animate={{ rotate: [0, 360] }}
               transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
@@ -116,8 +116,8 @@ export function LiveVoteCounter({
             className="text-center"
           >
             <div className="text-2xl font-bold text-green-600">{proposal.yesVotes}</div>
-            <div className="text-xs text-gray-600 mt-1">Yes</div>
-            <div className="text-xs text-gray-500">{yesPercentage.toFixed(1)}%</div>
+            <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Yes</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{yesPercentage.toFixed(1)}%</div>
           </motion.div>
         </AnimatePresence>
 
@@ -129,9 +129,9 @@ export function LiveVoteCounter({
             transition={{ duration: 0.3 }}
             className="text-center"
           >
-            <div className="text-2xl font-bold text-red-600">{proposal.noVotes}</div>
-            <div className="text-xs text-gray-600 mt-1">No</div>
-            <div className="text-xs text-gray-500">{noPercentage.toFixed(1)}%</div>
+            <div className="text-2xl font-bold text-gray-600 dark:text-gray-400">{proposal.noVotes}</div>
+            <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">No</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{noPercentage.toFixed(1)}%</div>
           </motion.div>
         </AnimatePresence>
 
@@ -144,8 +144,8 @@ export function LiveVoteCounter({
             className="text-center"
           >
             <div className="text-2xl font-bold text-gray-600">{proposal.abstainVotes}</div>
-            <div className="text-xs text-gray-600 mt-1">Abstain</div>
-            <div className="text-xs text-gray-500">{abstainPercentage.toFixed(1)}%</div>
+            <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">Abstain</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">{abstainPercentage.toFixed(1)}%</div>
           </motion.div>
         </AnimatePresence>
       </div>
@@ -153,15 +153,15 @@ export function LiveVoteCounter({
       {/* Progress Bar */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-xs">
-          <span className="text-gray-600">
+          <span className="text-gray-600 dark:text-gray-400">
             {totalVotes} / {proposal.totalEligibleVoters} votes cast
           </span>
-          <span className="font-medium text-gray-900">
+          <span className="font-medium text-gray-900 dark:text-white">
             {participationRate.toFixed(1)}% participation
           </span>
         </div>
 
-        <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
           <motion.div
             className="h-full flex"
             initial={{ width: 0 }}
@@ -173,7 +173,7 @@ export function LiveVoteCounter({
               style={{ width: `${(proposal.yesVotes / proposal.totalEligibleVoters) * 100}%` }}
             />
             <div
-              className="bg-red-500"
+              className="bg-gray-500"
               style={{ width: `${(proposal.noVotes / proposal.totalEligibleVoters) * 100}%` }}
             />
             <div

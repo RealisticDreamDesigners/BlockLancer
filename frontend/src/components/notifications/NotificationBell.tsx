@@ -78,7 +78,7 @@ export function NotificationBell({
       case NotificationType.PROPOSAL_CREATED:
         return <FileText className="h-4 w-4 text-purple-600" />;
       case NotificationType.VOTE_CAST:
-        return <Vote className="h-4 w-4 text-orange-600" />;
+        return <Vote className="h-4 w-4 text-blue-600" />;
       case NotificationType.PROPOSAL_FINALIZED:
         return <Check className="h-4 w-4 text-green-600" />;
       default:
@@ -157,7 +157,7 @@ export function NotificationBell({
                         key={notification.id}
                         onClick={() => handleNotificationClick(notification)}
                         className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors ${
-                          !notification.read ? 'bg-blue-50' : ''
+                          !notification.read ? 'bg-blue-50' : '-'
                         }`}
                       >
                         <div className="flex gap-3">
@@ -166,7 +166,7 @@ export function NotificationBell({
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-start justify-between gap-2">
-                              <p className={`text-sm font-medium text-gray-900 ${!notification.read ? 'font-semibold' : ''}`}>
+                              <p className={`text-sm font-medium text-gray-900 ${!notification.read ? 'font-semibold' : '-'}`}>
                                 {notification.title}
                               </p>
                               {!notification.read && (

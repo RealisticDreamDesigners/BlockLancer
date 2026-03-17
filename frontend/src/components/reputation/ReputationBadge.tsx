@@ -28,7 +28,7 @@ function getStarCount(score: number): number {
   return 1;
 }
 
-export function ReputationBadge({ score, size = 'md', className = '' }: ReputationBadgeProps) {
+export function ReputationBadge({ score, size = 'md', className = '-' }: ReputationBadgeProps) {
   const colorClass = getScoreColor(score);
   const label = getScoreLabel(score);
   const stars = getStarCount(score);
@@ -44,7 +44,7 @@ export function ReputationBadge({ score, size = 'md', className = '' }: Reputati
       <span className="flex">
         {Array.from({ length: 5 }, (_, i) => (
           <span key={i} className={i < stars ? 'opacity-100' : 'opacity-30'}>
-            ★
+            *
           </span>
         ))}
       </span>
