@@ -10,7 +10,7 @@ import { JsonLd } from '@/components/seo/JsonLd';
 
 const inter = Inter({ subsets: ['latin'] });
 
-const siteUrl = 'https://blocklancer.app';
+const siteUrl = 'https://blocklancing.vercel.app';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

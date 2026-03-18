@@ -151,7 +151,7 @@ export default async function Image() {
               display: 'flex',
             }}
           />
-          blocklancer.app
+          blocklancing.vercel.app
         </div>
       </div>
     ),

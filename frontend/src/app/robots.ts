@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/api/', '/admin'],
       },
     ],
-    sitemap: 'https://blocklancer.app/sitemap.xml',
+    sitemap: 'https://blocklancing.vercel.app/sitemap.xml',
   };
 }

@@ -2,7 +2,7 @@ const structuredData = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
   name: 'BlockLancer',
-  url: 'https://blocklancer.app',
+  url: 'https://blocklancing.vercel.app',
   description:
     'Trustless milestone-based payment contracts between employers and workers. Built on Stacks with Bitcoin-level security.',
   applicationCategory: 'FinanceApplication',
@@ -15,7 +15,7 @@ const structuredData = {
   creator: {
     '@type': 'Organization',
     name: 'BlockLancer',
-    url: 'https://blocklancer.app',
+    url: 'https://blocklancing.vercel.app',
   },
   featureList: [
     'Smart Escrow Contracts',
