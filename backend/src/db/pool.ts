@@ -4,11 +4,14 @@ import pino from 'pino';
 
 const logger = pino({ name: 'db' });
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 export const pool = new pg.Pool({
   connectionString: config.databaseUrl,
-  max: 20,
+  max: isProduction ? 10 : 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 5000,
+  ssl: isProduction ? { rejectUnauthorized: false } : undefined,
 });
 
 pool.on('error', (err) => {
