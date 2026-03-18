@@ -29,6 +29,14 @@ export async function createApiServer() {
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
+  // Root route
+  app.get('/', async () => ({
+    name: 'BlockLancer API',
+    version: '1.0.0',
+    status: 'running',
+    docs: '/api/health',
+  }));
+
   // Register routes
   await app.register(escrowRoutes);
   await app.register(disputeRoutes);
