@@ -17,6 +17,7 @@ import {
   DisputeCard,
   EvidenceComparison,
 } from '@/components/dispute';
+import { AppLayout } from '@/components/layout/AppLayout';
 import { AlertCircle, Loader2, ExternalLink } from 'lucide-react';
 
 /**
@@ -117,6 +118,7 @@ export default function ProposalDetailPage() {
   const isActive = proposal.status === ProposalStatus.ACTIVE;
 
   return (
+    <AppLayout>
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* Header */}
       <div className="bg-white dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700/50">
@@ -277,5 +279,6 @@ export default function ProposalDetailPage() {
         </div>
       </div>
     </div>
+    </AppLayout>
   );
 }

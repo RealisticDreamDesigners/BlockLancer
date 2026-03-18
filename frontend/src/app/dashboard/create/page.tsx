@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useStacks } from '@/hooks/useStacks';
 import { dateToBlockHeight, fetchCurrentBlockHeight } from '@/lib/blockTime';
+import { AppLayout } from '@/components/layout/AppLayout';
 import { ArrowLeft, CheckCircle, XCircle, AlertCircle, User, Calendar, DollarSign, FileText } from 'lucide-react';
 
 // Helper function to convert STX to microSTX
@@ -333,6 +334,7 @@ export default function CreateContractPage() {
   }
 
   return (
+    <AppLayout>
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8">
       <div className="max-w-xl mx-auto px-4 sm:px-6">
         {/* Header */}
@@ -539,5 +541,6 @@ export default function CreateContractPage() {
         </div>
       </div>
     </div>
+    </AppLayout>
   );
 }

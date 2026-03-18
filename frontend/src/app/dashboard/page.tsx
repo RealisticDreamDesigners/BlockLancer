@@ -9,6 +9,7 @@ import { useReputation } from '@/hooks/useReputation';
 import { TierBadge } from '@/components/payments/TierBadge';
 import { UpgradeModal } from '@/components/payments/UpgradeModal';
 import { ReputationBadge } from '@/components/reputation/ReputationBadge';
+import { AppLayout } from '@/components/layout/AppLayout';
 import {
   Calendar,
   DollarSign,
@@ -136,12 +137,14 @@ export default function EnhancedDashboardPage() {
 
   if (loading || !mounted) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-2 border-blue-600 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Loading dashboard...</p>
+      <AppLayout>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-10 w-10 border-2 border-blue-600 border-t-transparent mx-auto mb-4"></div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Loading dashboard...</p>
+          </div>
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
@@ -290,6 +293,7 @@ export default function EnhancedDashboardPage() {
   };
 
   return (
+    <AppLayout>
     <div className="bg-gray-50 dark:bg-gray-950 min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
@@ -492,5 +496,6 @@ export default function EnhancedDashboardPage() {
         />
       </div>
     </div>
+    </AppLayout>
   );
 }
