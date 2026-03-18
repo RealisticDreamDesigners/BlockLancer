@@ -355,8 +355,8 @@ async function bootstrapReputation() {
     `SELECT DISTINCT address FROM (
       SELECT client as address FROM escrows
       UNION SELECT freelancer as address FROM escrows
-      UNION SELECT complainant as address FROM disputes WHERE complainant IS NOT NULL
-      UNION SELECT respondent as address FROM disputes WHERE respondent IS NOT NULL
+      UNION SELECT client as address FROM disputes WHERE client IS NOT NULL
+      UNION SELECT freelancer as address FROM disputes WHERE freelancer IS NOT NULL
     ) combined WHERE address IS NOT NULL`
   );
   const addresses: string[] = addressResult.rows.map((r: any) => r.address).filter(Boolean);
