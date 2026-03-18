@@ -63,7 +63,6 @@ export default function EnhancedDashboardPage() {
     freelancerContracts,
     transactionInProgress,
     refreshContracts,
-    debugContractSystem,
   } = useStacks();
 
   const { isPro, userTier, upgradeToPro } = usePayments();
@@ -317,14 +316,6 @@ export default function EnhancedDashboardPage() {
                 Upgrade to Pro
               </button>
             )}
-
-            {/* Debug Button - Remove in production */}
-            <button
-              onClick={debugContractSystem}
-              className="px-3 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
-            >
-              Debug
-            </button>
 
             <button
               onClick={async () => {
