@@ -24,12 +24,10 @@ frontend/.env.local
 frontend/.env.*
 !frontend/.env.example
 
-# Deployment plans with real data
+# Deployment plans
 deployments/default.testnet-plan.yaml
 deployments/default.mainnet-plan.yaml
 deployments/default.devnet-plan.yaml
-
-# Keep only examples
 !deployments/*.example
 
 # Build artifacts
@@ -41,22 +39,6 @@ backend/node_modules/
 
 # Screenshots and debug files
 *.png
-frontend/*.mjs
-frontend/*.sh
-
-# Deploy and infrastructure scripts (contain sensitive config)
-deploy-v4.mjs
-wire-contracts.mjs
-verify-committee.mjs
-backend/wire-contracts.mjs
-
-# Internal documentation (moved to blocklancer-private)
-BLOCKLANCER_FEATURE_PLAN.md
-stacks_upgrade_research.md
-team-blocklancer.md
-
-# Old contract backups
-contracts/backup-v1/
 
 # Editor config
 .vscode/

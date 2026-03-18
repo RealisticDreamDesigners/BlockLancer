@@ -1,16 +1,6 @@
-// import type { NextConfig } from "next";
+import type { NextConfig } from "next";
 
-// const nextConfig: NextConfig = {
-//   /* config options here */
-// };
-
-// export default nextConfig;
-
-
-// next.config.js - Add API proxy to avoid CORS issues
-
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
@@ -19,7 +9,7 @@ const nextConfig = {
       },
     ];
   },
-  
+
   async headers() {
     return [
       {
@@ -35,4 +25,4 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
