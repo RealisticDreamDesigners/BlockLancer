@@ -138,12 +138,12 @@ export function Footer() {
               <span>&copy; {currentYear} BlockLancer.</span>
               <span className="hidden sm:inline">|</span>
               <a
-                href="https://agedevs.netlify.app/"
+                href="https://dorahacks.io/hackathon/buidlbattle2/detail"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors font-medium"
               >
-                Built by AGEDEVS
+                Built for BUIDL Battle #2
               </a>
             </div>
             <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
