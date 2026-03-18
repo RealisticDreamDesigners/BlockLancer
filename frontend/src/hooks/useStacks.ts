@@ -193,16 +193,19 @@ export const useStacks = () => {
 
   useEffect(() => {
     setMounted(true);
-    
-    if (userSession.isUserSignedIn()) {
-      const userData = userSession.loadUserData();
-      setUserData(userData);
-      setIsSignedIn(true);
-      
-      const address = userData?.profile?.stxAddress?.testnet || userData?.profile?.stxAddress?.mainnet;
-      setUserAddress(address);
-      
-      console.log('User already signed in:', address);
+
+    try {
+      if (userSession.isUserSignedIn()) {
+        const userData = userSession.loadUserData();
+        setUserData(userData);
+        setIsSignedIn(true);
+
+        const address = userData?.profile?.stxAddress?.testnet || userData?.profile?.stxAddress?.mainnet;
+        setUserAddress(address);
+      }
+    } catch {
+      // Corrupted session data — clear it so user can reconnect
+      userSession.signUserOut();
     }
   }, []);
 
