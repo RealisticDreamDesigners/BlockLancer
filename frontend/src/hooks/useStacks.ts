@@ -133,6 +133,7 @@ const CONTRACTS = {
   REPUTATION: process.env.NEXT_PUBLIC_REPUTATION_CONTRACT || 'ST30M31FNAKNX5EJKV10V7SJSE07VVDFFZHZHGE0J.blocklancer-reputation',
   MARKETPLACE: process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT || 'ST30M31FNAKNX5EJKV10V7SJSE07VVDFFZHZHGE0J.blocklancer-marketplace',
   SBTC_TOKEN: process.env.NEXT_PUBLIC_SBTC_TOKEN_CONTRACT || 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token',
+  USDCX_TOKEN: process.env.NEXT_PUBLIC_USDCX_TOKEN_CONTRACT || 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.usdcx',
 };
 
 const parseContractId = (contractId: string) => {
@@ -741,6 +742,68 @@ export const useStacks = () => {
     }
   }, [isSignedIn, userData, userAddress, network, queryClient, execute]);
 
+  const createEscrowUsdcx = useCallback(async (
+    client: string,
+    freelancer: string,
+    description: string,
+    endDate: number,
+    totalAmount: number
+  ): Promise<TransactionResponse> => {
+
+    if (!isSignedIn || !userData) {
+      return { success: false, error: 'Wallet not connected' };
+    }
+
+    if (!isValidStacksAddress(freelancer)) {
+      return { success: false, error: 'Invalid freelancer address format' };
+    }
+
+    if (freelancer === userAddress) {
+      return { success: false, error: 'You cannot create a contract with yourself' };
+    }
+
+    setTransactionInProgress(true);
+
+    try {
+      const result = await execute({
+        callOptions: {
+          network,
+          contractAddress: escrowContract.address,
+          contractName: escrowContract.name,
+          functionName: 'create-escrow-usdcx',
+          functionArgs: [
+            standardPrincipalCV(client),
+            standardPrincipalCV(freelancer),
+            stringUtf8CV(description),
+            uintCV(endDate),
+            uintCV(totalAmount)
+          ],
+          postConditions: [],
+          postConditionMode: PostConditionMode.Allow,
+        },
+        actionLabel: 'Create USDCx Escrow',
+        onBroadcast: () => {
+          setTimeout(() => {
+            contractCache.clear();
+            if (userAddress) {
+              queryClient.invalidateQueries({ queryKey: QUERY_KEYS.contracts(userAddress) });
+            }
+          }, 2000);
+        },
+      });
+
+      setTransactionInProgress(false);
+      return result;
+    } catch (error) {
+      setTransactionInProgress(false);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return {
+        success: false,
+        error: `USDCx escrow creation failed: ${errorMessage}`
+      };
+    }
+  }, [isSignedIn, userData, userAddress, network, queryClient, execute]);
+
   // REAL-TIME CONTROLS
   const enableRealTimeUpdates = useCallback(() => {
     setIsPollingEnabled(true);
@@ -1065,6 +1128,7 @@ export const useStacks = () => {
     // Enhanced contract creation (with validation kept)
     createEscrow,
     createEscrowSbtc,
+    createEscrowUsdcx,
     
     // Milestone operations
     addMilestone,

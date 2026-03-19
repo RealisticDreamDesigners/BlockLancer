@@ -5,12 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useStacks } from '@/hooks/useStacks';
 import { dateToBlockHeight, fetchCurrentBlockHeight } from '@/lib/blockTime';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { ArrowLeft, CheckCircle, XCircle, AlertCircle, User, Calendar, DollarSign, FileText } from 'lucide-react';
-
-// Helper function to convert STX to microSTX
-const stxToMicroStx = (stx: number): number => {
-  return Math.floor(stx * 1000000);
-};
+import { ArrowLeft, CheckCircle, XCircle, AlertCircle, User, Calendar, DollarSign, FileText, Bitcoin, Coins } from 'lucide-react';
 
 // Enhanced validation interface
 interface ValidationError {
@@ -19,7 +14,13 @@ interface ValidationError {
   type: 'error' | 'warning' | 'info';
 }
 
-type TokenType = 'stx' | 'sip010';
+type TokenType = 'stx' | 'sbtc' | 'usdcx';
+
+const TOKEN_CONFIG: Record<TokenType, { label: string; symbol: string; decimals: number; minAmount: number; maxAmount: number }> = {
+  stx: { label: 'STX', symbol: 'STX', decimals: 6, minAmount: 0.000001, maxAmount: 1000000 },
+  sbtc: { label: 'sBTC', symbol: 'sBTC', decimals: 8, minAmount: 0.00000001, maxAmount: 21 },
+  usdcx: { label: 'USDCx', symbol: 'USDCx', decimals: 6, minAmount: 0.000001, maxAmount: 10000000 },
+};
 
 interface FormData {
   freelancer: string;
@@ -27,7 +28,6 @@ interface FormData {
   totalAmount: string;
   endDate: string;
   tokenType: TokenType;
-  tokenContract: string;
 }
 
 interface FormErrors {
@@ -38,14 +38,16 @@ export default function CreateContractPage() {
   const router = useRouter();
   
   // FIXED: Added userAddress to the destructuring
-  const { 
-    userData, 
-    isSignedIn, 
-    createEscrow, 
-    validateAddress, 
+  const {
+    userData,
+    isSignedIn,
+    createEscrow,
+    createEscrowSbtc,
+    createEscrowUsdcx,
+    validateAddress,
     transactionInProgress,
     connectWallet,
-    userAddress  // ADDED: This was missing
+    userAddress,
   } = useStacks();
 
   const [formData, setFormData] = useState<FormData>({
@@ -54,7 +56,6 @@ export default function CreateContractPage() {
     totalAmount: '-',
     endDate: '-',
     tokenType: 'stx',
-    tokenContract: '-',
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -100,22 +101,24 @@ export default function CreateContractPage() {
         }
         break;
         
-      case 'totalAmount':
+      case 'totalAmount': {
+        const token = TOKEN_CONFIG[formData.tokenType];
         if (!value.trim()) {
           errors.push({ field: name, message: 'Total amount is required', type: 'error' });
         } else {
           const amount = parseFloat(value);
           if (isNaN(amount) || amount <= 0) {
             errors.push({ field: name, message: 'Amount must be a positive number', type: 'error' });
-          } else if (amount < 0.000001) {
-            errors.push({ field: name, message: 'Minimum amount is 0.000001 STX', type: 'error' });
-          } else if (amount > 1000000) {
-            errors.push({ field: name, message: 'Maximum amount is 1,000,000 STX', type: 'warning' });
+          } else if (amount < token.minAmount) {
+            errors.push({ field: name, message: `Minimum amount is ${token.minAmount} ${token.symbol}`, type: 'error' });
+          } else if (amount > token.maxAmount) {
+            errors.push({ field: name, message: `Maximum amount is ${token.maxAmount.toLocaleString()} ${token.symbol}`, type: 'warning' });
           } else {
-            errors.push({ field: name, message: `${amount.toLocaleString()} STX`, type: 'info' });
+            errors.push({ field: name, message: `${amount.toLocaleString()} ${token.symbol}`, type: 'info' });
           }
         }
         break;
+      }
         
       case 'endDate':
         if (!value.trim()) {
@@ -245,18 +248,22 @@ export default function CreateContractPage() {
 
     
     try {
-      const totalAmountMicroStx = parseFloat(formData.totalAmount) * 1000000; // Convert to microSTX
+      const token = TOKEN_CONFIG[formData.tokenType];
+      const totalAmountSmallest = Math.floor(parseFloat(formData.totalAmount) * Math.pow(10, token.decimals));
       const endDate = new Date(formData.endDate);
       endDate.setHours(23, 59, 59);
-      const endDateBlockHeight = dateToBlockHeight(endDate); // Convert to Stacks block height
+      const endDateBlockHeight = dateToBlockHeight(endDate);
 
-      // FIXED: Call createEscrow with correct 5 parameters matching smart contract
-      const result = await createEscrow(
+      const createFn = formData.tokenType === 'sbtc' ? createEscrowSbtc!
+        : formData.tokenType === 'usdcx' ? createEscrowUsdcx!
+        : createEscrow;
+
+      const result = await createFn(
         clientAddress,
-        formData.freelancer.trim(),     // freelancer
-        formData.description.trim(),    // description
-        endDateBlockHeight,            // endDate (block height)
-        totalAmountMicroStx            // totalAmount
+        formData.freelancer.trim(),
+        formData.description.trim(),
+        endDateBlockHeight,
+        totalAmountSmallest
       );
 
       setTxResult(result);
@@ -269,7 +276,6 @@ export default function CreateContractPage() {
           totalAmount: '-',
           endDate: '-',
           tokenType: 'stx',
-          tokenContract: '-',
         });
         setErrors({});
         setValidationErrors([]);
@@ -398,7 +404,7 @@ export default function CreateContractPage() {
               <div>
                 <label htmlFor="totalAmount" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   <DollarSign className="w-4 h-4 text-gray-400" />
-                  Total Amount (STX)
+                  Total Amount ({TOKEN_CONFIG[formData.tokenType].symbol})
                 </label>
                 <input
                   type="number"
@@ -406,8 +412,8 @@ export default function CreateContractPage() {
                   name="totalAmount"
                   value={formData.totalAmount}
                   onChange={handleInputChange}
-                  step="0.000001"
-                  min="0.000001"
+                  step={String(Math.pow(10, -TOKEN_CONFIG[formData.tokenType].decimals))}
+                  min={String(TOKEN_CONFIG[formData.tokenType].minAmount)}
                   className={`w-full px-4 py-3 text-sm bg-white dark:bg-gray-900/50 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-colors text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 ${
                     errors.totalAmount ? 'border-red-300 dark:border-red-500' : 'border-gray-200 dark:border-gray-700'
                   }`}
@@ -419,46 +425,39 @@ export default function CreateContractPage() {
               {/* Token Type Selector */}
               <div>
                 <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  <DollarSign className="w-4 h-4 text-gray-400" />
+                  <Coins className="w-4 h-4 text-gray-400" />
                   Payment Token
                 </label>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, tokenType: 'stx', tokenContract: '-' }))}
-                    className={`flex-1 py-2.5 px-4 rounded-lg border text-sm font-medium transition-colors ${
-                      formData.tokenType === 'stx'
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-600'
-                        : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600'
-                    }`}
-                  >
-                    STX (Default)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, tokenType: 'sip010' }))}
-                    className={`flex-1 py-2.5 px-4 rounded-lg border text-sm font-medium transition-colors ${
-                      formData.tokenType === 'sip010'
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-600'
-                        : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600'
-                    }`}
-                  >
-                    SIP-010 Token
-                  </button>
+                <div className="grid grid-cols-3 gap-2">
+                  {([
+                    { type: 'stx' as TokenType, icon: <DollarSign className="w-4 h-4" />, name: 'STX' },
+                    { type: 'sbtc' as TokenType, icon: <Bitcoin className="w-4 h-4" />, name: 'sBTC' },
+                    { type: 'usdcx' as TokenType, icon: <DollarSign className="w-4 h-4" />, name: 'USDCx' },
+                  ]).map(({ type, icon, name }) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setFormData(prev => ({ ...prev, tokenType: type }))}
+                      className={`py-2.5 px-3 rounded-lg border text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${
+                        formData.tokenType === type
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-600'
+                          : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600'
+                      }`}
+                    >
+                      {icon}
+                      {name}
+                    </button>
+                  ))}
                 </div>
-                {formData.tokenType === 'sip010' && (
-                  <div className="mt-3">
-                    <input
-                      type="text"
-                      value={formData.tokenContract}
-                      onChange={(e) => setFormData(prev => ({ ...prev, tokenContract: e.target.value }))}
-                      className="w-full px-4 py-3 text-sm bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-                      placeholder="SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-token"
-                    />
-                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1.5">
-                      SIP-010 token support is coming soon. Currently only STX payments are processed on-chain.
-                    </p>
-                  </div>
+                {formData.tokenType === 'sbtc' && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    Amount in sBTC (8 decimal places). Requires sBTC in your wallet.
+                  </p>
+                )}
+                {formData.tokenType === 'usdcx' && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    Amount in USDCx stablecoin (6 decimal places). Requires USDCx in your wallet.
+                  </p>
                 )}
               </div>
 
