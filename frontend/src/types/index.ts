@@ -149,7 +149,10 @@ export function formatSTX(microStx: number): string {
 
 // Date formatting
 export function formatDate(timestamp: number): string {
-  return new Date(timestamp).toLocaleDateString('en-US', {
+  if (!timestamp || isNaN(timestamp)) return 'N/A';
+  const date = new Date(timestamp);
+  if (isNaN(date.getTime())) return 'N/A';
+  return date.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric'

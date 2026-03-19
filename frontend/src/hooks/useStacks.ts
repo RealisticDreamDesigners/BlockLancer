@@ -26,37 +26,30 @@ import {
 import { Contract, Milestone, TransactionResponse, isValidStacksAddress } from '@/types';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { useContractCall } from './useContractCall';
+import { blockHeightToTimestamp } from '@/lib/blockTime';
 
 // Initialize App Config and Session
 const appConfig = new AppConfig(['store_write', 'publish_data']);
 const userSession = new UserSession({ appConfig });
 
 function convertSmartContractTimeToTimestamp(value: number): number {
-  if (!value || value === 0) {
+  if (!value || value === 0 || isNaN(value)) {
     return Date.now();
   }
 
-  if (value > 1000000000) {
-    console.log(`Detected Unix timestamp: ${value} (${new Date(value * 1000).toISOString()})`);
+  // Unix timestamp in seconds (> 1 billion = after ~2001)
+  if (value > 1_000_000_000_000) {
+    // Already in milliseconds
+    return value;
+  }
+
+  if (value > 1_000_000_000) {
+    // Unix seconds → milliseconds
     return value * 1000;
-
-  } else if (value >= 100000 && value <= 300000) {
-    console.log(`Detected block height: ${value}`);
-    return convertBlockHeightToTimestamp(value);
-
-  } else {
-    console.warn(`Unexpected time value: ${value}, using current time`);
-    return Date.now();
   }
-}
 
-function convertBlockHeightToTimestamp(blockHeight: number): number {
-  // Stacks testnet approximation
-  const TESTNET_GENESIS_TIMESTAMP = 1610000000; // Jan 2021 approximate
-  const AVERAGE_BLOCK_TIME = 600; // 10 minutes in seconds
-
-  const approximateTimestamp = TESTNET_GENESIS_TIMESTAMP + (blockHeight * AVERAGE_BLOCK_TIME);
-  return approximateTimestamp * 1000; // Convert to milliseconds
+  // Block height — use the accurate blockHeightToTimestamp from blockTime.ts
+  return blockHeightToTimestamp(value);
 }
 
 // FALLBACK: Proxy-based API calls for CORS issues
@@ -355,8 +348,8 @@ export const useStacks = () => {
           totalAmount: backendEscrow.totalAmount,
           remainingBalance: backendEscrow.remainingBalance,
           status: backendEscrow.status,
-          createdAt: backendEscrow.createdAt > 1000000000 ? backendEscrow.createdAt * 1000 : backendEscrow.createdAt,
-          endDate: backendEscrow.endDate > 1000000000 ? backendEscrow.endDate * 1000 : backendEscrow.endDate,
+          createdAt: convertSmartContractTimeToTimestamp(backendEscrow.createdAt),
+          endDate: convertSmartContractTimeToTimestamp(backendEscrow.endDate),
           description: backendEscrow.description,
           milestones: (backendEscrow.milestones || []).map(m => ({
             id: m.id,
@@ -448,14 +441,14 @@ export const useStacks = () => {
           totalAmount: e.totalAmount,
           remainingBalance: e.remainingBalance,
           status: e.status,
-          createdAt: e.createdAt > 1000000000 ? e.createdAt * 1000 : e.createdAt,
-          endDate: e.endDate > 1000000000 ? e.endDate * 1000 : e.endDate,
+          createdAt: convertSmartContractTimeToTimestamp(e.createdAt),
+          endDate: convertSmartContractTimeToTimestamp(e.endDate),
           description: e.description,
           milestones: (e.milestones || []).map(m => ({
             id: m.id,
             description: m.description,
             amount: m.amount,
-            deadline: m.deadline > 1000000000 ? m.deadline * 1000 : m.deadline,
+            deadline: convertSmartContractTimeToTimestamp(m.deadline),
             status: m.status,
             submissionNotes: m.submissionNote,
             rejectionReason: m.rejectionReason,
