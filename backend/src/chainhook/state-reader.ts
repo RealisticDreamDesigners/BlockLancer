@@ -4,6 +4,18 @@ import pino from 'pino';
 
 const logger = pino({ name: 'state-reader' });
 
+/** Safely extract a string from a Clarity optional field. Returns '' for (none). */
+function extractOptionalString(field: any): string {
+  if (!field) return '';
+  if (typeof field === 'string') return field;
+  if (field.value === null || field.value === undefined) return '';
+  if (typeof field.value === 'string') return field.value;
+  if (typeof field.value === 'object' && field.value?.value) {
+    return typeof field.value.value === 'string' ? field.value.value : '';
+  }
+  return '';
+}
+
 /**
  * Read escrow state from blockchain.
  * Returns parsed escrow data or null.
@@ -54,8 +66,8 @@ export async function readMilestoneState(escrowId: number, milestoneIndex: numbe
       amount: String(parseInt(data.amount?.value || data.amount || '0')),
       deadline: parseInt(data.deadline?.value || data.deadline || '0'),
       status: parseInt(data.status?.value || data.status || '0'),
-      submission_note: data['submission-note']?.value || data['submission-note'] || '',
-      rejection_reason: data['rejection-reason']?.value || data['rejection-reason'] || '',
+      submission_note: extractOptionalString(data['submission-note']),
+      rejection_reason: extractOptionalString(data['rejection-reason']),
     };
   } catch (err) {
     logger.error({ err, escrowId, milestoneIndex }, 'Failed to read milestone state');
@@ -74,17 +86,6 @@ export async function readDisputeState(disputeId: number) {
     if (!result || result.value === null) return null;
 
     const data = result.value?.value || result.value || result;
-
-    const extractOptionalString = (field: any): string | undefined => {
-      if (!field) return undefined;
-      if (typeof field === 'string') return field;
-      if (field.value === null) return undefined;
-      if (typeof field.value === 'string') return field.value;
-      if (typeof field.value === 'object' && field.value?.value) {
-        return typeof field.value.value === 'string' ? field.value.value : undefined;
-      }
-      return undefined;
-    };
 
     return {
       on_chain_id: disputeId,

@@ -124,6 +124,15 @@ export default function ContractDetailsPage() {
     }
   };
 
+  // Clean Clarity optional fields — strips (optional none) objects and garbage values
+  const cleanOptionalField = (val: any): string | undefined => {
+    if (!val || val === '-') return undefined;
+    if (typeof val === 'object') return undefined; // Raw Clarity optional object
+    const str = String(val).trim();
+    if (!str || str === '-' || str === 'null' || str === 'undefined' || str.includes('optional none')) return undefined;
+    return str;
+  };
+
   // ENHANCED: Safe milestone parser
   const parseMilestoneData = (rawMilestone: any): Milestone => {
     const parsed = parseStacksValue(rawMilestone);
@@ -134,8 +143,8 @@ export default function ContractDetailsPage() {
       amount: parseInt(String(parsed.amount || '0')),
       deadline: parseInt(String(parsed.deadline || '0')),
       status: parseInt(String(parsed.status || '0')) as MilestoneStatus,
-      submissionNotes: String(parsed.submissionNotes || parsed['submission-notes'] || '-'),
-      rejectionReason: String(parsed.rejectionReason || parsed['rejection-reason'] || '-'),
+      submissionNotes: cleanOptionalField(parsed.submissionNotes || parsed['submission-notes']),
+      rejectionReason: cleanOptionalField(parsed.rejectionReason || parsed['rejection-reason']),
       submittedAt: parsed.submittedAt ? parseInt(String(parsed.submittedAt)) : undefined,
       approvedAt: parsed.approvedAt ? parseInt(String(parsed.approvedAt)) : undefined,
     };

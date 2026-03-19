@@ -20,6 +20,14 @@ function toApiEscrow(row: any): ApiEscrow {
   };
 }
 
+/** Clean Clarity optional strings that were stored as raw JSON in DB */
+function cleanOptionalField(val: any): string {
+  if (!val) return '';
+  const str = String(val);
+  if (str.includes('optional none') || str.includes('"value":null')) return '';
+  return str;
+}
+
 function toApiMilestone(row: any): ApiMilestone {
   return {
     id: row.milestone_index,
@@ -28,8 +36,8 @@ function toApiMilestone(row: any): ApiMilestone {
     amount: parseInt(row.amount),
     deadline: row.deadline,
     status: row.status,
-    submissionNote: row.submission_note,
-    rejectionReason: row.rejection_reason,
+    submissionNote: cleanOptionalField(row.submission_note),
+    rejectionReason: cleanOptionalField(row.rejection_reason),
   };
 }
 

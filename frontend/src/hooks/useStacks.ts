@@ -136,6 +136,21 @@ const parseContractId = (contractId: string) => {
 
 const escrowContract = parseContractId(CONTRACTS.ESCROW);
 
+/** Safely extract string from Clarity optional fields, returns undefined for none/null/objects */
+function cleanClarityOptional(field: any): string | undefined {
+  if (!field) return undefined;
+  if (typeof field === 'string' && field !== '-') return field;
+  if (typeof field === 'object') {
+    // Handle {type: "...", value: "actual string"} or {value: {value: "..."}}
+    const val = field.value;
+    if (val === null || val === undefined) return undefined;
+    if (typeof val === 'string') return val;
+    if (typeof val === 'object' && typeof val.value === 'string') return val.value;
+    return undefined;
+  }
+  return undefined;
+}
+
 // FIXED: CACHING CONFIGURATION - Use Map consistently
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const contractCache = new Map<string, { data: any; timestamp: number }>();
@@ -294,8 +309,8 @@ export const useStacks = () => {
         amount: parseInt(data.amount?.value || data.amount || '0'),
         deadline: convertSmartContractTimeToTimestamp(parseInt(data.deadline?.value || data.deadline || '0')),
         status: parseInt(data.status?.value || data.status || '0'),
-        submissionNotes: data['submission-note']?.value || data['submission-note'] || '-',
-        rejectionReason: data['rejection-reason']?.value || data['rejection-reason'] || '-',
+        submissionNotes: cleanClarityOptional(data['submission-note']),
+        rejectionReason: cleanClarityOptional(data['rejection-reason']),
       };
 
       console.log(`Fetched milestone ${contractId}-${milestoneId}:`, milestone);
