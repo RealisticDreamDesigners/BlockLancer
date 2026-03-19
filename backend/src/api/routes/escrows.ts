@@ -42,29 +42,22 @@ function toApiMilestone(row: any): ApiMilestone {
 }
 
 /**
- * Fetch milestones from DB, with on-chain catch-up if DB is empty.
- * Reads milestones 1..50 from chain and upserts into DB.
+ * Fetch milestones from DB, always refreshing from chain to catch status updates.
+ * Upserts all milestones so status changes (submit, approve, reject) are picked up.
  */
 async function getMilestonesWithCatchUp(escrowId: number): Promise<any[]> {
-  let rows = await getMilestonesByEscrow(escrowId);
-  if (rows.length > 0) return rows;
-
-  // DB has no milestones — try reading from chain
+  // Always read from chain to catch status updates (submit/approve/reject)
   try {
     for (let i = 1; i <= 50; i++) {
       const onChain = await readMilestoneState(escrowId, i);
       if (!onChain) break;
-      await upsertMilestone(onChain);
-    }
-    rows = await getMilestonesByEscrow(escrowId);
-    if (rows.length > 0) {
-      logger.info(`[catch-up] Indexed ${rows.length} milestones for escrow #${escrowId} from blockchain`);
+      await upsertMilestone(onChain); // UPSERT updates status for existing rows
     }
   } catch {
-    // Fall through with empty milestones
+    // Chain read failed — fall through to DB
   }
 
-  return rows;
+  return await getMilestonesByEscrow(escrowId);
 }
 
 export async function escrowRoutes(app: FastifyInstance) {

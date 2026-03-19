@@ -599,8 +599,9 @@ export async function syncLatestJobs(): Promise<number> {
 }
 
 /**
- * Sync latest escrows from chain.
- * Same pattern as syncLatestJobs.
+ * Sync escrows from chain.
+ * - Indexes any new escrows beyond what DB has.
+ * - Also refreshes ALL existing escrow statuses (active → completed, etc.).
  */
 export async function syncLatestEscrows(): Promise<number> {
   try {
@@ -610,28 +611,40 @@ export async function syncLatestEscrows(): Promise<number> {
     const syncState = await getSyncState('escrows');
     const lastSynced = syncState?.last_synced_id || 0;
 
-    if (totalOnChain <= lastSynced) return 0;
+    let synced = 0;
 
-    const newCount = totalOnChain - lastSynced;
-    logger.info({ lastSynced, totalOnChain, newEscrows: newCount }, 'Syncing new escrows from chain');
+    // Index new escrows
+    if (totalOnChain > lastSynced) {
+      const newCount = totalOnChain - lastSynced;
+      logger.info({ lastSynced, totalOnChain, newEscrows: newCount }, 'Syncing new escrows from chain');
 
-    for (let id = lastSynced + 1; id <= totalOnChain; id++) {
-      const state = await readEscrowState(id);
-      if (state) {
-        await upsertEscrow(state);
-        for (let m = 1; m <= 50; m++) {
-          const milestone = await readMilestoneState(id, m);
-          if (!milestone) break;
-          await upsertMilestone(milestone);
+      for (let id = lastSynced + 1; id <= totalOnChain; id++) {
+        const state = await readEscrowState(id);
+        if (state) {
+          await upsertEscrow(state);
+          await updateSyncState('escrows', id, false);
+          synced++;
         }
-        await updateSyncState('escrows', id, false);
+        if (id < totalOnChain) await sleep(batchDelayMs);
       }
-      if (id < totalOnChain) await sleep(batchDelayMs);
+
+      await updateSyncState('escrows', totalOnChain, true);
     }
 
-    await updateSyncState('escrows', totalOnChain, true);
-    logger.info({ synced: newCount }, 'Escrow sync complete');
-    return newCount;
+    // Refresh existing escrow statuses (catches active→completed, etc.)
+    const { query: dbQuery } = await import('../db/pool.js');
+    const escrowResult = await dbQuery('SELECT on_chain_id FROM escrows ORDER BY on_chain_id ASC');
+    for (const row of escrowResult.rows) {
+      try {
+        const state = await readEscrowState(row.on_chain_id);
+        if (state) await upsertEscrow(state);
+      } catch { /* skip individual failures */ }
+    }
+
+    if (synced > 0) {
+      logger.info({ synced }, 'Escrow sync complete');
+    }
+    return synced;
   } catch (err) {
     logger.error({ err }, 'syncLatestEscrows failed');
     return 0;
@@ -686,40 +699,35 @@ export async function syncReputationForKnownUsers(): Promise<number> {
 
 /**
  * Sync milestones for all existing escrows.
- * Compares DB milestone count vs on-chain for each escrow.
- * Fetches and upserts any missing milestones.
+ * Re-reads ALL milestones from chain (not just new ones) to catch status updates.
+ * Uses UPSERT so status changes (PENDING → SUBMITTED → APPROVED) are picked up.
  */
 export async function syncMilestonesForExistingEscrows(): Promise<number> {
   try {
     const { query: dbQuery } = await import('../db/pool.js');
-    const { getMilestonesByEscrow } = await import('../db/queries/escrows.js');
 
     // Get all escrow IDs from DB
     const escrowResult = await dbQuery('SELECT on_chain_id FROM escrows ORDER BY on_chain_id ASC');
     const escrowIds: number[] = escrowResult.rows.map((r: any) => r.on_chain_id);
     if (escrowIds.length === 0) return 0;
 
-    let totalNew = 0;
+    let totalUpdated = 0;
     for (const escrowId of escrowIds) {
-      const dbMilestones = await getMilestonesByEscrow(escrowId);
-      const dbCount = dbMilestones.length;
-
-      // Check chain for milestones beyond what DB has
-      const nextIndex = dbCount + 1;
-      for (let m = nextIndex; m <= 50; m++) {
+      // Re-read ALL milestones from chain starting at 1 to catch status updates
+      for (let m = 1; m <= 50; m++) {
         const milestone = await readMilestoneState(escrowId, m);
         if (!milestone) break; // No more milestones on chain
-        await upsertMilestone(milestone);
-        totalNew++;
+        await upsertMilestone(milestone); // UPSERT updates status for existing rows
+        totalUpdated++;
       }
 
-      if (totalNew > 0) await sleep(batchDelayMs);
+      if (totalUpdated > 0) await sleep(batchDelayMs);
     }
 
-    if (totalNew > 0) {
-      logger.info({ totalNew }, 'Synced new milestones for existing escrows');
+    if (totalUpdated > 0) {
+      logger.info({ totalUpdated }, 'Synced milestone states for existing escrows');
     }
-    return totalNew;
+    return totalUpdated;
   } catch (err) {
     logger.error({ err }, 'syncMilestonesForExistingEscrows failed');
     return 0;
