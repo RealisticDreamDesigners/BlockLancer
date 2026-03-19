@@ -26,7 +26,7 @@ export async function isBackendAvailable(): Promise<boolean> {
 
   try {
     const response = await fetch(`${BACKEND_URL}/api/health`, {
-      signal: AbortSignal.timeout(3000),
+      signal: AbortSignal.timeout(15000), // 15s to survive Render free tier cold starts
     });
     backendAvailable = response.ok;
     lastHealthCheck = now;
@@ -47,7 +47,7 @@ async function fetchBackend<T>(path: string): Promise<T | null> {
     if (!available) return null;
 
     const response = await fetch(`${BACKEND_URL}${path}`, {
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(15000), // 15s to survive Render free tier cold starts
     });
 
     if (!response.ok) {
