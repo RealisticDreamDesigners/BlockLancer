@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStacks } from '@/hooks/useStacks';
 import { usePayments } from '@/hooks/usePayments';
-import { estimateCurrentBlockHeight, dateToBlockHeight, fetchCurrentBlockHeight } from '@/lib/blockTime';
+import { estimateCurrentBlockHeight, dateToBlockHeight, blockHeightToTimestamp, fetchCurrentBlockHeight } from '@/lib/blockTime';
 import { FeeBreakdown } from '@/components/payments/FeeBreakdown';
 import {
   Calendar,
@@ -143,15 +143,15 @@ export default function ContractDetailsPage() {
 
   // Form states
   const [milestoneForm, setMilestoneForm] = useState({
-    description: '-',
-    amount: '-',
-    deadline: '-'
+    description: '',
+    amount: '',
+    deadline: ''
   });
   const [submissionForm, setSubmissionForm] = useState({
-    notes: '-'
+    notes: ''
   });
   const [rejectionForm, setRejectionForm] = useState({
-    reason: '-'
+    reason: ''
   });
 
   const userAddress = userData?.profile?.stxAddress?.testnet || userData?.profile?.stxAddress?.mainnet;
@@ -301,10 +301,30 @@ export default function ContractDetailsPage() {
 
       if (result.success) {
         setShowAddMilestone(false);
-        setMilestoneForm({ description: '-', amount: '-', deadline: '-' });
-        // Reload contract data
-        const updatedContract = await fetchContractById(contract.id);
-        setContract(parseContractData(updatedContract));
+        setMilestoneForm({ description: '', amount: '', deadline: '' });
+
+        // Optimistically add the milestone to local state immediately
+        const newMilestone: Milestone = {
+          id: (contract.milestones?.length || 0) + 1,
+          description: milestoneForm.description,
+          amount: amountInMicroSTX,
+          deadline: blockHeightToTimestamp(deadlineBlockHeight),
+          status: MilestoneStatus.PENDING,
+        };
+        setContract(prev => prev ? {
+          ...prev,
+          milestones: [...(prev.milestones || []), newMilestone],
+        } : prev);
+
+        // After a delay, refetch from chain/backend for accurate data
+        setTimeout(async () => {
+          try {
+            const updatedContract = await fetchContractById(contract.id);
+            setContract(parseContractData(updatedContract));
+          } catch {
+            // Keep optimistic data if refetch fails
+          }
+        }, 5000);
       }
     } catch (error) {
       console.error('Error adding milestone:', error);
@@ -318,7 +338,7 @@ export default function ContractDetailsPage() {
       const result = await submitMilestone(contract.id, milestoneId, notes);
       if (result.success) {
         setShowSubmitForm(null);
-        setSubmissionForm({ notes: '-' });
+        setSubmissionForm({ notes: '' });
         // Reload contract data
         const updatedContract = await fetchContractById(contract.id);
         setContract(parseContractData(updatedContract));
@@ -350,7 +370,7 @@ export default function ContractDetailsPage() {
       const result = await rejectMilestone(contract.id, milestoneId, reason);
       if (result.success) {
         setShowRejectForm(null);
-        setRejectionForm({ reason: '-' });
+        setRejectionForm({ reason: '' });
         // Reload contract data
         const updatedContract = await fetchContractById(contract.id);
         setContract(parseContractData(updatedContract));
