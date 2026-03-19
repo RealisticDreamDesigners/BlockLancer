@@ -375,6 +375,89 @@ export async function fetchCommitteeAddressesFromHiro(): Promise<string[]> {
 }
 
 /**
+ * Fetch DAO member addresses from Hiro API transaction history.
+ * Looks for admin-add-dao-member calls on the DAO contract.
+ */
+export async function fetchDAOMemberAddressesFromHiro(): Promise<string[]> {
+  const { config: appConfig } = await import('../config.js');
+  const contractId = `${DAO.address}.${DAO.name}`;
+  const url = `${appConfig.hiroApiUrl}/extended/v1/address/${contractId}/transactions?limit=50`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return [];
+
+    const data = await response.json();
+    const results = data.results || [];
+    const addresses = new Set<string>();
+
+    for (const tx of results) {
+      if (
+        tx.tx_type === 'contract_call' &&
+        tx.contract_call?.function_name === 'admin-add-dao-member' &&
+        tx.tx_status === 'success'
+      ) {
+        const args = tx.contract_call.function_args || [];
+        const memberArg = args.find((a: any) => a.name === 'new-member');
+        if (memberArg?.repr) {
+          const addr = memberArg.repr.replace(/^'/, '');
+          if (addr.startsWith('ST') || addr.startsWith('SP')) {
+            addresses.add(addr);
+          }
+        }
+      }
+    }
+
+    return Array.from(addresses);
+  } catch (err) {
+    logger.error({ err }, 'Failed to fetch DAO member addresses from Hiro');
+    return [];
+  }
+}
+
+/**
+ * Fetch job application data from Hiro API transaction history.
+ * Returns array of {jobId, applicant} pairs from apply-to-job calls.
+ */
+export async function fetchJobApplicationsFromHiro(): Promise<Array<{ jobId: number; applicant: string }>> {
+  const { config: appConfig } = await import('../config.js');
+  const contractId = `${MARKETPLACE.address}.${MARKETPLACE.name}`;
+  const url = `${appConfig.hiroApiUrl}/extended/v1/address/${contractId}/transactions?limit=50`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return [];
+
+    const data = await response.json();
+    const results = data.results || [];
+    const applications: Array<{ jobId: number; applicant: string }> = [];
+
+    for (const tx of results) {
+      if (
+        tx.tx_type === 'contract_call' &&
+        tx.contract_call?.function_name === 'apply-to-job' &&
+        tx.tx_status === 'success'
+      ) {
+        const args = tx.contract_call.function_args || [];
+        const jobIdArg = args.find((a: any) => a.name === 'job-id');
+        const applicant = tx.sender_address;
+        if (jobIdArg?.repr && applicant) {
+          const jobId = parseInt(jobIdArg.repr.replace(/^u/, ''));
+          if (!isNaN(jobId)) {
+            applications.push({ jobId, applicant });
+          }
+        }
+      }
+    }
+
+    return applications;
+  } catch (err) {
+    logger.error({ err }, 'Failed to fetch job applications from Hiro');
+    return [];
+  }
+}
+
+/**
  * Read user tier info from payments contract.
  */
 export async function readUserTierInfo(address: string) {

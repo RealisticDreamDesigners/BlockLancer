@@ -3,7 +3,7 @@ import { config } from '../config.js';
 import { getSyncState, updateSyncState } from '../db/queries/sync-state.js';
 import { upsertEscrow, upsertMilestone } from '../db/queries/escrows.js';
 import { upsertDispute } from '../db/queries/disputes.js';
-import { upsertProposal } from '../db/queries/dao.js';
+import { upsertProposal, upsertDAOMember } from '../db/queries/dao.js';
 import { upsertCommitteeMember, upsertMembershipProposal } from '../db/queries/committee.js';
 import {
   readTotalEscrows,
@@ -17,12 +17,16 @@ import {
   readMembershipProposalState,
   readCommitteeMemberStatus,
   fetchCommitteeAddressesFromHiro,
+  fetchDAOMemberAddressesFromHiro,
+  fetchJobApplicationsFromHiro,
+  readJobApplicationState,
+  readDAOMemberStatus,
   readUserTierInfo,
   readTotalJobs,
   readJobState,
 } from '../chainhook/state-reader.js';
 import { upsertUserTier } from '../db/queries/platform-fees.js';
-import { upsertJob } from '../db/queries/marketplace.js';
+import { upsertJob, upsertJobApplication } from '../db/queries/marketplace.js';
 import { upsertReputation, insertReputationHistory } from '../db/queries/reputation.js';
 import { readReputationState } from '../chainhook/state-reader.js';
 
@@ -187,7 +191,7 @@ async function bootstrapProposals() {
  * then verifies each address on-chain and upserts.
  */
 async function bootstrapCommitteeMembers() {
-  const syncState = await getSyncState('committee');
+  const syncState = await getSyncState('committee_members');
   if (syncState?.is_complete) {
     logger.info('Committee members already synced, skipping');
     return;
@@ -217,7 +221,7 @@ async function bootstrapCommitteeMembers() {
     }
   }
 
-  await updateSyncState('committee', synced, true);
+  await updateSyncState('committee_members', synced, true);
   logger.info({ synced }, 'Committee member bootstrap complete');
 }
 
@@ -393,6 +397,96 @@ async function bootstrapReputation() {
 }
 
 /**
+ * Bootstrap DAO members from blockchain.
+ * Scans Hiro API for admin-add-dao-member calls, verifies on-chain, upserts.
+ */
+async function bootstrapDAOMembers() {
+  const syncState = await getSyncState('dao_members');
+  if (syncState?.is_complete) {
+    logger.info('DAO members already synced, skipping');
+    return;
+  }
+
+  logger.info('Starting DAO member bootstrap');
+
+  const deployerAddress = config.deployerAddress;
+  const addressesFromHiro = await fetchDAOMemberAddressesFromHiro();
+  const allAddresses = new Set([deployerAddress, ...addressesFromHiro]);
+
+  logger.info({ count: allAddresses.size }, 'Found DAO member candidates');
+
+  let synced = 0;
+  for (const address of allAddresses) {
+    try {
+      const status = await readDAOMemberStatus(address);
+      if (status && status.isMember) {
+        await upsertDAOMember(address, true);
+        synced++;
+        logger.info({ address: address.slice(0, 10) + '...' }, 'Synced DAO member');
+      }
+      await sleep(batchDelayMs);
+    } catch (err) {
+      logger.error({ err, address }, 'Failed to sync DAO member');
+    }
+  }
+
+  await updateSyncState('dao_members', synced, true);
+  logger.info({ synced }, 'DAO member bootstrap complete');
+}
+
+/**
+ * Bootstrap job applications from blockchain.
+ * Scans Hiro API for apply-to-job calls, reads on-chain state, upserts.
+ */
+async function bootstrapJobApplications() {
+  const syncState = await getSyncState('job_applications');
+  if (syncState?.is_complete) {
+    logger.info('Job applications already synced, skipping');
+    return;
+  }
+
+  logger.info('Starting job application bootstrap');
+
+  const applicationsFromHiro = await fetchJobApplicationsFromHiro();
+  logger.info({ count: applicationsFromHiro.length }, 'Found job applications from Hiro');
+
+  let synced = 0;
+  for (const { jobId, applicant } of applicationsFromHiro) {
+    try {
+      const state = await readJobApplicationState(jobId, applicant);
+      if (state) {
+        await upsertJobApplication(state);
+        synced++;
+      }
+      await sleep(batchDelayMs);
+    } catch (err) {
+      logger.error({ err, jobId, applicant }, 'Failed to sync job application');
+    }
+  }
+
+  await updateSyncState('job_applications', synced, true);
+  logger.info({ synced }, 'Job application bootstrap complete');
+}
+
+/**
+ * Bootstrap platform fees sync state.
+ * Platform fees are event-driven (captured during approve-milestone).
+ * No bulk state to read from chain — just mark as synced.
+ */
+async function bootstrapPlatformFees() {
+  const syncState = await getSyncState('platform_fees');
+  if (syncState?.is_complete) {
+    logger.info('Platform fees already synced, skipping');
+    return;
+  }
+
+  // Platform fees come from transaction events (approve-milestone with fee deduction).
+  // There's no on-chain state to bulk-read. The chainhook handler captures them going forward.
+  await updateSyncState('platform_fees', 0, true);
+  logger.info('Platform fees marked as synced (event-driven, no bulk state)');
+}
+
+/**
  * Run full bootstrap sync.
  * Call this on startup. Idempotent — skips already-synced entities.
  */
@@ -445,6 +539,24 @@ export async function runBootstrap() {
     await bootstrapReputation();
   } catch (err) {
     logger.error({ err }, 'Reputation bootstrap failed');
+  }
+
+  try {
+    await bootstrapDAOMembers();
+  } catch (err) {
+    logger.error({ err }, 'DAO member bootstrap failed');
+  }
+
+  try {
+    await bootstrapJobApplications();
+  } catch (err) {
+    logger.error({ err }, 'Job application bootstrap failed');
+  }
+
+  try {
+    await bootstrapPlatformFees();
+  } catch (err) {
+    logger.error({ err }, 'Platform fees bootstrap failed');
   }
 
   logger.info('Bootstrap sync complete');
