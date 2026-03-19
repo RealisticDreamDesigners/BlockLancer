@@ -51,10 +51,10 @@ export default function CreateContractPage() {
   } = useStacks();
 
   const [formData, setFormData] = useState<FormData>({
-    freelancer: '-',
-    description: '-',
-    totalAmount: '-',
-    endDate: '-',
+    freelancer: '',
+    description: '',
+    totalAmount: '',
+    endDate: '',
     tokenType: 'stx',
   });
 
@@ -165,7 +165,7 @@ export default function CreateContractPage() {
     // Clear form errors for this field
     setErrors(prev => ({
       ...prev,
-      [name]: '-'
+      [name]: ''
     }));
   };
 
@@ -271,10 +271,10 @@ export default function CreateContractPage() {
       if (result.success) {
         // Reset form on success
         setFormData({
-          freelancer: '-',
-          description: '-',
-          totalAmount: '-',
-          endDate: '-',
+          freelancer: '',
+          description: '',
+          totalAmount: '',
+          endDate: '',
           tokenType: 'stx',
         });
         setErrors({});
@@ -320,7 +320,7 @@ export default function CreateContractPage() {
 
   // Check if form is valid (no error-type validations)
   const hasErrors = validationErrors.some(e => e.type === 'error');
-  const canSubmit = !hasErrors && Object.values(formData).every(v => v.trim() !== '-');
+  const canSubmit = !hasErrors && formData.freelancer.trim() !== '' && formData.description.trim() !== '' && formData.totalAmount.trim() !== '' && formData.endDate.trim() !== '';
 
   if (!isSignedIn) {
     return (
