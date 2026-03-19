@@ -32,8 +32,8 @@ const network = getNetwork();
 
 // Contract addresses (Deployed on Testnet)
 const CONTRACTS = {
-  DISPUTE: process.env.NEXT_PUBLIC_DISPUTE_CONTRACT || 'ST30M31FNAKNX5EJKV10V7SJSE07VVDFFZHZHGE0J.blocklancer-dispute-v3',
-  ESCROW: process.env.NEXT_PUBLIC_ESCROW_CONTRACT || 'ST30M31FNAKNX5EJKV10V7SJSE07VVDFFZHZHGE0J.blocklancer-escrow-v2',
+  DISPUTE: process.env.NEXT_PUBLIC_DISPUTE_CONTRACT || 'ST30M31FNAKNX5EJKV10V7SJSE07VVDFFZHZHGE0J.blocklancer-dispute-v5',
+  ESCROW: process.env.NEXT_PUBLIC_ESCROW_CONTRACT || 'ST30M31FNAKNX5EJKV10V7SJSE07VVDFFZHZHGE0J.blocklancer-escrow-v4',
 };
 
 const parseContractId = (contractId: string) => {

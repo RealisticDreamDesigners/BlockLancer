@@ -19,13 +19,13 @@ const DEPLOYER_ADDRESS = getDeployerAddress();
 
 const CONTRACTS = {
   DAO: process.env.NEXT_PUBLIC_DAO_CONTRACT ||
-    `${getDeployerAddress()}.blocklancer-dao`,
+    `${getDeployerAddress()}.blocklancer-dao-v3`,
   DISPUTE: process.env.NEXT_PUBLIC_DISPUTE_CONTRACT ||
-    `${getDeployerAddress()}.blocklancer-dispute-v3`,
+    `${getDeployerAddress()}.blocklancer-dispute-v5`,
   MEMBERSHIP: process.env.NEXT_PUBLIC_MEMBERSHIP_CONTRACT ||
     `${getDeployerAddress()}.blocklancer-membership`,
   ESCROW: process.env.NEXT_PUBLIC_ESCROW_CONTRACT ||
-    `${getDeployerAddress()}.blocklancer-escrow-v2`,
+    `${getDeployerAddress()}.blocklancer-escrow-v4`,
 };
 
 const parseContractId = (contractId: string) => {

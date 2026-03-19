@@ -36,7 +36,7 @@ const network = getNetwork();
 
 // Contract addresses (Deployed on Testnet)
 const CONTRACTS = {
-  DAO: process.env.NEXT_PUBLIC_DAO_CONTRACT || 'ST30M31FNAKNX5EJKV10V7SJSE07VVDFFZHZHGE0J.blocklancer-dao',
+  DAO: process.env.NEXT_PUBLIC_DAO_CONTRACT || 'ST30M31FNAKNX5EJKV10V7SJSE07VVDFFZHZHGE0J.blocklancer-dao-v3',
 };
 
 const parseContractId = (contractId: string) => {

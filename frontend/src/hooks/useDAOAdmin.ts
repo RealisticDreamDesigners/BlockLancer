@@ -21,7 +21,7 @@ const network = getNetwork();
 
 const CONTRACTS = {
   DAO: process.env.NEXT_PUBLIC_DAO_CONTRACT ||
-    `${getDeployerAddress()}.blocklancer-dao`,
+    `${getDeployerAddress()}.blocklancer-dao-v3`,
   MEMBERSHIP: process.env.NEXT_PUBLIC_MEMBERSHIP_CONTRACT ||
     `${getDeployerAddress()}.blocklancer-membership`,
   DEPLOYER: getDeployerAddress(),
