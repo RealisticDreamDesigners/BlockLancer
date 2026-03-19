@@ -685,16 +685,59 @@ export async function syncReputationForKnownUsers(): Promise<number> {
 }
 
 /**
+ * Sync milestones for all existing escrows.
+ * Compares DB milestone count vs on-chain for each escrow.
+ * Fetches and upserts any missing milestones.
+ */
+export async function syncMilestonesForExistingEscrows(): Promise<number> {
+  try {
+    const { query: dbQuery } = await import('../db/pool.js');
+    const { getMilestonesByEscrow } = await import('../db/queries/escrows.js');
+
+    // Get all escrow IDs from DB
+    const escrowResult = await dbQuery('SELECT on_chain_id FROM escrows ORDER BY on_chain_id ASC');
+    const escrowIds: number[] = escrowResult.rows.map((r: any) => r.on_chain_id);
+    if (escrowIds.length === 0) return 0;
+
+    let totalNew = 0;
+    for (const escrowId of escrowIds) {
+      const dbMilestones = await getMilestonesByEscrow(escrowId);
+      const dbCount = dbMilestones.length;
+
+      // Check chain for milestones beyond what DB has
+      const nextIndex = dbCount + 1;
+      for (let m = nextIndex; m <= 50; m++) {
+        const milestone = await readMilestoneState(escrowId, m);
+        if (!milestone) break; // No more milestones on chain
+        await upsertMilestone(milestone);
+        totalNew++;
+      }
+
+      if (totalNew > 0) await sleep(batchDelayMs);
+    }
+
+    if (totalNew > 0) {
+      logger.info({ totalNew }, 'Synced new milestones for existing escrows');
+    }
+    return totalNew;
+  } catch (err) {
+    logger.error({ err }, 'syncMilestonesForExistingEscrows failed');
+    return 0;
+  }
+}
+
+/**
  * Poll for new on-chain data. Call this periodically.
- * Checks for new jobs, escrows, and reputation updates.
+ * Checks for new jobs, escrows, milestones, and reputation updates.
  */
 export async function pollForNewData(): Promise<void> {
   try {
     const newJobs = await syncLatestJobs();
     const newEscrows = await syncLatestEscrows();
+    const newMilestones = await syncMilestonesForExistingEscrows();
     const updatedRep = await syncReputationForKnownUsers();
-    if (newJobs > 0 || newEscrows > 0 || updatedRep > 0) {
-      logger.info({ newJobs, newEscrows, updatedRep }, 'Polling sync found new data');
+    if (newJobs > 0 || newEscrows > 0 || newMilestones > 0 || updatedRep > 0) {
+      logger.info({ newJobs, newEscrows, newMilestones, updatedRep }, 'Polling sync found new data');
     }
   } catch (err) {
     logger.error({ err }, 'Polling sync error');
