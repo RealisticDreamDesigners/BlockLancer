@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
-import { getEscrowById, getEscrowCount, getEscrowsByUser, getMilestonesByEscrow, getMilestoneById, upsertEscrow } from '../../db/queries/escrows.js';
+import { getEscrowById, getEscrowCount, getEscrowsByUser, getMilestonesByEscrow, getMilestoneById, upsertEscrow, upsertMilestone } from '../../db/queries/escrows.js';
 import { getPendingByFunction } from '../../db/queries/pending-transactions.js';
-import { readEscrowState, readTotalEscrows } from '../../chainhook/state-reader.js';
+import { readEscrowState, readMilestoneState, readTotalEscrows } from '../../chainhook/state-reader.js';
 import type { ApiEscrow, ApiMilestone } from '../../types/index.js';
 
 const logger = { info: console.log, error: console.error };
@@ -33,6 +33,32 @@ function toApiMilestone(row: any): ApiMilestone {
   };
 }
 
+/**
+ * Fetch milestones from DB, with on-chain catch-up if DB is empty.
+ * Reads milestones 1..50 from chain and upserts into DB.
+ */
+async function getMilestonesWithCatchUp(escrowId: number): Promise<any[]> {
+  let rows = await getMilestonesByEscrow(escrowId);
+  if (rows.length > 0) return rows;
+
+  // DB has no milestones — try reading from chain
+  try {
+    for (let i = 1; i <= 50; i++) {
+      const onChain = await readMilestoneState(escrowId, i);
+      if (!onChain) break;
+      await upsertMilestone(onChain);
+    }
+    rows = await getMilestonesByEscrow(escrowId);
+    if (rows.length > 0) {
+      logger.info(`[catch-up] Indexed ${rows.length} milestones for escrow #${escrowId} from blockchain`);
+    }
+  } catch {
+    // Fall through with empty milestones
+  }
+
+  return rows;
+}
+
 export async function escrowRoutes(app: FastifyInstance) {
   // GET /api/escrows/:id
   // Includes live catch-up: if not in DB, try reading from blockchain
@@ -58,7 +84,7 @@ export async function escrowRoutes(app: FastifyInstance) {
 
     if (!escrow) return reply.code(404).send({ error: 'Escrow not found' });
 
-    const milestones = await getMilestonesByEscrow(id);
+    const milestones = await getMilestonesWithCatchUp(id);
     const result = toApiEscrow(escrow);
     result.milestones = milestones.map(toApiMilestone);
 
@@ -101,11 +127,11 @@ export async function escrowRoutes(app: FastifyInstance) {
     // Include pending escrow creations for this user
     const pendingCreates = await getPendingByFunction('create-escrow', address);
 
-    // Build results with milestones included
+    // Build results with milestones included (with chain catch-up)
     const results: ApiEscrow[] = [];
     for (const row of escrows) {
       const escrow = toApiEscrow(row);
-      const milestones = await getMilestonesByEscrow(row.on_chain_id);
+      const milestones = await getMilestonesWithCatchUp(row.on_chain_id);
       escrow.milestones = milestones.map(toApiMilestone);
       results.push(escrow);
     }
@@ -136,7 +162,22 @@ export async function escrowRoutes(app: FastifyInstance) {
     const milestoneId = parseInt(request.params.milestoneId, 10);
     if (isNaN(escrowId) || isNaN(milestoneId)) return reply.code(400).send({ error: 'Invalid IDs' });
 
-    const milestone = await getMilestoneById(escrowId, milestoneId);
+    let milestone = await getMilestoneById(escrowId, milestoneId);
+
+    // Catch-up: if not in DB, try reading from chain
+    if (!milestone) {
+      try {
+        const onChain = await readMilestoneState(escrowId, milestoneId);
+        if (onChain) {
+          await upsertMilestone(onChain);
+          milestone = await getMilestoneById(escrowId, milestoneId);
+          logger.info(`[catch-up] Indexed milestone ${escrowId}-${milestoneId} from blockchain`);
+        }
+      } catch {
+        // Fall through to 404
+      }
+    }
+
     if (!milestone) return reply.code(404).send({ error: 'Milestone not found' });
 
     return toApiMilestone(milestone);
@@ -147,7 +188,7 @@ export async function escrowRoutes(app: FastifyInstance) {
     const id = parseInt(request.params.id, 10);
     if (isNaN(id)) return reply.code(400).send({ error: 'Invalid escrow ID' });
 
-    const milestones = await getMilestonesByEscrow(id);
+    const milestones = await getMilestonesWithCatchUp(id);
     return milestones.map(toApiMilestone);
   });
 }
