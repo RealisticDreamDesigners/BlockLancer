@@ -101,7 +101,14 @@ export async function escrowRoutes(app: FastifyInstance) {
     // Include pending escrow creations for this user
     const pendingCreates = await getPendingByFunction('create-escrow', address);
 
-    const results: ApiEscrow[] = escrows.map(toApiEscrow);
+    // Build results with milestones included
+    const results: ApiEscrow[] = [];
+    for (const row of escrows) {
+      const escrow = toApiEscrow(row);
+      const milestones = await getMilestonesByEscrow(row.on_chain_id);
+      escrow.milestones = milestones.map(toApiMilestone);
+      results.push(escrow);
+    }
 
     // Add pending escrows
     for (const pending of pendingCreates) {

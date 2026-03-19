@@ -355,7 +355,7 @@ export const useStacks = () => {
             id: m.id,
             description: m.description,
             amount: m.amount,
-            deadline: m.deadline > 1000000000 ? m.deadline * 1000 : m.deadline,
+            deadline: convertSmartContractTimeToTimestamp(m.deadline),
             status: m.status,
             submissionNotes: m.submissionNote,
             rejectionReason: m.rejectionReason,
