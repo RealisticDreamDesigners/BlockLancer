@@ -11,6 +11,7 @@ import { paymentRoutes } from './routes/payments.js';
 import { adminRoutes } from './routes/admin.js';
 import { reputationRoutes } from './routes/reputation.js';
 import { marketplaceRoutes } from './routes/marketplace.js';
+import { x402Routes } from './routes/x402.js';
 import pino from 'pino';
 
 const logger = pino({ name: 'api' });
@@ -26,7 +27,8 @@ export async function createApiServer() {
   await app.register(cors, {
     origin: true, // Allow all origins in dev
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'payment-signature'],
+    exposedHeaders: ['payment-required', 'payment-response'],
   });
 
   // Root route
@@ -48,6 +50,7 @@ export async function createApiServer() {
   await app.register(adminRoutes);
   await app.register(reputationRoutes);
   await app.register(marketplaceRoutes);
+  await app.register(x402Routes);
 
   return app;
 }
