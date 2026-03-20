@@ -206,7 +206,7 @@ export default function DAODashboardPage() {
                   onClick={() => router.push('/dao/membership')}
                   className="w-full text-left px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-colors text-sm font-semibold shadow-sm"
                 >
-                  Join the DAO
+                  DAO Membership
                 </button>
                 <button
                   onClick={() => router.push('/dao/proposals')}
