@@ -49,7 +49,7 @@ export function CreateProposalModal({
   onSuccess,
 }: CreateProposalModalProps) {
   const [selectedResolution, setSelectedResolution] = useState<ResolutionType>(ResolutionType.PENDING);
-  const [description, setDescription] = useState('-');
+  const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -61,21 +61,21 @@ export function CreateProposalModal({
       label: 'Refund Client',
       description: 'Return payment to client',
       icon: DollarSign,
-      color: 'text-blue-600 bg-blue-50 border-blue-200',
+      color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',
     },
     {
       type: ResolutionType.FREELANCER_WINS,
       label: 'Pay Worker',
       description: 'Release payment to freelancer',
       icon: CheckCircle2,
-      color: 'text-green-600 bg-green-50 border-green-200',
+      color: 'text-green-600 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800',
     },
     {
       type: ResolutionType.SPLIT,
       label: 'Split Funds',
       description: 'Split payment 50/50',
       icon: Split,
-      color: 'text-purple-600 bg-purple-50 border-purple-200',
+      color: 'text-purple-600 bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800',
     },
   ];
 
@@ -125,7 +125,7 @@ export function CreateProposalModal({
           onClose();
           // Reset form
           setSelectedResolution(ResolutionType.PENDING);
-          setDescription('-');
+          setDescription('');
           setSuccess(false);
         }, 2000);
       } else {
@@ -170,7 +170,7 @@ export function CreateProposalModal({
           {/* Dispute Info */}
           <div className="bg-gray-50 dark:bg-gray-950 rounded-lg p-4 border border-gray-200 dark:border-gray-700/50">
             <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Dispute Details</h3>
-            <div className="text-sm space-y-1">
+            <div className="text-sm space-y-1 text-gray-800 dark:text-gray-200">
               <p><span className="text-gray-600 dark:text-gray-400">Reason:</span> {dispute.reason}</p>
               <p><span className="text-gray-600 dark:text-gray-400">Employer:</span> {dispute.client}</p>
               <p><span className="text-gray-600 dark:text-gray-400">Worker:</span> {dispute.freelancer}</p>
@@ -201,8 +201,14 @@ export function CreateProposalModal({
                       'h-5 w-5 mb-2',
                       selectedResolution === option.type ? 'opacity-100' : 'opacity-50'
                     )} />
-                    <div className="font-semibold text-gray-900 dark:text-white">{option.label}</div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">{option.description}</div>
+                    <div className={cn(
+                      'font-semibold',
+                      selectedResolution === option.type ? 'text-inherit' : 'text-gray-900 dark:text-white'
+                    )}>{option.label}</div>
+                    <div className={cn(
+                      'text-xs mt-1',
+                      selectedResolution === option.type ? 'opacity-80' : 'text-gray-600 dark:text-gray-400'
+                    )}>{option.description}</div>
                   </button>
                 );
               })}
@@ -236,17 +242,17 @@ export function CreateProposalModal({
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-red-800">{error}</div>
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-red-800 dark:text-red-300">{error}</div>
             </div>
           )}
 
           {/* Success Message */}
           {success && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
-              <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-green-800">
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-start gap-3">
+              <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-green-800 dark:text-green-300">
                 Proposal created successfully! Other DAO members can now vote.
               </div>
             </div>
