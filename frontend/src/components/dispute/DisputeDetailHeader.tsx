@@ -177,8 +177,8 @@ export function DisputeDetailHeader({
 
           {/* Resolution Status */}
           {dispute.status === DisputeStatus.RESOLVED ? (
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+            <div className="bg-gray-50 dark:bg-gray-950 rounded-lg p-4">
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-1">
                 <CheckCircle2 className="h-4 w-4" />
                 <span className="font-medium">Resolution</span>
               </div>
@@ -187,8 +187,8 @@ export function DisputeDetailHeader({
               </p>
             </div>
           ) : (
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+            <div className="bg-gray-50 dark:bg-gray-950 rounded-lg p-4">
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-1">
                 <Clock className="h-4 w-4" />
                 <span className="font-medium">Status</span>
               </div>

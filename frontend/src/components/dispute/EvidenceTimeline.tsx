@@ -181,9 +181,9 @@ export function EvidenceTimeline({
           isLast={++currentEvent === eventCount}
           side="center"
         >
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <p className="text-sm font-medium text-blue-900 mb-1">Reason:</p>
-            <p className="text-sm text-blue-800 whitespace-pre-wrap">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+            <p className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-1">Reason:</p>
+            <p className="text-sm text-blue-800 dark:text-blue-300 whitespace-pre-wrap">
               {dispute.reason}
             </p>
           </div>
@@ -195,7 +195,7 @@ export function EvidenceTimeline({
         <TimelineEvent
           icon={<FileText className="h-6 w-6 text-white" />}
           title="Employer Submitted Evidence"
-          description="Evidence supporting client's position"
+          description="Evidence supporting employer's position"
           timestamp={dispute.createdAt} // In real app, you'd have separate timestamp
           color="bg-blue-500"
           isLast={++currentEvent === eventCount}
@@ -216,7 +216,7 @@ export function EvidenceTimeline({
         <TimelineEvent
           icon={<FileText className="h-6 w-6 text-white" />}
           title="Worker Submitted Evidence"
-          description="Evidence supporting freelancer's position"
+          description="Evidence supporting worker's position"
           timestamp={dispute.createdAt} // In real app, you'd have separate timestamp
           color="bg-purple-500"
           isLast={++currentEvent === eventCount}
@@ -254,7 +254,7 @@ export function EvidenceTimeline({
         <TimelineEvent
           icon={<FileText className="h-6 w-6 text-gray-400" />}
           title="Employer Evidence Pending"
-          description="Waiting for client to submit evidence"
+          description="Waiting for employer to submit evidence"
           color="bg-gray-300"
           isLast={++currentEvent === eventCount}
           side="left"
@@ -268,7 +268,7 @@ export function EvidenceTimeline({
         <TimelineEvent
           icon={<FileText className="h-6 w-6 text-gray-400" />}
           title="Worker Evidence Pending"
-          description="Waiting for freelancer to submit evidence"
+          description="Waiting for worker to submit evidence"
           color="bg-gray-300"
           isLast={++currentEvent === eventCount}
           side="right"
@@ -288,8 +288,8 @@ export function EvidenceTimeline({
           isLast={++currentEvent === eventCount}
           side="center"
         >
-          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-            <p className="text-sm font-medium text-green-900">
+          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+            <p className="text-sm font-medium text-green-900 dark:text-green-200">
               Resolution: {dispute.resolution === 1
                 ? 'Employer Wins'
                 : dispute.resolution === 2
@@ -299,7 +299,7 @@ export function EvidenceTimeline({
                 : 'Pending'}
             </p>
             {dispute.proposal && (
-              <p className="text-xs text-green-800 mt-1">
+              <p className="text-xs text-green-800 dark:text-green-300 mt-1">
                 DAO Proposal #{dispute.proposal.id} was executed
               </p>
             )}
@@ -313,7 +313,7 @@ export function EvidenceTimeline({
           icon={<XCircle className="h-6 w-6 text-white" />}
           title="Dispute Withdrawn"
           description={`Withdrawn by ${
-            dispute.openedBy === dispute.client ? 'client' : 'freelancer'
+            dispute.openedBy === dispute.client ? 'Employer' : 'Worker'
           }`}
           timestamp={dispute.resolvedAt}
           color="bg-gray-500"

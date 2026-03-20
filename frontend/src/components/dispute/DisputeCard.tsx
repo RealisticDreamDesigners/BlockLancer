@@ -233,7 +233,7 @@ export function DisputeCard({
             {canCreateProposal && (
               <Link
                 href={`/disputes/${dispute.id}#dao-resolution`}
-                className="inline-flex items-center gap-1 text-sm font-medium text-green-600 hover:text-green-700 transition-colors px-3 py-1.5 bg-green-50 rounded-lg hover:bg-green-100"
+                className="inline-flex items-center gap-1 text-sm font-medium text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors px-3 py-1.5 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30"
                 onClick={(e) => e.stopPropagation()}
               >
                 <Scale className="h-3.5 w-3.5" />

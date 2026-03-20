@@ -72,19 +72,24 @@ export interface EvidenceCardProps {
 
 const roleColors = {
   client: {
-    bg: 'bg-blue-50',
-    border: 'border-blue-200',
-    text: 'text-blue-700',
-    badge: 'bg-blue-100 text-blue-700',
-    icon: 'text-blue-600',
+    bg: 'bg-blue-50 dark:bg-blue-900/20',
+    border: 'border-blue-200 dark:border-blue-800',
+    text: 'text-blue-700 dark:text-blue-300',
+    badge: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300',
+    icon: 'text-blue-600 dark:text-blue-400',
   },
   freelancer: {
-    bg: 'bg-purple-50',
-    border: 'border-purple-200',
-    text: 'text-purple-700',
-    badge: 'bg-purple-100 text-purple-700',
-    icon: 'text-purple-600',
+    bg: 'bg-purple-50 dark:bg-purple-900/20',
+    border: 'border-purple-200 dark:border-purple-800',
+    text: 'text-purple-700 dark:text-purple-300',
+    badge: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300',
+    icon: 'text-purple-600 dark:text-purple-400',
   },
+};
+
+const roleLabels = {
+  client: 'Employer',
+  freelancer: 'Worker',
 };
 
 // ===============================================
@@ -147,8 +152,8 @@ export function EvidenceCard({
           <User className={cn('flex-shrink-0', colors.icon, isCompact ? 'h-3.5 w-3.5' : 'h-4 w-4')} />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className={cn('font-medium capitalize', colors.text, isCompact ? 'text-sm' : 'text-base')}>
-                {role}
+              <span className={cn('font-medium', colors.text, isCompact ? 'text-sm' : 'text-base')}>
+                {roleLabels[role]}
               </span>
               {isCurrentUser && (
                 <span className="text-xs bg-white/70 px-2 py-0.5 rounded-full font-medium">

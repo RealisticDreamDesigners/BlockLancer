@@ -312,8 +312,8 @@ export default function DisputeDetailPage() {
                 <div className="text-sm text-gray-700 dark:text-gray-300">
                   <p className="font-medium">You're viewing this dispute</p>
                   <p className="text-gray-600 dark:text-gray-400 mt-1">
-                    You're not directly involved in this dispute. Only the client
-                    and freelancer can submit evidence.
+                    You're not directly involved in this dispute. Only the employer
+                    and worker can submit evidence.
                   </p>
                 </div>
               </div>
