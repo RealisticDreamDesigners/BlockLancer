@@ -99,15 +99,16 @@ export async function getAllDAOMembers() {
 }
 
 export async function upsertDAOMember(address: string, isActive: boolean, joinedAt?: number) {
+  const joinedValue = joinedAt || Math.floor(Date.now() / 1000);
   const result = await query(
     `INSERT INTO dao_members (address, is_active, joined_at, updated_at)
      VALUES ($1, $2, $3, NOW())
      ON CONFLICT (address) DO UPDATE SET
        is_active = EXCLUDED.is_active,
-       joined_at = COALESCE(EXCLUDED.joined_at, dao_members.joined_at),
+       joined_at = COALESCE(dao_members.joined_at, EXCLUDED.joined_at),
        updated_at = NOW()
      RETURNING *`,
-    [address, isActive, joinedAt || null]
+    [address, isActive, joinedValue]
   );
   return result.rows[0];
 }
