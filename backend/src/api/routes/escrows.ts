@@ -123,6 +123,29 @@ export async function escrowRoutes(app: FastifyInstance) {
     const { address } = request.params;
     if (!address) return reply.code(400).send({ error: 'Address required' });
 
+    // Catch-up: index any new escrows from chain so they appear for this request
+    try {
+      const dbCount = await getEscrowCount();
+      const onChainTotal = await readTotalEscrows();
+      if (onChainTotal > dbCount) {
+        logger.info(`[catch-up] Found ${onChainTotal - dbCount} new escrows on-chain (DB: ${dbCount}, chain: ${onChainTotal})`);
+        for (let id = dbCount + 1; id <= onChainTotal; id++) {
+          try {
+            const state = await readEscrowState(id);
+            if (state) {
+              await upsertEscrow(state);
+              logger.info(`[catch-up] Indexed escrow #${id}`);
+            }
+          } catch (err) {
+            logger.error({ err, id }, '[catch-up] Failed to index escrow');
+            break;
+          }
+        }
+      }
+    } catch {
+      // Non-critical: if catch-up fails, still return DB results
+    }
+
     const escrows = await getEscrowsByUser(address);
 
     // Include pending escrow creations for this user
