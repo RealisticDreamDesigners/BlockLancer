@@ -104,50 +104,46 @@ export async function daoRoutes(app: FastifyInstance) {
     };
   });
 
-  // GET /api/proposals/:id — always refresh active proposals from chain
+  // GET /api/proposals/:id — DB first, chain catch-up if missing
   app.get<{ Params: { id: string } }>('/api/proposals/:id', async (request, reply) => {
     const id = parseInt(request.params.id, 10);
     if (isNaN(id)) return reply.code(400).send({ error: 'Invalid proposal ID' });
 
-    // Always try to refresh from blockchain for fresh vote counts
-    try {
-      const onChainState = await readProposalState(id);
-      if (onChainState) {
-        await upsertProposal(onChainState);
+    let proposal = await getProposalById(id);
+
+    // If not in DB, try chain catch-up
+    if (!proposal) {
+      try {
+        const onChainState = await readProposalState(id);
+        if (onChainState) {
+          await upsertProposal(onChainState);
+          proposal = await getProposalById(id);
+        }
+      } catch (err) {
+        logger.warn({ err, proposalId: id }, 'Failed to catch up proposal from chain');
       }
-    } catch (err) {
-      logger.warn({ err, proposalId: id }, 'Failed to refresh proposal from chain');
     }
 
-    const proposal = await getProposalById(id);
     if (!proposal) return reply.code(404).send({ error: 'Proposal not found' });
 
     return toApiProposal(proposal);
   });
 
-  // GET /api/proposals/count — with blockchain catch-up
+  // GET /api/proposals/count — DB first, background catch-up
   app.get('/api/proposals/count', async () => {
-    await catchUpProposals();
     const count = await getProposalCount();
+    // Fire-and-forget catch-up for next request
+    catchUpProposals().catch(() => {});
     return { count };
   });
 
-  // GET /api/proposals/all — with blockchain catch-up + refresh active proposals
+  // GET /api/proposals/all — DB first, background catch-up
   app.get('/api/proposals/all', async () => {
-    await catchUpProposals();
-
-    // Refresh all active (status=0) proposals from chain for fresh vote counts
-    const existing = await getAllProposals();
-    for (const p of existing) {
-      if (p.status === 0) {
-        try {
-          const fresh = await readProposalState(p.on_chain_id);
-          if (fresh) await upsertProposal(fresh);
-        } catch { /* skip refresh errors */ }
-      }
-    }
-
     const proposals = await getAllProposals();
+
+    // Fire-and-forget catch-up for next request
+    catchUpProposals().catch(() => {});
+
     return proposals.map(toApiProposal);
   });
 
@@ -156,19 +152,19 @@ export async function daoRoutes(app: FastifyInstance) {
     const { address } = request.params;
     if (!address) return reply.code(400).send({ error: 'Address required' });
 
+    const count = await getDAOMemberCount();
+
     // Check DB first
     const dbMember = await getDAOMemberByAddress(address);
     if (dbMember) {
-      const count = await getDAOMemberCount();
       return {
         isMember: dbMember.is_active,
         memberCount: count,
       };
     }
 
-    // Fallback to blockchain
-    const status = await readDAOMemberStatus(address);
-    return status || { isMember: false, memberCount: 0 };
+    // Not in DB — return false with DB count (poller will pick up new members)
+    return { isMember: false, memberCount: count };
   });
 
   // GET /api/dao/members/count
