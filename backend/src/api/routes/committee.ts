@@ -51,63 +51,24 @@ export async function committeeRoutes(app: FastifyInstance) {
     return { count };
   });
 
-  // GET /api/committee/status/:address
+  // GET /api/committee/status/:address — DB only, poller keeps data fresh
   app.get<{ Params: { address: string } }>('/api/committee/status/:address', async (request, reply) => {
     const { address } = request.params;
     if (!address) return reply.code(400).send({ error: 'Address required' });
 
-    // Check DB first
     const member = await getCommitteeMemberByAddress(address);
     const count = await getCommitteeMemberCount();
 
-    if (member) {
-      return {
-        isMember: member.is_active,
-        committeeCount: count,
-      };
-    }
-
-    // Fallback to blockchain
-    const status = await readCommitteeMemberStatus(address);
-    return status || { isMember: false, committeeCount: count };
+    return {
+      isMember: member?.is_active || false,
+      committeeCount: count,
+    };
   });
 
   // GET /api/membership/proposals/pending — returns only pending proposals (status=0)
-  // Includes live catch-up: checks blockchain for proposals beyond what's indexed in DB
-  // Also refreshes existing pending proposals to get updated vote counts
-  // Returns only the LATEST proposal per nominee to avoid duplicate clutter
+  // DB-first for instant response. Poller keeps data fresh.
   app.get('/api/membership/proposals/pending', async () => {
-    // First, catch up on any new proposals not yet in the DB
-    const maxDbId = await getMaxMembershipProposalId();
-    let newFound = 0;
-    for (let id = maxDbId + 1; id <= maxDbId + 20; id++) {
-      try {
-        const state = await readMembershipProposalState(id);
-        if (!state) break;
-        await upsertMembershipProposal(state);
-        newFound++;
-      } catch {
-        break;
-      }
-    }
-    if (newFound > 0) {
-      logger.info(`[catch-up] Indexed ${newFound} new membership proposals (${maxDbId + 1}..${maxDbId + newFound})`);
-    }
-
-    // Refresh existing pending proposals from chain to get updated vote counts
-    const pendingBefore = await getPendingMembershipProposals();
-    for (const p of pendingBefore) {
-      try {
-        const fresh = await readMembershipProposalState(p.on_chain_id);
-        if (fresh) {
-          await upsertMembershipProposal(fresh);
-        }
-      } catch {
-        // Skip refresh errors
-      }
-    }
-
-    // Get refreshed pending proposals from DB
+    // Return DB results immediately
     const proposals = await getPendingMembershipProposals();
 
     // Filter to only the LATEST pending proposal per nominee
@@ -119,7 +80,21 @@ export async function committeeRoutes(app: FastifyInstance) {
       }
     }
 
-    return Array.from(latestByNominee.values()).map(toApiMembershipProposal);
+    const result = Array.from(latestByNominee.values()).map(toApiMembershipProposal);
+
+    // Fire-and-forget: catch up new proposals in background for next request
+    (async () => {
+      try {
+        const maxDbId = await getMaxMembershipProposalId();
+        for (let id = maxDbId + 1; id <= maxDbId + 20; id++) {
+          const state = await readMembershipProposalState(id);
+          if (!state) break;
+          await upsertMembershipProposal(state);
+        }
+      } catch { /* background task */ }
+    })();
+
+    return result;
   });
 
   // GET /api/membership/proposals/all — returns all proposals
