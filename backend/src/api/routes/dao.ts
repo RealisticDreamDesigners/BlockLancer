@@ -88,19 +88,19 @@ async function catchUpProposals(): Promise<number> {
 export async function daoRoutes(app: FastifyInstance) {
   // GET /api/dao/stats
   app.get('/api/dao/stats', async () => {
-    // Try from blockchain first for freshness
-    const stats = await readDAOStats();
-    if (stats) return stats;
+    // DB member count is authoritative (on-chain member-count var has init quirk)
+    const dbMemberCount = await getDAOMemberCount();
 
-    // Fallback to DB
-    const memberCount = await getDAOMemberCount();
+    // Get other stats from blockchain
+    const chainStats = await readDAOStats();
     const proposalCount = await getProposalCount();
+
     return {
-      totalMembers: memberCount,
-      maxMembers: 100,
-      nextProposalId: proposalCount,
-      supermajorityThreshold: SUPERMAJORITY_THRESHOLD,
-      memberCount,
+      totalMembers: dbMemberCount,
+      maxMembers: chainStats?.maxMembers || 100,
+      nextProposalId: chainStats?.nextProposalId || proposalCount,
+      supermajorityThreshold: chainStats?.supermajorityThreshold || SUPERMAJORITY_THRESHOLD,
+      memberCount: dbMemberCount,
     };
   });
 
