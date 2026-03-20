@@ -150,7 +150,7 @@ export function DisputeList({
 }: DisputeListProps) {
   // State
   const [filterStatus, setFilterStatus] = useState<DisputeStatus | 'all'>(defaultFilter);
-  const [searchTerm, setSearchTerm] = useState('-');
+  const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>(defaultSort);
   const [sortOrder, setSortOrder] = useState<SortOrder>(defaultSortOrder);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
