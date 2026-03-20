@@ -104,26 +104,22 @@ export async function daoRoutes(app: FastifyInstance) {
     };
   });
 
-  // GET /api/proposals/:id — DB first, chain catch-up if missing
+  // GET /api/proposals/:id — always refresh from chain for fresh vote counts
   app.get<{ Params: { id: string } }>('/api/proposals/:id', async (request, reply) => {
     const id = parseInt(request.params.id, 10);
     if (isNaN(id)) return reply.code(400).send({ error: 'Invalid proposal ID' });
 
-    let proposal = await getProposalById(id);
-
-    // If not in DB, try chain catch-up
-    if (!proposal) {
-      try {
-        const onChainState = await readProposalState(id);
-        if (onChainState) {
-          await upsertProposal(onChainState);
-          proposal = await getProposalById(id);
-        }
-      } catch (err) {
-        logger.warn({ err, proposalId: id }, 'Failed to catch up proposal from chain');
+    // Always refresh from chain so vote counts are up-to-date
+    try {
+      const onChainState = await readProposalState(id);
+      if (onChainState) {
+        await upsertProposal(onChainState);
       }
+    } catch (err) {
+      logger.warn({ err, proposalId: id }, 'Failed to refresh proposal from chain');
     }
 
+    const proposal = await getProposalById(id);
     if (!proposal) return reply.code(404).send({ error: 'Proposal not found' });
 
     return toApiProposal(proposal);
@@ -137,13 +133,22 @@ export async function daoRoutes(app: FastifyInstance) {
     return { count };
   });
 
-  // GET /api/proposals/all — DB first, background catch-up
+  // GET /api/proposals/all — catch up new + refresh active from chain
   app.get('/api/proposals/all', async () => {
+    await catchUpProposals();
+
+    // Refresh active proposals from chain for fresh vote counts
+    const existing = await getAllProposals();
+    for (const p of existing) {
+      if (p.status === 0) { // 0 = ACTIVE
+        try {
+          const fresh = await readProposalState(p.on_chain_id);
+          if (fresh) await upsertProposal(fresh);
+        } catch { /* skip refresh errors */ }
+      }
+    }
+
     const proposals = await getAllProposals();
-
-    // Fire-and-forget catch-up for next request
-    catchUpProposals().catch(() => {});
-
     return proposals.map(toApiProposal);
   });
 
