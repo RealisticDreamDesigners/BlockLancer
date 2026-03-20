@@ -562,367 +562,294 @@ export async function runBootstrap() {
   logger.info('Bootstrap sync complete');
 }
 
+// ============================================================
+// POLLING: Split into fast (new items) and slow (refresh existing)
+// ============================================================
+
+let isFastPolling = false;
+let isSlowPolling = false;
+
 /**
- * Sync latest jobs from chain.
- * Checks on-chain job count vs DB and indexes any new ones.
- * Safe to call repeatedly — only fetches jobs not yet in DB.
+ * FAST POLL — Discover new items only (lightweight).
+ * Only checks on-chain counts vs DB and fetches genuinely new items.
+ * Runs every 30 seconds.
  */
-export async function syncLatestJobs(): Promise<number> {
+export async function pollForNewItems(): Promise<void> {
+  if (isFastPolling) {
+    logger.info('Fast poll still running, skipping');
+    return;
+  }
+  isFastPolling = true;
+  try {
+    let total = 0;
+
+    // New jobs
+    total += await discoverNewJobs();
+    // New escrows + their milestones
+    total += await discoverNewEscrows();
+    // New disputes
+    total += await discoverNewDisputes();
+    // New DAO proposals
+    total += await discoverNewProposals();
+    // New membership proposals
+    total += await discoverNewMembershipProposals();
+    // New committee/DAO members (via Hiro tx scan)
+    total += await syncCommitteeMembers();
+    total += await syncDAOMembers();
+
+    if (total > 0) {
+      logger.info({ total }, 'Fast poll: discovered new items');
+    }
+  } catch (err) {
+    logger.error({ err }, 'Fast poll error');
+  } finally {
+    isFastPolling = false;
+  }
+}
+
+/**
+ * SLOW POLL — Refresh status of existing items (heavier).
+ * Re-reads existing records to catch status changes (votes, approvals, etc.).
+ * Runs every 5 minutes.
+ */
+export async function pollRefreshExisting(): Promise<void> {
+  if (isSlowPolling) {
+    logger.info('Slow poll still running, skipping');
+    return;
+  }
+  isSlowPolling = true;
+  try {
+    const { query: dbQuery } = await import('../db/pool.js');
+
+    // Refresh existing escrow statuses (active→completed, etc.)
+    const escrows = await dbQuery('SELECT on_chain_id FROM escrows ORDER BY on_chain_id ASC');
+    for (const row of escrows.rows) {
+      try {
+        const state = await readEscrowState(row.on_chain_id);
+        if (state) await upsertEscrow(state);
+      } catch { /* skip */ }
+      await sleep(batchDelayMs);
+    }
+
+    // Refresh milestones for all escrows
+    for (const row of escrows.rows) {
+      for (let m = 1; m <= 50; m++) {
+        const milestone = await readMilestoneState(row.on_chain_id, m);
+        if (!milestone) break;
+        await upsertMilestone(milestone);
+      }
+      await sleep(batchDelayMs);
+    }
+
+    // Refresh existing disputes
+    const disputes = await dbQuery('SELECT on_chain_id FROM disputes ORDER BY on_chain_id ASC');
+    for (const row of disputes.rows) {
+      try {
+        const state = await readDisputeState(row.on_chain_id);
+        if (state) await upsertDispute(state);
+      } catch { /* skip */ }
+      await sleep(batchDelayMs);
+    }
+
+    // Refresh existing DAO proposals (vote counts, status)
+    const proposals = await dbQuery('SELECT on_chain_id FROM dao_proposals ORDER BY on_chain_id ASC');
+    for (const row of proposals.rows) {
+      try {
+        const state = await readProposalState(row.on_chain_id);
+        if (state) await upsertProposal(state);
+      } catch { /* skip */ }
+      await sleep(batchDelayMs);
+    }
+
+    // Refresh existing membership proposals
+    const membershipProposals = await dbQuery('SELECT on_chain_id FROM membership_proposals ORDER BY on_chain_id ASC');
+    for (const row of membershipProposals.rows) {
+      try {
+        const state = await readMembershipProposalState(row.on_chain_id);
+        if (state) await upsertMembershipProposal(state);
+      } catch { /* skip */ }
+      await sleep(batchDelayMs);
+    }
+
+    // Refresh user tiers
+    const addresses = await dbQuery(
+      'SELECT DISTINCT client as address FROM escrows UNION SELECT DISTINCT freelancer as address FROM escrows'
+    );
+    for (const row of addresses.rows) {
+      if (!row.address) continue;
+      try {
+        const tierInfo = await readUserTierInfo(row.address);
+        if (tierInfo) {
+          await upsertUserTier({ address: tierInfo.address, tier: tierInfo.tier, total_fees_paid: tierInfo.total_fees_paid });
+        }
+      } catch { /* skip */ }
+      await sleep(batchDelayMs);
+    }
+
+    // Refresh job applications
+    const appsFromHiro = await fetchJobApplicationsFromHiro();
+    for (const { jobId, applicant } of appsFromHiro) {
+      try {
+        const state = await readJobApplicationState(jobId, applicant);
+        if (state) await upsertJobApplication(state);
+      } catch { /* skip */ }
+      await sleep(batchDelayMs);
+    }
+
+    // Refresh reputation
+    for (const row of addresses.rows) {
+      if (!row.address) continue;
+      try {
+        const state = await readReputationState(row.address);
+        if (state) {
+          const { getReputationByAddress } = await import('../db/queries/reputation.js');
+          const existing = await getReputationByAddress(row.address);
+          if (!existing || existing.score !== state.score || existing.completed_escrows !== state.completed_escrows) {
+            await upsertReputation(state);
+            if (!existing || existing.score !== state.score) {
+              await insertReputationHistory(row.address, state.score, 'poll_sync');
+            }
+          }
+        }
+      } catch { /* skip */ }
+      await sleep(batchDelayMs);
+    }
+
+    logger.info('Slow poll: refreshed existing items');
+  } catch (err) {
+    logger.error({ err }, 'Slow poll error');
+  } finally {
+    isSlowPolling = false;
+  }
+}
+
+// ============================================================
+// DISCOVER functions — only fetch NEW items (used by fast poll)
+// ============================================================
+
+async function discoverNewJobs(): Promise<number> {
   try {
     const totalOnChain = await readTotalJobs();
     if (totalOnChain === 0) return 0;
 
     const syncState = await getSyncState('jobs');
     const lastSynced = syncState?.last_synced_id || 0;
-
     if (totalOnChain <= lastSynced) return 0;
 
-    const newCount = totalOnChain - lastSynced;
-    logger.info({ lastSynced, totalOnChain, newJobs: newCount }, 'Syncing new jobs from chain');
-
+    logger.info({ lastSynced, totalOnChain }, 'Discovering new jobs');
+    let synced = 0;
     for (let id = lastSynced + 1; id <= totalOnChain; id++) {
       const state = await readJobState(id);
-      if (state) {
-        await upsertJob(state);
-        await updateSyncState('jobs', id, false);
-      }
-      if (id < totalOnChain) await sleep(batchDelayMs);
+      if (state) { await upsertJob(state); synced++; }
+      await updateSyncState('jobs', id, id === totalOnChain);
     }
-
-    await updateSyncState('jobs', totalOnChain, true);
-    logger.info({ synced: newCount }, 'Job sync complete');
-    return newCount;
+    return synced;
   } catch (err) {
-    logger.error({ err }, 'syncLatestJobs failed');
+    logger.error({ err }, 'discoverNewJobs failed');
     return 0;
   }
 }
 
-/**
- * Sync escrows from chain.
- * - Indexes any new escrows beyond what DB has.
- * - Also refreshes ALL existing escrow statuses (active → completed, etc.).
- */
-export async function syncLatestEscrows(): Promise<number> {
+async function discoverNewEscrows(): Promise<number> {
   try {
     const totalOnChain = await readTotalEscrows();
     if (totalOnChain === 0) return 0;
 
     const syncState = await getSyncState('escrows');
     const lastSynced = syncState?.last_synced_id || 0;
+    if (totalOnChain <= lastSynced) return 0;
 
+    logger.info({ lastSynced, totalOnChain }, 'Discovering new escrows');
     let synced = 0;
-
-    // Index new escrows
-    if (totalOnChain > lastSynced) {
-      const newCount = totalOnChain - lastSynced;
-      logger.info({ lastSynced, totalOnChain, newEscrows: newCount }, 'Syncing new escrows from chain');
-
-      for (let id = lastSynced + 1; id <= totalOnChain; id++) {
-        const state = await readEscrowState(id);
-        if (state) {
-          await upsertEscrow(state);
-          await updateSyncState('escrows', id, false);
-          synced++;
+    for (let id = lastSynced + 1; id <= totalOnChain; id++) {
+      const state = await readEscrowState(id);
+      if (state) {
+        await upsertEscrow(state);
+        synced++;
+        // Also fetch milestones for the new escrow
+        for (let m = 1; m <= 50; m++) {
+          const milestone = await readMilestoneState(id, m);
+          if (!milestone) break;
+          await upsertMilestone(milestone);
         }
-        if (id < totalOnChain) await sleep(batchDelayMs);
       }
-
-      await updateSyncState('escrows', totalOnChain, true);
-    }
-
-    // Refresh existing escrow statuses (catches active→completed, etc.)
-    const { query: dbQuery } = await import('../db/pool.js');
-    const escrowResult = await dbQuery('SELECT on_chain_id FROM escrows ORDER BY on_chain_id ASC');
-    for (const row of escrowResult.rows) {
-      try {
-        const state = await readEscrowState(row.on_chain_id);
-        if (state) await upsertEscrow(state);
-      } catch { /* skip individual failures */ }
-    }
-
-    if (synced > 0) {
-      logger.info({ synced }, 'Escrow sync complete');
+      await updateSyncState('escrows', id, id === totalOnChain);
     }
     return synced;
   } catch (err) {
-    logger.error({ err }, 'syncLatestEscrows failed');
+    logger.error({ err }, 'discoverNewEscrows failed');
     return 0;
   }
 }
 
-/**
- * Sync reputation for all known addresses.
- * Reads on-chain reputation state and upserts into DB.
- * Only updates if the score has changed to avoid unnecessary writes.
- */
-export async function syncReputationForKnownUsers(): Promise<number> {
-  try {
-    const { query: dbQuery } = await import('../db/pool.js');
-    const addressResult = await dbQuery(
-      `SELECT DISTINCT address FROM (
-        SELECT client as address FROM escrows
-        UNION SELECT freelancer as address FROM escrows
-      ) combined WHERE address IS NOT NULL`
-    );
-    const addresses: string[] = addressResult.rows.map((r: any) => r.address).filter(Boolean);
-    if (addresses.length === 0) return 0;
-
-    let updated = 0;
-    for (const address of addresses) {
-      try {
-        const state = await readReputationState(address);
-        if (state) {
-          const { getReputationByAddress } = await import('../db/queries/reputation.js');
-          const existing = await getReputationByAddress(address);
-          // Only upsert if score actually changed
-          if (!existing || existing.score !== state.score || existing.completed_escrows !== state.completed_escrows) {
-            await upsertReputation(state);
-            // Record history if score changed
-            if (!existing || existing.score !== state.score) {
-              await insertReputationHistory(address, state.score, 'poll_sync');
-            }
-            updated++;
-          }
-        }
-        await sleep(batchDelayMs);
-      } catch (err) {
-        // Silently skip individual failures during polling
-      }
-    }
-    return updated;
-  } catch (err) {
-    logger.error({ err }, 'syncReputationForKnownUsers failed');
-    return 0;
-  }
-}
-
-/**
- * Sync milestones for all existing escrows.
- * Re-reads ALL milestones from chain (not just new ones) to catch status updates.
- * Uses UPSERT so status changes (PENDING → SUBMITTED → APPROVED) are picked up.
- */
-export async function syncMilestonesForExistingEscrows(): Promise<number> {
-  try {
-    const { query: dbQuery } = await import('../db/pool.js');
-
-    // Get all escrow IDs from DB
-    const escrowResult = await dbQuery('SELECT on_chain_id FROM escrows ORDER BY on_chain_id ASC');
-    const escrowIds: number[] = escrowResult.rows.map((r: any) => r.on_chain_id);
-    if (escrowIds.length === 0) return 0;
-
-    let totalUpdated = 0;
-    for (const escrowId of escrowIds) {
-      // Re-read ALL milestones from chain starting at 1 to catch status updates
-      for (let m = 1; m <= 50; m++) {
-        const milestone = await readMilestoneState(escrowId, m);
-        if (!milestone) break; // No more milestones on chain
-        await upsertMilestone(milestone); // UPSERT updates status for existing rows
-        totalUpdated++;
-      }
-
-      if (totalUpdated > 0) await sleep(batchDelayMs);
-    }
-
-    if (totalUpdated > 0) {
-      logger.info({ totalUpdated }, 'Synced milestone states for existing escrows');
-    }
-    return totalUpdated;
-  } catch (err) {
-    logger.error({ err }, 'syncMilestonesForExistingEscrows failed');
-    return 0;
-  }
-}
-
-/**
- * Sync disputes from chain.
- * Indexes new disputes and refreshes status of existing ones.
- */
-export async function syncLatestDisputes(): Promise<number> {
+async function discoverNewDisputes(): Promise<number> {
   try {
     const totalOnChain = await readTotalDisputes();
-    if (totalOnChain <= 1) return 0; // next-dispute-id starts at 1
+    if (totalOnChain <= 1) return 0;
 
     const disputeCount = totalOnChain - 1;
-    const { query: dbQuery } = await import('../db/pool.js');
-
-    // Index new disputes
     const syncState = await getSyncState('disputes');
     const lastSynced = syncState?.last_synced_id || 0;
-    let newCount = 0;
+    if (disputeCount <= lastSynced) return 0;
 
-    if (disputeCount > lastSynced) {
-      for (let id = lastSynced + 1; id <= disputeCount; id++) {
-        const state = await readDisputeState(id);
-        if (state) {
-          await upsertDispute(state);
-          newCount++;
-        }
-        await sleep(batchDelayMs);
-      }
-      await updateSyncState('disputes', disputeCount, true);
+    logger.info({ lastSynced, disputeCount }, 'Discovering new disputes');
+    let synced = 0;
+    for (let id = lastSynced + 1; id <= disputeCount; id++) {
+      const state = await readDisputeState(id);
+      if (state) { await upsertDispute(state); synced++; }
+      await updateSyncState('disputes', id, id === disputeCount);
     }
-
-    // Refresh existing dispute statuses (open → resolved, evidence updates)
-    const existingResult = await dbQuery('SELECT on_chain_id FROM disputes ORDER BY on_chain_id ASC');
-    for (const row of existingResult.rows) {
-      try {
-        const state = await readDisputeState(row.on_chain_id);
-        if (state) await upsertDispute(state);
-      } catch { /* skip */ }
-    }
-
-    return newCount;
+    return synced;
   } catch (err) {
-    logger.error({ err }, 'syncLatestDisputes failed');
+    logger.error({ err }, 'discoverNewDisputes failed');
     return 0;
   }
 }
 
-/**
- * Sync proposals from chain.
- * Indexes new proposals and refreshes status/votes of existing ones.
- */
-export async function syncLatestProposals(): Promise<number> {
+async function discoverNewProposals(): Promise<number> {
   try {
     const totalOnChain = await readTotalProposals();
     if (totalOnChain === 0) return 0;
 
-    const { query: dbQuery } = await import('../db/pool.js');
-
-    // Index new proposals (0-based indexing)
     const syncState = await getSyncState('proposals');
     const lastSynced = syncState?.last_synced_id ?? -1;
-    let newCount = 0;
+    if (totalOnChain - 1 <= lastSynced) return 0;
 
-    if (totalOnChain - 1 > lastSynced) {
-      for (let id = lastSynced + 1; id < totalOnChain; id++) {
-        const state = await readProposalState(id);
-        if (state) {
-          await upsertProposal(state);
-          newCount++;
-        }
-        await sleep(batchDelayMs);
-      }
-      await updateSyncState('proposals', totalOnChain - 1, true);
-    }
-
-    // Refresh existing proposal statuses (voting → executed, vote counts)
-    const existingResult = await dbQuery('SELECT on_chain_id FROM proposals ORDER BY on_chain_id ASC');
-    for (const row of existingResult.rows) {
-      try {
-        const state = await readProposalState(row.on_chain_id);
-        if (state) await upsertProposal(state);
-      } catch { /* skip */ }
-    }
-
-    return newCount;
-  } catch (err) {
-    logger.error({ err }, 'syncLatestProposals failed');
-    return 0;
-  }
-}
-
-/**
- * Sync membership proposals from chain.
- * Indexes new proposals and refreshes status of existing ones.
- */
-export async function syncLatestMembershipProposals(): Promise<number> {
-  try {
-    const totalOnChain = await readTotalMembershipProposals();
-    if (totalOnChain === 0) return 0;
-
-    const { query: dbQuery } = await import('../db/pool.js');
-
-    // Index new membership proposals
-    const syncState = await getSyncState('membership_proposals');
-    const lastSynced = syncState?.last_synced_id || 0;
-    let newCount = 0;
-
-    if (totalOnChain > lastSynced) {
-      for (let id = lastSynced + 1; id <= totalOnChain; id++) {
-        const state = await readMembershipProposalState(id);
-        if (state) {
-          await upsertMembershipProposal(state);
-          newCount++;
-        }
-        await sleep(batchDelayMs);
-      }
-      await updateSyncState('membership_proposals', totalOnChain, true);
-    }
-
-    // Refresh existing membership proposal statuses (pending → approved/rejected)
-    const existingResult = await dbQuery('SELECT on_chain_id FROM membership_proposals ORDER BY on_chain_id ASC');
-    for (const row of existingResult.rows) {
-      try {
-        const state = await readMembershipProposalState(row.on_chain_id);
-        if (state) await upsertMembershipProposal(state);
-      } catch { /* skip */ }
-    }
-
-    return newCount;
-  } catch (err) {
-    logger.error({ err }, 'syncLatestMembershipProposals failed');
-    return 0;
-  }
-}
-
-/**
- * Sync user tiers from chain for all known addresses.
- */
-export async function syncUserTiers(): Promise<number> {
-  try {
-    const { query: dbQuery } = await import('../db/pool.js');
-    const addressResult = await dbQuery(
-      'SELECT DISTINCT client as address FROM escrows UNION SELECT DISTINCT freelancer as address FROM escrows'
-    );
-    const addresses: string[] = addressResult.rows.map((r: any) => r.address).filter(Boolean);
-    if (addresses.length === 0) return 0;
-
-    let updated = 0;
-    for (const address of addresses) {
-      try {
-        const tierInfo = await readUserTierInfo(address);
-        if (tierInfo) {
-          await upsertUserTier({
-            address: tierInfo.address,
-            tier: tierInfo.tier,
-            total_fees_paid: tierInfo.total_fees_paid,
-          });
-          updated++;
-        }
-        await sleep(batchDelayMs);
-      } catch { /* skip */ }
-    }
-    return updated;
-  } catch (err) {
-    logger.error({ err }, 'syncUserTiers failed');
-    return 0;
-  }
-}
-
-/**
- * Sync job applications from chain.
- */
-export async function syncJobApplications(): Promise<number> {
-  try {
-    const applicationsFromHiro = await fetchJobApplicationsFromHiro();
-    if (applicationsFromHiro.length === 0) return 0;
-
+    logger.info({ lastSynced, totalOnChain }, 'Discovering new DAO proposals');
     let synced = 0;
-    for (const { jobId, applicant } of applicationsFromHiro) {
-      try {
-        const state = await readJobApplicationState(jobId, applicant);
-        if (state) {
-          await upsertJobApplication(state);
-          synced++;
-        }
-        await sleep(batchDelayMs);
-      } catch { /* skip */ }
+    for (let id = lastSynced + 1; id < totalOnChain; id++) {
+      const state = await readProposalState(id);
+      if (state) { await upsertProposal(state); synced++; }
+    }
+    await updateSyncState('proposals', totalOnChain - 1, true);
+    return synced;
+  } catch (err) {
+    logger.error({ err }, 'discoverNewProposals failed');
+    return 0;
+  }
+}
+
+async function discoverNewMembershipProposals(): Promise<number> {
+  try {
+    // Use DB max ID to avoid the expensive readTotalMembershipProposals (iterates 200 IDs)
+    const { getMaxMembershipProposalId } = await import('../db/queries/committee.js');
+    const maxDbId = await getMaxMembershipProposalId();
+
+    // Probe a few IDs beyond what we have to find new proposals
+    let synced = 0;
+    for (let id = maxDbId + 1; id <= maxDbId + 10; id++) {
+      const state = await readMembershipProposalState(id);
+      if (!state) break; // No more proposals
+      await upsertMembershipProposal(state);
+      synced++;
+    }
+    if (synced > 0) {
+      await updateSyncState('membership_proposals', maxDbId + synced, true);
+      logger.info({ synced }, 'Discovered new membership proposals');
     }
     return synced;
   } catch (err) {
-    logger.error({ err }, 'syncJobApplications failed');
+    logger.error({ err }, 'discoverNewMembershipProposals failed');
     return 0;
   }
 }
@@ -945,7 +872,6 @@ export async function syncCommitteeMembers(): Promise<number> {
           await upsertCommitteeMember(address, true);
           synced++;
         }
-        await sleep(batchDelayMs);
       } catch { /* skip individual failures */ }
     }
     return synced;
@@ -973,7 +899,6 @@ export async function syncDAOMembers(): Promise<number> {
           await upsertDAOMember(address, true);
           synced++;
         }
-        await sleep(batchDelayMs);
       } catch { /* skip individual failures */ }
     }
     return synced;
@@ -983,35 +908,12 @@ export async function syncDAOMembers(): Promise<number> {
   }
 }
 
-/**
- * Poll for new on-chain data. Call this periodically.
- * Syncs all entity types: jobs, escrows, milestones, disputes, proposals,
- * membership proposals, committee, DAO members, user tiers, job applications, reputation.
- */
-export async function pollForNewData(): Promise<void> {
-  try {
-    const newJobs = await syncLatestJobs();
-    const newEscrows = await syncLatestEscrows();
-    const newMilestones = await syncMilestonesForExistingEscrows();
-    const newDisputes = await syncLatestDisputes();
-    const newProposals = await syncLatestProposals();
-    const newMembershipProposals = await syncLatestMembershipProposals();
-    const committeeSynced = await syncCommitteeMembers();
-    const daoSynced = await syncDAOMembers();
-    const tiersUpdated = await syncUserTiers();
-    const appsSynced = await syncJobApplications();
-    const updatedRep = await syncReputationForKnownUsers();
+// Keep legacy export for backward compatibility (index.ts import)
+export const pollForNewData = pollForNewItems;
 
-    const total = newJobs + newEscrows + newMilestones + newDisputes + newProposals
-      + newMembershipProposals + committeeSynced + daoSynced + tiersUpdated + appsSynced + updatedRep;
-
-    if (total > 0) {
-      logger.info({
-        newJobs, newEscrows, newMilestones, newDisputes, newProposals,
-        newMembershipProposals, committeeSynced, daoSynced, tiersUpdated, appsSynced, updatedRep,
-      }, 'Polling sync found new data');
-    }
-  } catch (err) {
-    logger.error({ err }, 'Polling sync error');
-  }
-}
+// Also export individual sync functions used by bootstrap
+export { discoverNewEscrows as syncLatestEscrows };
+export { discoverNewJobs as syncLatestJobs };
+export { discoverNewDisputes as syncLatestDisputes };
+export { discoverNewProposals as syncLatestProposals };
+export { discoverNewMembershipProposals as syncLatestMembershipProposals };

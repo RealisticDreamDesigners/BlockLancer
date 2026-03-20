@@ -3,7 +3,7 @@ import { testConnection } from './db/pool.js';
 import { runMigrations } from './db/migrate.js';
 import { createApiServer } from './api/server.js';
 import { chainhookRoutes } from './chainhook/server.js';
-import { runBootstrap, pollForNewData } from './sync/bootstrap.js';
+import { runBootstrap, pollForNewItems, pollRefreshExisting } from './sync/bootstrap.js';
 import { cleanupExpiredPending } from './db/queries/pending-transactions.js';
 import pino from 'pino';
 
@@ -52,15 +52,23 @@ async function main() {
     }
   }, 5 * 60 * 1000);
 
-  // 8. Periodic polling for new on-chain data (every 30 seconds)
-  // This ensures new jobs/escrows show up even without Chainhook
+  // 8. Fast poll: discover new items every 30 seconds (lightweight — count checks only)
   setInterval(async () => {
     try {
-      await pollForNewData();
+      await pollForNewItems();
     } catch (err) {
-      logger.error({ err }, 'Polling sync error');
+      logger.error({ err }, 'Fast poll error');
     }
   }, 30 * 1000);
+
+  // 9. Slow poll: refresh existing item statuses every 5 minutes (heavier)
+  setInterval(async () => {
+    try {
+      await pollRefreshExisting();
+    } catch (err) {
+      logger.error({ err }, 'Slow poll error');
+    }
+  }, 5 * 60 * 1000);
 
   // Handle graceful shutdown
   const shutdown = async () => {
