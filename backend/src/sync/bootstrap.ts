@@ -735,17 +735,75 @@ export async function syncMilestonesForExistingEscrows(): Promise<number> {
 }
 
 /**
+ * Sync committee members from chain.
+ * Re-scans Hiro for set-committee-member txs and verifies on-chain.
+ */
+export async function syncCommitteeMembers(): Promise<number> {
+  try {
+    const deployerAddress = config.deployerAddress;
+    const addressesFromHiro = await fetchCommitteeAddressesFromHiro();
+    const allAddresses = new Set([deployerAddress, ...addressesFromHiro]);
+
+    let synced = 0;
+    for (const address of allAddresses) {
+      try {
+        const status = await readCommitteeMemberStatus(address);
+        if (status && status.isMember) {
+          await upsertCommitteeMember(address, true);
+          synced++;
+        }
+        await sleep(batchDelayMs);
+      } catch { /* skip individual failures */ }
+    }
+    return synced;
+  } catch (err) {
+    logger.error({ err }, 'syncCommitteeMembers failed');
+    return 0;
+  }
+}
+
+/**
+ * Sync DAO members from chain.
+ * Re-scans Hiro for admin-add-dao-member txs and verifies on-chain.
+ */
+export async function syncDAOMembers(): Promise<number> {
+  try {
+    const deployerAddress = config.deployerAddress;
+    const addressesFromHiro = await fetchDAOMemberAddressesFromHiro();
+    const allAddresses = new Set([deployerAddress, ...addressesFromHiro]);
+
+    let synced = 0;
+    for (const address of allAddresses) {
+      try {
+        const status = await readDAOMemberStatus(address);
+        if (status && status.isMember) {
+          await upsertDAOMember(address, true);
+          synced++;
+        }
+        await sleep(batchDelayMs);
+      } catch { /* skip individual failures */ }
+    }
+    return synced;
+  } catch (err) {
+    logger.error({ err }, 'syncDAOMembers failed');
+    return 0;
+  }
+}
+
+/**
  * Poll for new on-chain data. Call this periodically.
- * Checks for new jobs, escrows, milestones, and reputation updates.
+ * Checks for new jobs, escrows, milestones, committee, DAO members, and reputation updates.
  */
 export async function pollForNewData(): Promise<void> {
   try {
     const newJobs = await syncLatestJobs();
     const newEscrows = await syncLatestEscrows();
     const newMilestones = await syncMilestonesForExistingEscrows();
+    const committeeSynced = await syncCommitteeMembers();
+    const daoSynced = await syncDAOMembers();
     const updatedRep = await syncReputationForKnownUsers();
-    if (newJobs > 0 || newEscrows > 0 || newMilestones > 0 || updatedRep > 0) {
-      logger.info({ newJobs, newEscrows, newMilestones, updatedRep }, 'Polling sync found new data');
+    if (newJobs > 0 || newEscrows > 0 || newMilestones > 0 || committeeSynced > 0 || daoSynced > 0 || updatedRep > 0) {
+      logger.info({ newJobs, newEscrows, newMilestones, committeeSynced, daoSynced, updatedRep }, 'Polling sync found new data');
     }
   } catch (err) {
     logger.error({ err }, 'Polling sync error');
