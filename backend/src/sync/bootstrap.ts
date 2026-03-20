@@ -735,6 +735,199 @@ export async function syncMilestonesForExistingEscrows(): Promise<number> {
 }
 
 /**
+ * Sync disputes from chain.
+ * Indexes new disputes and refreshes status of existing ones.
+ */
+export async function syncLatestDisputes(): Promise<number> {
+  try {
+    const totalOnChain = await readTotalDisputes();
+    if (totalOnChain <= 1) return 0; // next-dispute-id starts at 1
+
+    const disputeCount = totalOnChain - 1;
+    const { query: dbQuery } = await import('../db/pool.js');
+
+    // Index new disputes
+    const syncState = await getSyncState('disputes');
+    const lastSynced = syncState?.last_synced_id || 0;
+    let newCount = 0;
+
+    if (disputeCount > lastSynced) {
+      for (let id = lastSynced + 1; id <= disputeCount; id++) {
+        const state = await readDisputeState(id);
+        if (state) {
+          await upsertDispute(state);
+          newCount++;
+        }
+        await sleep(batchDelayMs);
+      }
+      await updateSyncState('disputes', disputeCount, true);
+    }
+
+    // Refresh existing dispute statuses (open → resolved, evidence updates)
+    const existingResult = await dbQuery('SELECT on_chain_id FROM disputes ORDER BY on_chain_id ASC');
+    for (const row of existingResult.rows) {
+      try {
+        const state = await readDisputeState(row.on_chain_id);
+        if (state) await upsertDispute(state);
+      } catch { /* skip */ }
+    }
+
+    return newCount;
+  } catch (err) {
+    logger.error({ err }, 'syncLatestDisputes failed');
+    return 0;
+  }
+}
+
+/**
+ * Sync proposals from chain.
+ * Indexes new proposals and refreshes status/votes of existing ones.
+ */
+export async function syncLatestProposals(): Promise<number> {
+  try {
+    const totalOnChain = await readTotalProposals();
+    if (totalOnChain === 0) return 0;
+
+    const { query: dbQuery } = await import('../db/pool.js');
+
+    // Index new proposals (0-based indexing)
+    const syncState = await getSyncState('proposals');
+    const lastSynced = syncState?.last_synced_id ?? -1;
+    let newCount = 0;
+
+    if (totalOnChain - 1 > lastSynced) {
+      for (let id = lastSynced + 1; id < totalOnChain; id++) {
+        const state = await readProposalState(id);
+        if (state) {
+          await upsertProposal(state);
+          newCount++;
+        }
+        await sleep(batchDelayMs);
+      }
+      await updateSyncState('proposals', totalOnChain - 1, true);
+    }
+
+    // Refresh existing proposal statuses (voting → executed, vote counts)
+    const existingResult = await dbQuery('SELECT on_chain_id FROM proposals ORDER BY on_chain_id ASC');
+    for (const row of existingResult.rows) {
+      try {
+        const state = await readProposalState(row.on_chain_id);
+        if (state) await upsertProposal(state);
+      } catch { /* skip */ }
+    }
+
+    return newCount;
+  } catch (err) {
+    logger.error({ err }, 'syncLatestProposals failed');
+    return 0;
+  }
+}
+
+/**
+ * Sync membership proposals from chain.
+ * Indexes new proposals and refreshes status of existing ones.
+ */
+export async function syncLatestMembershipProposals(): Promise<number> {
+  try {
+    const totalOnChain = await readTotalMembershipProposals();
+    if (totalOnChain === 0) return 0;
+
+    const { query: dbQuery } = await import('../db/pool.js');
+
+    // Index new membership proposals
+    const syncState = await getSyncState('membership_proposals');
+    const lastSynced = syncState?.last_synced_id || 0;
+    let newCount = 0;
+
+    if (totalOnChain > lastSynced) {
+      for (let id = lastSynced + 1; id <= totalOnChain; id++) {
+        const state = await readMembershipProposalState(id);
+        if (state) {
+          await upsertMembershipProposal(state);
+          newCount++;
+        }
+        await sleep(batchDelayMs);
+      }
+      await updateSyncState('membership_proposals', totalOnChain, true);
+    }
+
+    // Refresh existing membership proposal statuses (pending → approved/rejected)
+    const existingResult = await dbQuery('SELECT on_chain_id FROM membership_proposals ORDER BY on_chain_id ASC');
+    for (const row of existingResult.rows) {
+      try {
+        const state = await readMembershipProposalState(row.on_chain_id);
+        if (state) await upsertMembershipProposal(state);
+      } catch { /* skip */ }
+    }
+
+    return newCount;
+  } catch (err) {
+    logger.error({ err }, 'syncLatestMembershipProposals failed');
+    return 0;
+  }
+}
+
+/**
+ * Sync user tiers from chain for all known addresses.
+ */
+export async function syncUserTiers(): Promise<number> {
+  try {
+    const { query: dbQuery } = await import('../db/pool.js');
+    const addressResult = await dbQuery(
+      'SELECT DISTINCT client as address FROM escrows UNION SELECT DISTINCT freelancer as address FROM escrows'
+    );
+    const addresses: string[] = addressResult.rows.map((r: any) => r.address).filter(Boolean);
+    if (addresses.length === 0) return 0;
+
+    let updated = 0;
+    for (const address of addresses) {
+      try {
+        const tierInfo = await readUserTierInfo(address);
+        if (tierInfo) {
+          await upsertUserTier({
+            address: tierInfo.address,
+            tier: tierInfo.tier,
+            total_fees_paid: tierInfo.total_fees_paid,
+          });
+          updated++;
+        }
+        await sleep(batchDelayMs);
+      } catch { /* skip */ }
+    }
+    return updated;
+  } catch (err) {
+    logger.error({ err }, 'syncUserTiers failed');
+    return 0;
+  }
+}
+
+/**
+ * Sync job applications from chain.
+ */
+export async function syncJobApplications(): Promise<number> {
+  try {
+    const applicationsFromHiro = await fetchJobApplicationsFromHiro();
+    if (applicationsFromHiro.length === 0) return 0;
+
+    let synced = 0;
+    for (const { jobId, applicant } of applicationsFromHiro) {
+      try {
+        const state = await readJobApplicationState(jobId, applicant);
+        if (state) {
+          await upsertJobApplication(state);
+          synced++;
+        }
+        await sleep(batchDelayMs);
+      } catch { /* skip */ }
+    }
+    return synced;
+  } catch (err) {
+    logger.error({ err }, 'syncJobApplications failed');
+    return 0;
+  }
+}
+
+/**
  * Sync committee members from chain.
  * Re-scans Hiro for set-committee-member txs and verifies on-chain.
  */
@@ -792,18 +985,31 @@ export async function syncDAOMembers(): Promise<number> {
 
 /**
  * Poll for new on-chain data. Call this periodically.
- * Checks for new jobs, escrows, milestones, committee, DAO members, and reputation updates.
+ * Syncs all entity types: jobs, escrows, milestones, disputes, proposals,
+ * membership proposals, committee, DAO members, user tiers, job applications, reputation.
  */
 export async function pollForNewData(): Promise<void> {
   try {
     const newJobs = await syncLatestJobs();
     const newEscrows = await syncLatestEscrows();
     const newMilestones = await syncMilestonesForExistingEscrows();
+    const newDisputes = await syncLatestDisputes();
+    const newProposals = await syncLatestProposals();
+    const newMembershipProposals = await syncLatestMembershipProposals();
     const committeeSynced = await syncCommitteeMembers();
     const daoSynced = await syncDAOMembers();
+    const tiersUpdated = await syncUserTiers();
+    const appsSynced = await syncJobApplications();
     const updatedRep = await syncReputationForKnownUsers();
-    if (newJobs > 0 || newEscrows > 0 || newMilestones > 0 || committeeSynced > 0 || daoSynced > 0 || updatedRep > 0) {
-      logger.info({ newJobs, newEscrows, newMilestones, committeeSynced, daoSynced, updatedRep }, 'Polling sync found new data');
+
+    const total = newJobs + newEscrows + newMilestones + newDisputes + newProposals
+      + newMembershipProposals + committeeSynced + daoSynced + tiersUpdated + appsSynced + updatedRep;
+
+    if (total > 0) {
+      logger.info({
+        newJobs, newEscrows, newMilestones, newDisputes, newProposals,
+        newMembershipProposals, committeeSynced, daoSynced, tiersUpdated, appsSynced, updatedRep,
+      }, 'Polling sync found new data');
     }
   } catch (err) {
     logger.error({ err }, 'Polling sync error');
