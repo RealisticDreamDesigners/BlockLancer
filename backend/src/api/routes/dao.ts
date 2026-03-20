@@ -163,7 +163,23 @@ export async function daoRoutes(app: FastifyInstance) {
       };
     }
 
-    // Not in DB — return false with DB count (poller will pick up new members)
+    // Not in DB — check on-chain before returning false (catch-up)
+    try {
+      const chainStatus = await readDAOMemberStatus(address);
+      if (chainStatus?.isMember) {
+        // Sync this member to DB so future checks are fast
+        const { upsertDAOMember } = await import('../../db/queries/dao.js');
+        await upsertDAOMember(address, true);
+        logger.info({ address }, '[catch-up] Synced new DAO member from chain');
+        return {
+          isMember: true,
+          memberCount: count + 1,
+        };
+      }
+    } catch (err) {
+      logger.warn({ err, address }, '[catch-up] Failed to check DAO membership on-chain');
+    }
+
     return { isMember: false, memberCount: count };
   });
 
